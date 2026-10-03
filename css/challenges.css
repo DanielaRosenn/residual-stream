@@ -1,0 +1,73 @@
+/* Guess-first / quick-check cards and saved progress (js/challenges.js). Logical properties only, so RTL works. */
+
+/* ---------- Cards ---------- */
+.ch-card {
+  font-family: var(--f-display);
+  background: var(--accent-soft);
+  border: 1px solid var(--rule);
+  border-inline-start: 4px solid var(--accent);
+  border-radius: var(--r-md);
+  padding: 16px 18px;
+  margin: 1.75rem 0 1.25rem;
+  max-width: var(--measure);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.ch-card.ch-check { background: var(--brand-soft); border-inline-start-color: var(--brand); margin: 2.5rem 0 0; }
+.ch-kicker {
+  margin: 0 0 .3rem;
+  font-size: .78rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--ink-2);
+}
+[dir="rtl"] .ch-kicker { letter-spacing: 0; font-size: .85rem; }
+.ch-quote { margin: .2rem 0 .6rem; font-size: 1.02rem; line-height: 1.4; font-style: italic; color: var(--ink-2); text-align: start; }
+.ch-q { margin: 0 0 .8rem; font-size: 1.08rem; font-weight: 600; line-height: 1.4; color: var(--ink); }
+
+.ch-opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.ch-check .ch-opts { display: grid; grid-template-columns: minmax(0, 1fr); }
+.ch-opt {
+  font: 600 .95rem/1.35 var(--f-display);
+  color: var(--ink); background: var(--surface);
+  border: 1px solid var(--rule); border-radius: 999px;
+  padding: 8px 16px; margin: 0; cursor: pointer;
+  text-align: start; max-width: 100%; min-width: 0; white-space: normal;
+}
+.ch-check .ch-opt { border-radius: var(--r-md); font-weight: 400; }
+.ch-opt:hover:not([aria-disabled="true"]) { border-color: var(--brand); color: var(--brand); }
+.ch-opt:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 999px; }
+.ch-check .ch-opt:focus-visible { border-radius: var(--r-md); }
+.ch-opt[aria-disabled="true"] { cursor: default; }
+.ch-answered .ch-opt:not(.ch-right):not(.ch-wrong) { color: var(--muted); }
+.ch-opt.ch-right { border-color: var(--good); background: color-mix(in srgb, var(--good) 14%, var(--surface)); color: var(--ink); }
+.ch-opt.ch-wrong { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, var(--surface)); color: var(--ink); }
+/* Not colour alone: a tick or a cross in front of the marked options. */
+.ch-opt.ch-right::before { content: "\2713"; color: var(--good); font-weight: 700; margin-inline-end: .45em; }
+.ch-opt.ch-wrong::before { content: "\2717"; color: var(--bad); font-weight: 700; margin-inline-end: .45em; }
+
+.ch-fb { margin: 0; font-size: .95rem; line-height: 1.5; color: var(--ink-2); }
+.ch-fb:not(:empty) { margin-top: .8rem; }
+.ch-fb .ch-ok { color: var(--good); }
+.ch-fb .ch-no { color: var(--bad); }
+
+/* ---------- Progress strip in the hero ---------- */
+.ch-progress { font-family: var(--f-display); max-width: var(--measure); margin: 2.5rem 0 0; }
+.ch-progress-row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; }
+.ch-progress-text { font-size: .9rem; font-weight: 600; color: var(--ink-2); }
+.ch-reset {
+  font: .85rem var(--f-display); color: var(--brand); background: none; border: 0; padding: 2px 0; margin: 0;
+  cursor: pointer; text-decoration: underline; text-underline-offset: 3px;
+}
+.ch-reset:hover { text-decoration-thickness: 2px; }
+.ch-reset[hidden] { display: none; }
+.ch-progress-bar { height: 4px; margin: 6px 0 8px; background: var(--rule); border-radius: 2px; overflow: hidden; }
+.ch-progress-fill { height: 100%; width: 0; background: var(--brand); border-radius: 2px; transition: width .25s ease; }
+.ch-progress-note { margin: 0; font-size: .85rem; line-height: 1.45; color: var(--muted); }
+
+/* ---------- Chapter completed: rail dot and mobile menu ---------- */
+.rail-nodes a.done .dot { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
+.mobile-menu a.done::after { content: "\2713"; color: var(--good); font-weight: 700; margin-inline-start: .5em; }
+
+@media (max-width: 480px) {
+  .ch-card { padding: 14px; }
+  .ch-opt { padding: 8px 14px; }
+}
