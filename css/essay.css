@@ -1,0 +1,25 @@
+/* ---------- Essay / interlude sections ----------
+   Extras for long-form interludes (e.g. #paper). Everything else comes from style.css.
+   Logical properties only, so the same rules work in RTL. */
+.essay-lede { font-size: 1.25rem; line-height: 1.55; }
+
+.essay-quote {
+  margin-block: 1.75rem;
+  margin-inline: 0;
+  padding-block: 1rem;
+  padding-inline: 1.25rem;
+  background: var(--brand-soft);
+  border-inline-start: 3px solid var(--brand);
+  border-radius: var(--r-sm);
+}
+.essay-quote p { margin: 0; font-size: 1.3rem; line-height: 1.4; font-style: italic; color: var(--ink); }
+.essay-quote .essay-gloss { margin-block-start: .5rem; font-size: 1rem; font-style: normal; color: var(--ink-2); }
+.essay-quote footer { margin-block-start: .6rem; font-family: var(--f-display); font-size: .88rem; color: var(--muted); }
+
+.essay-kicker { font-family: var(--f-display); font-weight: 600; font-size: 1.3rem; line-height: 1.1; color: var(--brand); margin-block: 2.2rem .6rem; }
+.essay-questions { margin-block: 0 1rem; padding-inline-start: 1.3rem; }
+.essay-questions li { margin-block-end: .6rem; padding-inline-start: .2rem; }
+.essay-questions li::marker { color: var(--accent); }
+
+/* Keep short English titles on one line inside Hebrew text so they don't wrap out of order. */
+#paper em[dir="ltr"] { white-space: nowrap; }

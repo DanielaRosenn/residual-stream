@@ -341,3 +341,7 @@ details summary { cursor: pointer; font-family: var(--f-display); font-size: .92
 .rel-big { font: 800 clamp(1.6rem, 4vw, 2.4rem)/1.1 var(--f-display); margin: 6px 0 10px; }
 .rel-track { height: 18px; }
 @media (max-width: 480px) { .patch-grid { font-size: .68rem; } .patch-grid button { font-size: .62rem; } }
+
+/* Link from the guide's hero to the game */
+.play-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 0 0 1.5rem; }
+.play-cta .btn { text-decoration: none; display: inline-block; }
