@@ -50,7 +50,7 @@
   const svg = $("#attnSvg"), heat = $("#attnHeat"), desc = $("#headDesc");
   function drawLines() {
     const A = weights(head), toks = tokens();
-    const cob = cssVar("--cobalt"), ink = cssVar("--ink"), muted = cssVar("--muted"), amb = cssVar("--amber");
+    const cob = cssVar("--brand"), ink = cssVar("--ink"), muted = cssVar("--muted"), amb = cssVar("--accent");
     svg.innerHTML = "";
     const y = i => 30 + i * 37;
     svg.append(svgLabel({ x: 112, y: 12, "text-anchor": "end", fill: muted, style: "font-size:12px" }, tr("looking", "מסתכל")));
@@ -76,7 +76,7 @@
   function drawHeat() {
     const A = weights(head), toks = tokens();
     const { ctx, w } = setupCanvas(heat);
-    const cob = cssVar("--cobalt"), surf = cssVar("--surface"), muted = cssVar("--muted"), ink = cssVar("--ink"), rule = cssVar("--rule");
+    const cob = cssVar("--brand"), surf = cssVar("--surface"), muted = cssVar("--muted"), ink = cssVar("--ink"), rule = cssVar("--rule");
     const m = 62, n = toks.length, cs = (w - m) / n;
     ctx.clearRect(0, 0, w, w);
     ctx.font = "11px " + cssVar("--f-display");
@@ -90,7 +90,7 @@
         ctx.fillRect(m + j * cs, m + i * cs, cs - 1, cs - 1);
       }
     });
-    ctx.strokeStyle = cssVar("--amber"); ctx.lineWidth = 2;
+    ctx.strokeStyle = cssVar("--accent"); ctx.lineWidth = 2;
     ctx.strokeRect(m - 1, m + query * cs - 1, n * cs + 1, cs + 1);
   }
   function render() { desc.textContent = HEADS[head].desc(query); drawLines(); drawHeat(); }
@@ -149,7 +149,7 @@
   ];
   const grid = $("#mathGrid");
   function drawMath() {
-    const cob = cssVar("--cobalt"), amb = cssVar("--amber"), surf = cssVar("--surface");
+    const cob = cssVar("--brand"), amb = cssVar("--accent"), surf = cssVar("--surface");
     grid.innerHTML = "";
     const s = STEPS[step];
     $("#mathDesc").textContent = tr(`Step ${step + 1} of ${STEPS.length}. `, `שלב ${step + 1} מתוך ${STEPS.length}. `) + (typeof s === "function" ? s() : s);

@@ -31,7 +31,7 @@
     .map(n => ({ n, d: Math.hypot(W[n][0] - v[0], W[n][1] - v[1]) })).sort((a, b) => a.d - b.d);
 
   function draw() {
-    const ink = cssVar("--ink"), muted = cssVar("--muted"), cob = cssVar("--cobalt"), amb = cssVar("--amber"), rule = cssVar("--rule");
+    const ink = cssVar("--ink"), muted = cssVar("--muted"), cob = cssVar("--brand"), amb = cssVar("--accent"), rule = cssVar("--rule");
     svg.innerHTML = "";
     const defs = sv("defs");
     [["arrC", cob], ["arrA", amb]].forEach(([id, c]) => {

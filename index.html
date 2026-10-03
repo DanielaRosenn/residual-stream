@@ -149,7 +149,7 @@
       <label class="slider">Compare position <input type="range" id="pePos" min="0" max="63" value="20"><output id="pePosOut">20</output></label>
     </div>
     <div class="pe-grid">
-      <figure><canvas id="peCanvas" width="640" height="320" aria-label="Sinusoidal positional encoding heatmap"></canvas><figcaption>Rows are positions 0–63, columns are dimensions. Blue is +1, amber is −1. The outlined row is the position you chose.</figcaption></figure>
+      <figure><canvas id="peCanvas" width="640" height="320" aria-label="Sinusoidal positional encoding heatmap"></canvas><figcaption>Rows are positions 0–63, columns are dimensions. Green is +1, yellow is −1. The outlined row is the position you chose.</figcaption></figure>
       <figure><canvas id="peSim" width="640" height="200" aria-label="Similarity of the chosen position to every other position"></canvas><figcaption>Dot product between the chosen position's encoding and every other position's. Nearby positions look alike, and the shape depends on distance, not on absolute place.</figcaption></figure>
     </div>
   </div>
@@ -345,7 +345,7 @@
       <span class="stat" id="kvStat"></span>
     </div>
     <div class="kv-grid" id="kvGrid" aria-live="polite"></div>
-    <p class="caption">Each row is a generation step; each cell is a token whose key and value exist at that step. Blue cells are computed fresh in that step, faint ones are read from the cache.</p>
+    <p class="caption">Each row is a generation step; each cell is a token whose key and value exist at that step. Green cells are computed fresh in that step, faint ones are read from the cache.</p>
   </div>
 
   <h3>Mixture of experts</h3>

@@ -49,7 +49,7 @@
   const svg = $("#moeSvg");
   function drawMoE() {
     const { p, top, gate } = route(tok);
-    const cob = cssVar("--cobalt"), amb = cssVar("--amber"), ink = cssVar("--ink"), muted = cssVar("--muted"), rule = cssVar("--rule"), surf = cssVar("--surface"), soft = cssVar("--amber-soft");
+    const cob = cssVar("--brand"), amb = cssVar("--accent"), ink = cssVar("--ink"), muted = cssVar("--muted"), rule = cssVar("--rule"), surf = cssVar("--surface"), soft = cssVar("--accent-soft");
     svg.innerHTML = "";
     const ey = i => 14 + i * 27;
     svg.append(sv("rect", { x: 10, y: 100, width: 130, height: 40, rx: 8, fill: cob }));

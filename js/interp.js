@@ -77,7 +77,7 @@
   function drawSup() {
     const { h, read } = compute();
     const svg = $("#supSvg");
-    const cob = cssVar("--cobalt"), amb = cssVar("--amber"), ink = cssVar("--ink"), muted = cssVar("--muted"), rule = cssVar("--rule");
+    const cob = cssVar("--brand"), amb = cssVar("--accent"), ink = cssVar("--ink"), muted = cssVar("--muted"), rule = cssVar("--rule");
     svg.innerHTML = "";
     const C = 150, R = 100;
     const defs = sv("defs");
@@ -174,7 +174,7 @@
   let patchSel = [7, 5];
   const grid = $("#patchGrid");
   function drawPatch() {
-    const cob = cssVar("--cobalt"), surf = cssVar("--surface");
+    const cob = cssVar("--brand"), surf = cssVar("--surface");
     grid.innerHTML = "";
     grid.append(el("span", { class: "ph", text: tr("layer", "שכבה") }));
     POS.forEach(p => grid.append(el("span", { class: "ph", text: p })));

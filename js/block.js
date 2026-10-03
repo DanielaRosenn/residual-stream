@@ -44,7 +44,7 @@
   const svg = $("#blockSvg");
 
   function drawDiagram() {
-    const cob = cssVar("--cobalt"), amb = cssVar("--amber"), ink = cssVar("--ink"), surf = cssVar("--surface"), rule = cssVar("--rule"), muted = cssVar("--muted"), soft = cssVar("--cobalt-soft");
+    const cob = cssVar("--brand"), amb = cssVar("--accent"), ink = cssVar("--ink"), surf = cssVar("--surface"), rule = cssVar("--rule"), muted = cssVar("--muted"), soft = cssVar("--brand-soft");
     const act = STAGES[stage].id;
     svg.innerHTML = "";
     const SX = 70;
@@ -81,7 +81,7 @@
   function drawVec() {
     const s = STAGES[stage];
     const { ctx, w, h } = setupCanvas($("#blkVec"));
-    const cob = cssVar("--cobalt"), amb = cssVar("--amber"), muted = cssVar("--muted"), rule = cssVar("--rule"), ink = cssVar("--ink");
+    const cob = cssVar("--brand"), amb = cssVar("--accent"), muted = cssVar("--muted"), rule = cssVar("--rule"), ink = cssVar("--ink");
     ctx.clearRect(0, 0, w, h);
     const mid = h / 2, scale = 34, bw = (w - 20) / D;
     ctx.strokeStyle = rule; ctx.beginPath(); ctx.moveTo(10, mid); ctx.lineTo(w - 10, mid); ctx.stroke();
@@ -145,7 +145,7 @@
     const emb = V * d * (tied ? 1 : 2);
     const total = L * (attn + mlp) + emb;
     const kvPerTok = 2 * L * kv * dh * 2; // K and V, fp16 = 2 bytes
-    const cob = cssVar("--cobalt"), amb = cssVar("--amber"), muted = cssVar("--muted");
+    const cob = cssVar("--brand"), amb = cssVar("--accent"), muted = cssVar("--muted");
     const parts = [["Attention", L * attn, cob], ["MLP", L * mlp, amb], ["Embeddings", emb, muted]];
     const warn = Number.isInteger(dh) ? "" : `<p class="caption">${tr(`Note: model width ${d} isn't divisible by ${h} heads, so the head size is fractional. Real models always choose values that divide evenly.`, `שימו לב: רוחב המודל ${d} לא מתחלק ב־${h} heads, ולכן גודל ה־head אינו שלם. מודלים אמיתיים תמיד בוחרים ערכים שמתחלקים בלי שארית.`)}</p>`;
     $("#calcOut").innerHTML = `

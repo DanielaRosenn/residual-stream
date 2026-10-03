@@ -1,6 +1,6 @@
 (function () {
   /* ---------- Agent run simulator ---------- */
-  const ROLE_COLOR = { system: "--muted", user: "--cobalt", assistant: "--good", tool: "--amber" };
+  const ROLE_COLOR = { system: "--muted", user: "--brand", assistant: "--good", tool: "--accent" };
   const ROLE_LABEL = {
     system: tr("system", "system"), user: tr("user", "user"),
     assistant: tr("assistant", "assistant"), tool: tr("tool result", "tool result")

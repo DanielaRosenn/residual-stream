@@ -149,7 +149,7 @@
       <label class="slider">השוואת מיקום <input type="range" id="pePos" min="0" max="63" value="20"><output id="pePosOut">20</output></label>
     </div>
     <div class="pe-grid" dir="ltr">
-      <figure><canvas id="peCanvas" width="640" height="320" aria-label="Heatmap של קידוד מיקום סינוסואידלי"></canvas><figcaption dir="rtl">השורות הן מיקומים 0–63, העמודות הן ממדים. כחול הוא ‎+1‎, ענבר הוא ‎−1‎. השורה המסומנת היא המיקום שבחרתם.</figcaption></figure>
+      <figure><canvas id="peCanvas" width="640" height="320" aria-label="Heatmap של קידוד מיקום סינוסואידלי"></canvas><figcaption dir="rtl">השורות הן מיקומים 0–63, העמודות הן ממדים. ירוק הוא ‎+1‎, צהוב הוא ‎−1‎. השורה המסומנת היא המיקום שבחרתם.</figcaption></figure>
       <figure><canvas id="peSim" width="640" height="200" aria-label="הדמיון בין המיקום הנבחר לכל מיקום אחר"></canvas><figcaption dir="rtl">ה־dot product בין הקידוד של המיקום הנבחר לקידוד של כל מיקום אחר. מיקומים קרובים דומים זה לזה, והצורה תלויה במרחק ולא במיקום המוחלט.</figcaption></figure>
     </div>
   </div>
@@ -345,7 +345,7 @@
       <span class="stat" id="kvStat"></span>
     </div>
     <div class="kv-grid ltr-island" dir="ltr" id="kvGrid" aria-live="polite"></div>
-    <p class="caption">כל שורה היא צעד יצירה; כל תא הוא טוקן שה־key וה־value שלו קיימים בצעד הזה. תאים כחולים מחושבים מחדש באותו צעד, תאים חיוורים נקראים מה־cache.</p>
+    <p class="caption">כל שורה היא צעד יצירה; כל תא הוא טוקן שה־key וה־value שלו קיימים בצעד הזה. תאים ירוקים מחושבים מחדש באותו צעד, תאים חיוורים נקראים מה־cache.</p>
   </div>
 
   <h3>Mixture of experts</h3>

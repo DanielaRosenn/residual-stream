@@ -14,7 +14,7 @@
   function drawHeat() {
     const d = +dimS.value, sel = +posS.value;
     const { ctx, w, h } = setupCanvas($("#peCanvas"));
-    const cob = cssVar("--cobalt"), amb = cssVar("--amber"), surf = cssVar("--surface"), ink = cssVar("--ink");
+    const cob = cssVar("--brand"), amb = cssVar("--accent"), surf = cssVar("--surface"), ink = cssVar("--ink");
     const cw = w / d, ch = h / N;
     for (let p = 0; p < N; p++) {
       const v = pe(p, d);
@@ -31,7 +31,7 @@
   function drawSim() {
     const d = +dimS.value, sel = +posS.value;
     const { ctx, w, h } = setupCanvas($("#peSim"));
-    const cob = cssVar("--cobalt"), muted = cssVar("--muted"), rule = cssVar("--rule"), amb = cssVar("--amber");
+    const cob = cssVar("--brand"), muted = cssVar("--muted"), rule = cssVar("--rule"), amb = cssVar("--accent");
     const a = pe(sel, d);
     const sims = [...Array(N)].map((_, q) => pe(q, d).reduce((s, x, i) => s + x * a[i], 0));
     const hi = d / 2; // self-similarity: each sin/cos pair contributes 1
@@ -70,7 +70,7 @@
   function drawRope() {
     const pos = +ropeS.value;
     $("#ropePosOut").value = pos;
-    const cob = cssVar("--cobalt"), amb = cssVar("--amber"), rule = cssVar("--rule"), ink = cssVar("--ink"), muted = cssVar("--muted");
+    const cob = cssVar("--brand"), amb = cssVar("--accent"), rule = cssVar("--rule"), ink = cssVar("--ink"), muted = cssVar("--muted");
     svg.innerHTML = "";
     PAIRS.forEach((p, k) => {
       const theta = Math.pow(10000, -2 * p.i / 64);

@@ -42,7 +42,7 @@
 
   function drawLoss() {
     const { ctx, w, h } = setupCanvas($("#lossCanvas"));
-    const cob = cssVar("--cobalt"), amb = cssVar("--amber"), muted = cssVar("--muted"), rule = cssVar("--rule");
+    const cob = cssVar("--brand"), amb = cssVar("--accent"), muted = cssVar("--muted"), rule = cssVar("--rule");
     ctx.clearRect(0, 0, w, h);
     const pl = 40, pr = 10, pt = 12, pb = 26;
     const xmax = Math.max(300, steps), ymin = Math.floor((floor - 0.2) * 10) / 10, ymax = Math.ceil((start + 0.1) * 10) / 10;
@@ -63,7 +63,7 @@
   }
   function drawW() {
     const { ctx, w } = setupCanvas($("#wCanvas"));
-    const cob = cssVar("--cobalt"), surf = cssVar("--surface"), muted = cssVar("--muted");
+    const cob = cssVar("--brand"), surf = cssVar("--surface"), muted = cssVar("--muted");
     ctx.clearRect(0, 0, w, w);
     const m = 16, cs = (w - m) / V;
     ctx.font = "9px " + cssVar("--f-mono"); ctx.fillStyle = muted; ctx.textAlign = "center";
