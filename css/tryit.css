@@ -1,0 +1,22 @@
+/* "Try it yourself" controls added from JS (sampling prompt chooser, embeddings word finder, attention sentence chooser).
+   Logical properties only so the Hebrew (RTL) page works; colours come from the tokens in style.css. */
+.ty-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-block: 0 14px; font-family: var(--f-display); font-size: .92rem; color: var(--ink-2); min-inline-size: 0; }
+.ty-label { font-weight: 600; color: var(--ink-2); }
+.ty-row select, .ty-row input[type="text"] { min-inline-size: 0; max-inline-size: 100%; }
+.ty-select { flex: 0 1 26rem; }
+.ty-input { flex: 0 1 14rem; inline-size: 14rem; }
+.ty-row .seg { min-inline-size: 0; }
+
+.ty-msg { font-family: var(--f-display); font-size: .92rem; line-height: 1.45; color: var(--ink-2); }
+.ty-msg:empty { display: none; }
+.ty-msg p { margin-block: 0 8px; }
+.ty-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-block: 0 14px; }
+[dir="rtl"] .ty-chips { justify-content: flex-end; }
+.ty-chip { font: .85rem var(--f-display); color: var(--ink); background: var(--brand-soft); border: 1px solid var(--rule); border-radius: 999px; padding: 4px 11px; cursor: pointer; }
+.ty-chip:hover { border-color: var(--brand); }
+
+.ty-sentence { font-family: var(--f-display); font-size: 1.08rem; line-height: 1.5; color: var(--ink); background: var(--bg); border-radius: var(--r-sm); padding: 10px 14px; margin-block: 0 14px; overflow-wrap: anywhere; }
+.ty-sentence b { color: var(--brand); font-weight: 700; }
+.ty-sentence mark { background: var(--accent-soft); color: var(--ink); font-weight: 600; padding-inline: .12em; border-radius: var(--r-sm); }
+
+.ty-note { margin-block: 12px 0; }

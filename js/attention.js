@@ -1,21 +1,59 @@
 (function () {
-  /* ---------- Part A: heads on a real sentence ---------- */
-  const base = ["The", "animal", "didn't", "cross", "the", "street", "because", "it", "was", "too", "tired", "."];
-  const IT = 7, ANIMAL = 1, STREET = 5, ADJ = 10;
-  let adj = "tired", head = "coref", query = IT;
+  /* ---------- Part A: heads on a real sentence ----------
+     Three fixed example sentences (Winograd-style: one word flips what the pronoun refers to).
+     The patterns are hand-set by the same rules for every sentence, so no free-text input is offered.
+     Per sentence: pron = the pronoun, varIdx = the word the reader can swap, link = the "was" after the pronoun (if any),
+     subj = verb index -> [subject index, score] for the verb-to-subject head, verbs = the verbs named in its hint. */
+  const SENTS = [
+    {
+      id: "animal", label: "animal / street",
+      base: ["The", "animal", "didn't", "cross", "the", "street", "because", "it", "was", "too", "tired", "."],
+      pron: 7, link: 8, varIdx: 10, subj: { 2: [1, 4], 3: [1, 4], 8: [7, 4.5], 6: [3, 3] }, verbs: [2, 3, 8],
+      variants: [{ value: "tired", label: "…too tired", ref: 1, other: 5 }, { value: "wide", label: "…too wide", ref: 5, other: 1 }],
+      pronDesc: r => tr(`“it” sends most of its attention to “${r}”. Animals get tired; streets are wide. A caveat: in a left-to-right model, “it” cannot see the adjective that comes after it — the reference is only settled at the later words, which can look back at both. The pattern is drawn here on “it” to keep the picture simple.`,
+        `“it” שולח את רוב תשומת הלב שלו אל “${r}”. בעלי חיים מתעייפים, רחובות הם רחבים. הסתייגות: במודל שקורא משמאל לימין, “it” לא יכול לראות את שם התואר שבא אחריו — ההכרעה מתקבלת רק במילים המאוחרות יותר, שיכולות להסתכל אחורה על שניהם. הדפוס מצויר כאן על “it” כדי לשמור על תמונה פשוטה.`),
+      hint: () => tr("This head links pronouns and descriptions back to the noun they're about. Click “it”, “was” or the final adjective.", "ה־head הזה מקשר כינויי גוף ותיאורים בחזרה לשם העצם שהם מתייחסים אליו. לחצו על “it”, ‏“was” או על שם התואר האחרון.")
+    },
+    {
+      id: "trophy", label: "trophy / suitcase",
+      base: ["The", "trophy", "didn't", "fit", "in", "the", "suitcase", "because", "it", "was", "too", "big", "."],
+      pron: 8, link: 9, varIdx: 11, subj: { 2: [1, 4], 3: [1, 4], 9: [8, 4.5], 7: [3, 3] }, verbs: [2, 3, 9],
+      variants: [{ value: "big", label: "…too big", ref: 1, other: 6 }, { value: "small", label: "…too small", ref: 6, other: 1 }],
+      pronDesc: r => tr(`“it” sends most of its attention to “${r}”. A trophy can be too big to go in; a suitcase can be too small to hold it. Every word up to “too” is the same — only the last one says which noun “it” means.`,
+        `⁦“it”⁩ שולח את רוב תשומת הלב שלו אל ⁦“${r}”⁩. גביע יכול להיות גדול מדי בשביל להיכנס; מזוודה יכולה להיות קטנה מדי בשביל להכיל אותו. כל המילים עד ⁦“too”⁩ זהות — רק המילה האחרונה קובעת לאיזה שם עצם ⁦“it”⁩ מתייחס.`),
+      hint: () => tr("This head links pronouns and descriptions back to the noun they're about. Click “it”, “was” or the final adjective.", "ה־head הזה מקשר כינויי גוף ותיאורים בחזרה לשם העצם שהם מתייחסים אליו. לחצו על ⁦“it”⁩, על ⁦“was”⁩ או על שם התואר האחרון.")
+    },
+    {
+      id: "council", label: "council / protesters",
+      base: ["The", "council", "refused", "the", "protesters", "a", "permit", "because", "they", "feared", "violence", "."],
+      pron: 8, varIdx: 9, subj: { 2: [1, 4], 9: [8, 4.5], 7: [2, 3] }, verbs: [2, 9],
+      variants: [{ value: "feared", label: "…they feared violence", ref: 1, other: 4 }, { value: "advocated", label: "…they advocated violence", ref: 4, other: 1 }],
+      pronDesc: r => tr(`“they” sends most of its attention to “${r}”. A council fears violence; protesters would be the ones advocating it. One verb changes, and the pronoun switches sides.`,
+        `⁦“they”⁩ שולח את רוב תשומת הלב שלו אל ⁦“${r}”⁩. מועצה חוששת מאלימות; מפגינים הם אלה שעשויים לתמוך בה. פועל אחד משתנה, וכינוי הגוף עובר צד.`),
+      hint: () => tr(`This head links pronouns and descriptions back to the noun they're about. Click “they” or “${adj}”.`, `ה־head הזה מקשר כינויי גוף ותיאורים בחזרה לשם העצם שהם מתייחסים אליו. לחצו על ⁦“they”⁩ או על ⁦“${adj}”⁩.`)
+    }
+  ];
+  let S = SENTS[0], adj = S.variants[0].value, head = "coref", query = S.pron;
+  const variant = () => S.variants.find(v => v.value === adj) || S.variants[0];
+  const tokens = () => S.base.map((t, i) => (i === S.varIdx ? adj : t));
 
   const HEADS = {
     coref: {
       label: tr("Coreference head", "Coreference head"),
-      desc: q => q === IT ? tr(`“it” sends most of its attention to “${adj === "tired" ? "animal" : "street"}”. Animals get tired; streets are wide. The head uses the adjective later in the sentence — via the layers above — to settle the reference.`,
-          `“it” שולח את רוב תשומת הלב שלו אל “${adj === "tired" ? "animal" : "street"}”. בעלי חיים מתעייפים, רחובות הם רחבים. ה־head נעזר בשם התואר שמופיע בהמשך המשפט — דרך השכבות שמעליו — כדי להכריע למה “it” מתייחס.`) :
-        tr("This head links pronouns and descriptions back to the noun they're about. Click “it”, “was” or the final adjective.", "ה־head הזה מקשר כינויי גוף ותיאורים בחזרה לשם העצם שהם מתייחסים אליו. לחצו על “it”, ‏“was” או על שם התואר האחרון."),
+      desc: q => {
+        const v = variant(), r = S.base[v.ref], p = S.base[S.pron];
+        if (q === S.pron) return S.pronDesc(r);
+        if (q === S.varIdx) return tr(
+          `“${adj}” looks back at both “${p}” and “${r}”. This is the word that decides the reference, so it is where a model reading left to right can finally tie the pronoun to its noun.`,
+          `⁦“${adj}”⁩ מסתכל אחורה גם על ⁦“${p}”⁩ וגם על ⁦“${r}”⁩. זו המילה שמכריעה למה כינוי הגוף מתייחס, ולכן כאן מודל שקורא משמאל לימין יכול סוף־סוף לקשר את כינוי הגוף לשם העצם שלו.`);
+        return S.hint();
+      },
       score(i, j) {
-        const ref = adj === "tired" ? ANIMAL : STREET, other = adj === "tired" ? STREET : ANIMAL;
-        if (i === IT) return j === ref ? 4.5 : j === other ? 1.2 : j === i ? 1 : 0;
-        if (i === ADJ) return j === ref ? 3.2 : j === IT ? 2.8 : j === i ? 1 : 0;
-        if (i === 8) return j === IT ? 3.5 : j === ref ? 2 : 0;
-        if (i === 11) return j === ADJ ? 2 : j === 0 ? 1.5 : 0;
+        const v = variant(), ref = v.ref, other = v.other, n = S.base.length;
+        if (i === S.pron) return j === ref ? 4.5 : j === other ? 1.2 : j === i ? 1 : 0;
+        if (i === S.varIdx) return j === ref ? 3.2 : j === S.pron ? 2.8 : j === i ? 1 : 0;
+        if (i === S.link) return j === S.pron ? 3.5 : j === ref ? 2 : 0;
+        if (i === n - 1) return j === n - 2 ? 2 : j === 0 ? 1.5 : 0;
         return j === i ? 2.2 : j === 0 ? 0.8 : 0;
       }
     },
@@ -27,11 +65,16 @@
     },
     subj: {
       label: tr("Verb-to-subject head", "Verb-to-subject head"),
-      desc: q => [2, 3, 8].includes(q) ? tr(`“${base[q]}” finds the subject that governs it.`, `“${base[q]}” מוצא את הנושא שלו.`) : tr("Verbs look for their subjects. Click “didn't”, “cross” or “was”.", "פעלים מחפשים את הנושא שלהם. לחצו על “didn't”, ‏“cross” או “was”."),
+      desc: q => {
+        const toks = tokens();
+        if (S.verbs.includes(q)) return tr(`“${toks[q]}” finds the subject that governs it.`, `“${toks[q]}” מוצא את הנושא שלו.`);
+        const names = S.verbs.map(i => `“${toks[i]}”`);
+        const last = names.pop();
+        return tr(`Verbs look for their subjects. Click ${names.join(", ")} or ${last}.`, `פעלים מחפשים את הנושא שלהם. לחצו על ${names.join(", ‏")} או ${last}.`);
+      },
       score(i, j) {
-        if (i === 2 || i === 3) return j === ANIMAL ? 4 : j === i ? 1 : 0;
-        if (i === 8) return j === IT ? 4.5 : j === i ? 1 : 0;
-        if (i === 6) return j === 3 ? 3 : j === i ? 1 : 0;
+        const m = S.subj[i];
+        if (m) return j === m[0] ? m[1] : j === i ? 1 : 0;
         return j === i ? 2 : j === 0 ? 0.6 : 0;
       }
     },
@@ -42,9 +85,8 @@
       score(i, j) { return j === 0 ? 4 : j === i ? 1 : 0; }
     }
   };
-  const tokens = () => base.map((t, i) => (i === ADJ ? adj : t));
   function weights(h) {
-    return base.map((_, i) => softmax(base.map((_, j) => (j > i ? -Infinity : HEADS[h].score(i, j)))));
+    return S.base.map((_, i) => softmax(S.base.map((_, j) => (j > i ? -Infinity : HEADS[h].score(i, j)))));
   }
 
   const svg = $("#attnSvg"), heat = $("#attnHeat"), desc = $("#headDesc");
@@ -52,7 +94,8 @@
     const A = weights(head), toks = tokens();
     const cob = cssVar("--brand"), ink = cssVar("--ink"), muted = cssVar("--muted"), amb = cssVar("--accent");
     svg.innerHTML = "";
-    const y = i => 30 + i * 37;
+    const stepY = Math.min(37, 430 / (toks.length - 1));
+    const y = i => 30 + i * stepY;
     svg.append(svgLabel({ x: 112, y: 12, "text-anchor": "end", fill: muted, style: "font-size:12px" }, tr("looking", "מסתכל")));
     svg.append(svgLabel({ x: 308, y: 12, fill: muted, style: "font-size:12px" }, tr("looked at", "נצפה")));
     A[query].forEach((w, j) => {
@@ -77,9 +120,10 @@
     const A = weights(head), toks = tokens();
     const { ctx, w } = setupCanvas(heat);
     const cob = cssVar("--brand"), surf = cssVar("--surface"), muted = cssVar("--muted"), ink = cssVar("--ink"), rule = cssVar("--rule");
-    const m = 62, n = toks.length, cs = (w - m) / n;
     ctx.clearRect(0, 0, w, w);
     ctx.font = "11px " + cssVar("--f-display");
+    // Margin grows only if a sentence has a token too long for the default one.
+    const m = Math.max(62, Math.ceil(Math.max(...toks.map(t => ctx.measureText(t).width))) + 12), n = toks.length, cs = (w - m) / n;
     toks.forEach((t, i) => {
       ctx.fillStyle = i === query ? ink : muted;
       ctx.textAlign = "right"; ctx.fillText(t, m - 6, m + i * cs + cs / 2 + 4);
@@ -93,10 +137,39 @@
     ctx.strokeStyle = cssVar("--accent"); ctx.lineWidth = 2;
     ctx.strokeRect(m - 1, m + query * cs - 1, n * cs + 1, cs + 1);
   }
-  function render() { desc.textContent = HEADS[head].desc(query); drawLines(); drawHeat(); }
 
-  segmented($("#headSeg"), Object.entries(HEADS).map(([k, v]) => ({ value: k, label: v.label })), head, v => { head = v; render(); });
-  segmented($("#adjSeg"), [{ value: "tired", label: "…too tired" }, { value: "wide", label: "…too wide" }], adj, v => { adj = v; render(); });
+  /* Sentence chooser (built here so the HTML stays untouched). */
+  const headSeg = $("#headSeg"), adjSeg = $("#adjSeg"), adjLabel = adjSeg.getAttribute("aria-label");
+  const ctrl = headSeg.closest(".controls") || headSeg.parentNode, attnPanel = headSeg.closest(".panel") || ctrl.parentNode;
+  const sentSeg = el("div", { class: "seg", role: "radiogroup", id: "sentSeg", dir: "ltr", lang: "en", "aria-labelledby": "sentLbl" });
+  const sentLine = el("p", { class: "ty-sentence", id: "sentLine", dir: "ltr", lang: "en", "aria-live": "polite" });
+  ctrl.before(el("div", { class: "ty-row" }, el("span", { class: "ty-label", id: "sentLbl", text: tr("Example sentence", "משפט לדוגמה") }), sentSeg), sentLine);
+  attnPanel.append(el("p", {
+    class: "caption ty-note", id: "sentNote",
+    text: tr(
+      "The three example sentences are fixed on purpose: their patterns are drawn by hand, using the same rules for each sentence, not computed by a model — so this demo does not take free text. They are classic “Winograd schema” sentences, where changing one word flips what the pronoun refers to.",
+      "שלושת המשפטים לדוגמה קבועים בכוונה: התבניות שלהם צוירו ביד, לפי אותם כללים בכל משפט, ולא חושבו על ידי מודל — ולכן אי אפשר להקליד כאן טקסט חופשי. המשפטים נשארים באנגלית, והם משפטים קלאסיים מסוג ⁦“Winograd schema”⁩, שבהם החלפה של מילה אחת הופכת את מה שכינוי הגוף מתייחס אליו.")
+  }));
+  function drawSentence() {
+    sentLine.replaceChildren();
+    tokens().forEach((t, i) => {
+      if (i && t !== ".") sentLine.append(" ");
+      sentLine.append(i === S.pron ? el("b", { text: t }) : i === S.varIdx ? el("mark", { text: t }) : t);
+    });
+  }
+  function render() { desc.textContent = HEADS[head].desc(query); drawSentence(); drawLines(); drawHeat(); }
+  function buildAdj() {
+    adjSeg.setAttribute("aria-label", S.varIdx === S.base.length - 2 ? adjLabel : tr("Word that changes", "המילה שמשתנה"));
+    segmented(adjSeg, S.variants.map(v => ({ value: v.value, label: v.label })), adj, v => { adj = v; render(); });
+  }
+
+  segmented(headSeg, Object.entries(HEADS).map(([k, v]) => ({ value: k, label: v.label })), head, v => { head = v; render(); });
+  segmented(sentSeg, SENTS.map(s => ({ value: s.id, label: s.label })), S.id, id => {
+    S = SENTS.find(s => s.id === id) || SENTS[0];
+    adj = S.variants[0].value; query = S.pron;
+    buildAdj(); render();
+  });
+  buildAdj();
 
   /* ---------- Part B: the maths, step by step ---------- */
   const T = ["the", "cat", "sat", "down"], DM = 4, DK = 3;
