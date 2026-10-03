@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Residual Stream — איך transformers ו־LLMs באמת עובדים</title>
+<meta name="description" content="מדריך אינטראקטיבי מהיסודות ל־transformers ולמודלי שפה גדולים: היסטוריה, טוקנים, embeddings, ‏attention, אימון, sampling וארכיטקטורה של LLMs מודרניים.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;600&family=Rubik:wght@400;600;800&family=Frank+Ruhl+Libre:wght@400;600&display=swap" rel="stylesheet">
+<link rel="alternate" hreflang="en" href="../index.html">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<a class="skip" href="#main">דילוג לתוכן</a>
+
+<nav class="rail" aria-label="פרקים">
+  <div class="rail-line"><div class="rail-fill" id="railFill"></div></div>
+  <ol class="rail-nodes" id="railNodes"></ol>
+</nav>
+
+<header class="topbar">
+  <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="mobileMenu">פרקים</button>
+  <div class="topbar-progress"><div id="topFill"></div></div>
+  <a class="lang-link" href="../index.html" lang="en" hreflang="en">English</a>
+  <button class="theme-btn" id="themeBtn" aria-label="מעבר בין מצב בהיר לכהה">◐</button>
+</header>
+<div class="mobile-menu" id="mobileMenu" hidden></div>
+<div class="corner">
+  <a class="lang-link" href="../index.html" lang="en" hreflang="en">English</a>
+  <button class="theme-btn" id="themeBtn2" aria-label="מעבר בין מצב בהיר לכהה">◐</button>
+</div>
+
+<main id="main">
+
+<!-- ============ HERO ============ -->
+<section class="chapter hero" id="start" data-title="התחלה">
+  <div class="hero-text">
+    <h1 dir="ltr" style="text-align: right">The Residual Stream</h1>
+    <p class="lede">מודל שפה עושה דבר אחד: בהינתן טקסט, הוא מנחש את החלק הבא. כל השאר — צ׳אט, קוד, reasoning, ‏agents — הוא הניחוש הזה, שוב ושוב. האתר הזה מפרק את המכונה, שכבה אחרי שכבה, עד שלא נשאר בה שום דבר מסתורי.</p>
+  </div>
+
+  <figure class="hero-demo panel" aria-label="חיזוי חי של המילה הבאה">
+    <div class="hero-out" id="heroOut" aria-live="polite"></div>
+    <div class="hero-bars" id="heroBars"></div>
+    <figcaption>
+      <span>מודל שפה אמיתי וזעיר, שאומן בדפדפן שלכם לפני רגע על כמה פסקאות של טקסט בעברית. הוא סופר איזו מילה נוטה להופיע אחרי שתי המילים האחרונות, ואז דוגם. ‏Transformer עושה בדיוק את אותה עבודה — חוזה את הטוקן הבא — עם דרך טובה לאין שיעור להשתמש ב־context.</span>
+      <span class="hero-controls">
+        <label>להתחיל ב־<input id="heroSeed" value="החתול" spellcheck="false" maxlength="40"></label>
+        <button id="heroGo" class="btn">צור</button>
+      </span>
+    </figcaption>
+  </figure>
+
+  <div class="pipeline-wrap">
+    <h2 class="h-small">כל המסע, בשורה אחת</h2>
+    <p>עקבו אחרי קטע טקסט אחד בדרכו דרך המודל. כל תחנה היא פרק בהמשך.</p>
+    <ol class="pipeline">
+      <li><a href="#tokens"><b>הטקסט</b> מתפצל לטוקנים</a></li>
+      <li><a href="#embeddings"><b>הטוקנים</b> הופכים לווקטורים</a></li>
+      <li><a href="#position"><b>המיקום</b> משתלב בהם</a></li>
+      <li><a href="#attention"><b>Attention</b> מאפשר לטוקנים לשתף מידע</a></li>
+      <li><a href="#block"><b>Blocks</b> חוזרים על זה עשרות פעמים</a></li>
+      <li><a href="#sampling"><b>Logits</b> הופכים לבחירה</a></li>
+      <li><a href="#sampling"><b>הטוקן החדש</b> מצורף, והלולאה רצה שוב</a></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ HISTORY ============ -->
+<section class="chapter" id="history" data-title="איך זה התחיל">
+  <p class="layer-tag">שכבה 1</p>
+  <h2>איך זה התחיל</h2>
+  <p>ה־transformer לא הגיע משום מקום. הוא התשובה לבעיה שלקח שישים שנה לנסח במדויק: איך נותנים למכונה להשתמש <em>בכל</em> ה־context שלה, בבת אחת, ובקנה מידה? לסיפור יש שלוש מערכות. בחרו אחת.</p>
+
+  <div class="seg era-tabs" role="tablist" id="eraTabs"></div>
+  <ol class="timeline" id="timeline"></ol>
+
+  <aside class="note">
+    <p><strong>הגרסה בפסקה אחת.</strong> רשתות נוירונים למדו לייצג מילים כווקטורים (2013). רשתות רקורסיביות למדו לתרגם על ידי דחיסה של משפט שלם לווקטור אחד (2014). ‏Attention הסיר את הדחיסה הזו כשאפשר ל־decoder להסתכל אחורה על כל מילה (2014). ה־transformer זרק את הרקורסיה לגמרי ושמר רק את ה־attention ‏(2017) — והתכנון הזה התגלה כמשהו שגדל כמעט בלי גבול.</p>
+  </aside>
+</section>
+
+<!-- ============ TOKENS ============ -->
+<section class="chapter" id="tokens" data-title="טוקנים">
+  <p class="layer-tag">שכבה 2</p>
+  <h2>טקסט הופך לטוקנים</h2>
+  <p>מודל לא יכול לקרוא אותיות או מילים ישירות; הוא קורא מספרים שלמים מתוך אוצר מילים קבוע. תווים בודדים שומרים על אוצר מילים זעיר אבל יוצרים רצפים ארוכים מאוד. מילים שלמות יוצרות רצפים קצרים, אבל אוצר המילים מתפוצץ וכל מילה חדשה לא מוכרת. <strong>Byte-Pair Encoding</strong> ‏(BPE) מוצא את דרך האמצע: מתחילים מתווים, ואז שוב ושוב ממזגים את הזוג הסמוך הנפוץ ביותר לטוקן חדש.</p>
+  <p>למטה, BPE מתאמן באמת על טקסט הדוגמה של האתר — בעברית. הזיזו את מספר המיזוגים ותראו מילים נפוצות מתאחדות לטוקן יחיד, בזמן שמילים נדירות נשארות בחלקים.</p>
+
+  <div class="panel wide">
+    <div class="controls">
+      <label class="slider">מיזוגים שנלמדו <input type="range" id="bpeMerges" min="0" max="300" value="60"><output id="bpeMergesOut">60</output></label>
+      <label class="grow">הטקסט שלכם <input id="bpeInput" value="החתול למד לחזות את המילה הבאה במהירות מדהימה." spellcheck="false"></label>
+    </div>
+    <div class="chips" id="bpeChips" aria-live="polite"></div>
+    <p class="stat-row" id="bpeStats"></p>
+    <details>
+      <summary>הצג את כללי המיזוג, לפי סדר הלמידה</summary>
+      <ol class="merge-list" id="bpeList"></ol>
+    </details>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3>למה זה חשוב בפועל</h3>
+      <p>תמחור, מגבלות context ו־latency נספרים כולם בטוקנים, לא במילים. באנגלית יש בממוצע כארבעה תווים לטוקן ב־tokenizers מודרניים. שפות שמיוצגות פחות בנתוני האימון של ה־tokenizer — עברית היא דוגמה קלאסית — צריכות לעיתים קרובות הרבה יותר טוקנים לאותה משמעות. כלומר, הן עולות יותר ונכנס מהן פחות לחלון ה־context.</p>
+    </div>
+    <div>
+      <h3>התנהגות מוזרה, מוסברת</h3>
+      <p>שאלו מודל כמה פעמים מופיעה האות r במילה “strawberry” והוא עלול למעוד: הוא מעולם לא ראה אותיות, רק חתיכות כמו <code>str</code> <code>aw</code> <code>berry</code>. חשבון על מספרים ארוכים סובל מאותה סיבה. ‏Tokenizers בפרודקשן עובדים על bytes ולא על תווים, כך שכל קלט אפשרי — אימוג׳י, קוד, כל כתב — ניתן לקידוד.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EMBEDDINGS ============ -->
+<section class="chapter" id="embeddings" data-title="Embeddings">
+  <p class="layer-tag">שכבה 3</p>
+  <h2>טוקנים הופכים לווקטורים</h2>
+  <p>כל מזהה טוקן מצביע על שורה בטבלה גדולה ונלמדת, <strong>מטריצת ה־embedding</strong>. השורה היא וקטור — 768 מספרים ב־GPT-2 small, ‏12,288 ב־GPT-3. אף אחד לא מתכנן את המספרים האלה ביד; האימון מזיז אותם עד שטוקנים שמשמשים בהקשרים דומים מגיעים קרוב זה לזה. כיוונים במרחב הזה מתחילים לקבל משמעות.</p>
+  <p>המפה למטה היא צעצוע דו־ממדי שנבנה ביד, כדי שתוכלו לראות את הגיאומטריה. בחרו אנלוגיה והחשבון ירוץ על הווקטורים עצמם.</p>
+
+  <div class="panel wide">
+    <div class="controls analogy ltr-island" dir="ltr">
+      <select id="anaA" aria-label="מילה ראשונה"></select><span class="op">−</span>
+      <select id="anaB" aria-label="מילה לחיסור"></select><span class="op">+</span>
+      <select id="anaC" aria-label="מילה להוספה"></select><span class="op">=</span>
+      <output class="ana-result" id="anaOut">?</output>
+      <button class="btn ghost" id="anaShuffle">נסו אחרת</button>
+    </div>
+    <div class="svg-wrap" dir="ltr"><svg id="embSvg" viewBox="0 0 640 420" role="img" aria-label="מפת embeddings דו־ממדית"></svg></div>
+    <p class="caption" id="embInfo">לחצו על מילה כדי לראות את הווקטור שלה ואת השכנים הקרובים.</p>
+  </div>
+
+  <p>embeddings אמיתיים חיים באלפי ממדים, וכיוון בודד כמעט אף פעם לא מייצג בדיוק מושג אנושי אחד. אבל הרעיון המרכזי נשאר: <em>משמעות היא מיקום</em>, ודמיון נמדד באמצעות dot product. ה־dot product הזה עומד להפוך ללב של ה־attention.</p>
+</section>
+
+<!-- ============ POSITION ============ -->
+<section class="chapter" id="position" data-title="מיקום">
+  <p class="layer-tag">שכבה 4</p>
+  <h2>איפה כל טוקן נמצא?</h2>
+  <p>‏Attention, כפי שתראו בפרק הבא, מתייחס לקלט שלו כאל <em>קבוצה</em>: אם מערבבים את הטוקנים, בלי עזרה נוספת כל טוקן מחשב בדיוק את אותה תוצאה. “Dog bites man” ו־“man bites dog” ייראו זהים. לכן צריך לומר למודל איפה כל טוקן יושב.</p>
+  <p>ה־transformer המקורי הוסיף לכל embedding תבנית קבועה של סינוסים וקוסינוסים. כל זוג ממדים מתנדנד בתדר אחר — המהירים מבחינים בין שכנים, האיטיים מקודדים מיקום גס, כמו המחוגים של שעון.</p>
+
+  <div class="panel wide">
+    <div class="controls">
+      <label class="slider">גודל ה־embedding <input type="range" id="peDim" min="16" max="128" step="16" value="64"><output id="peDimOut">64</output></label>
+      <label class="slider">השוואת מיקום <input type="range" id="pePos" min="0" max="63" value="20"><output id="pePosOut">20</output></label>
+    </div>
+    <div class="pe-grid" dir="ltr">
+      <figure><canvas id="peCanvas" width="640" height="320" aria-label="Heatmap של קידוד מיקום סינוסואידלי"></canvas><figcaption dir="rtl">השורות הן מיקומים 0–63, העמודות הן ממדים. כחול הוא ‎+1‎, ענבר הוא ‎−1‎. השורה המסומנת היא המיקום שבחרתם.</figcaption></figure>
+      <figure><canvas id="peSim" width="640" height="200" aria-label="הדמיון בין המיקום הנבחר לכל מיקום אחר"></canvas><figcaption dir="rtl">ה־dot product בין הקידוד של המיקום הנבחר לקידוד של כל מיקום אחר. מיקומים קרובים דומים זה לזה, והצורה תלויה במרחק ולא במיקום המוחלט.</figcaption></figure>
+    </div>
+  </div>
+
+  <h3>במה משתמשים מודלים מודרניים: RoPE</h3>
+  <p>רוב ה־LLMs היום משתמשים ב־<strong>rotary position embeddings</strong> ‏(RoPE, ‏2021). במקום להוסיף תבנית, הם <em>מסובבים</em> זוגות ממדים של וקטורי ה־query וה־key בזווית שפרופורציונלית למיקום. כשמשווים query ל־key, רק <em>ההפרש</em> בין הזוויות נשאר, כך שהמודל רואה ישירות את המרחק היחסי. הזיזו את ה־slider: כל עיגול הוא זוג ממדים אחד, שמסתובב במהירות משלו.</p>
+  <div class="panel">
+    <div class="controls"><label class="slider">מיקום הטוקן <input type="range" id="ropePos" min="0" max="40" value="3"><output id="ropePosOut">3</output></label></div>
+    <div class="svg-wrap" dir="ltr"><svg id="ropeSvg" viewBox="0 0 600 180" role="img" aria-label="סיבוב RoPE בתדרים שונים"></svg></div>
+  </div>
+</section>
+
+<!-- ============ ATTENTION ============ -->
+<section class="chapter" id="attention" data-title="Attention">
+  <p class="layer-tag">שכבה 5</p>
+  <h2>Attention: טוקנים מדברים עם טוקנים</h2>
+  <p>הנה הרעיון ששינה הכול. כל טוקן הופך את הווקטור שלו לשלושה וקטורים חדשים, כל אחד דרך מטריצה נלמדת משלו:</p>
+  <ul class="qkv">
+    <li><b class="q">Query</b> — מה אני מחפש?</li>
+    <li><b class="k">Key</b> — מה אני מציע, כפי שאחרים רואים אותי?</li>
+    <li><b class="v">Value</b> — מה אמסור אם מישהו יתמקד בי?</li>
+  </ul>
+  <p>כל טוקן משווה את ה־query שלו ל־key של כל טוקן קודם, באמצעות dot product. ציון גבוה אומר רלוונטי. ‏Softmax הופך את הציונים למשקלות שמסתכמים באחד, והפלט של הטוקן הוא הממוצע המשוקלל של ה־values. זה <em>חיפוש רך וגזיר במילון</em> — ומכיוון שכל הזוגות מושווים בהכפלת מטריצות אחת, זה רץ במקביל על כרטיס מסך, דבר שרשתות רקורסיביות מעולם לא יכלו לעשות.</p>
+
+  <h3>ראו איך הוא פותר כינוי גוף</h3>
+  <p>במשפט “The animal didn't cross the street because it was too tired”, ‏למה <em>it</em> מתייחס? החליפו את המילה האחרונה ל־<em>wide</em> והתשובה מתהפכת. לחצו על טוקן בצד שמאל כדי לראות לאן הוא מסתכל. כל head הוא תבנית attention עצמאית אחת; כל שכבה מריצה הרבה כאלה במקביל.</p>
+  <div class="panel wide">
+    <div class="controls">
+      <div class="seg" role="radiogroup" aria-label="Attention head" id="headSeg"></div>
+      <div class="seg" role="radiogroup" aria-label="המילה האחרונה" id="adjSeg" dir="ltr"></div>
+    </div>
+    <div class="attn-layout" dir="ltr">
+      <div class="svg-wrap"><svg id="attnSvg" viewBox="0 0 420 470" role="img" aria-label="קווי attention בין טוקנים"></svg></div>
+      <div class="attn-side" dir="rtl">
+        <p class="head-desc" id="headDesc"></p>
+        <canvas id="attnHeat" width="360" height="360" aria-label="Heatmap של מטריצת ה־attention" dir="ltr"></canvas>
+        <p class="caption">המטריצה המלאה: השורה היא הטוקן שמסתכל, העמודה היא הטוקן שמסתכלים עליו. המשולש העליון הריק הוא ה־causal mask — טוקן אף פעם לא יכול להסתכל על העתיד.</p>
+      </div>
+    </div>
+    <p class="caption">תבניות ה־heads כאן נקבעו ביד כדי לשקף תבניות שחוקרים מוצאים שוב ושוב במודלים מאומנים: previous-token heads, ‏coreference heads ו־“attention sinks” על הטוקן הראשון. במודל אמיתי הן צצות מתוך האימון; אף אחד לא כותב אותן.</p>
+  </div>
+
+  <h3>עכשיו תעשו את החשבון בעצמכם</h3>
+  <p>ארבעה טוקנים, ממדים זעירים, מספרים אמיתיים. עברו צעד אחרי צעד על scaled dot-product attention, בדיוק כפי שהוא רץ על כרטיס מסך:</p>
+  <p class="formula ltr-island" dir="ltr">Attention(Q, K, V) = softmax( QKᵀ / √d<sub>k</sub> + mask ) · V</p>
+  <div class="panel wide">
+    <div class="controls">
+      <button class="btn ghost" id="mathPrev">השלב הקודם</button>
+      <button class="btn" id="mathNext">השלב הבא</button>
+      <label class="slider">חדות <input type="range" id="mathSharp" min="0.2" max="4" step="0.1" value="1"><output id="mathSharpOut" dir="ltr">1.0×</output></label>
+      <label class="check"><input type="checkbox" id="mathMask" checked> Causal mask</label>
+      <button class="btn ghost" id="mathReroll">משקלות אקראיים חדשים</button>
+    </div>
+    <p class="step-desc" id="mathDesc"></p>
+    <div class="matrices ltr-island" dir="ltr" id="mathGrid"></div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3>למה מחלקים ב־<span dir="ltr">√d<sub>k</sub></span>?</h3>
+      <p>ה־dot product של שני וקטורים אקראיים עם d<sub>k</sub> ממדים גדל בערך כמו <span dir="ltr">√d<sub>k</sub></span>. ציונים גדולים דוחפים את ה־softmax לשיא כמעט one-hot, שבו ה־gradients נעלמים והלמידה נתקעת. החלוקה שומרת על הציונים בטווח בריא. גררו את ה־slider של החדות למעלה כדי להרגיש מה עושים ציונים גדולים מדי.</p>
+    </div>
+    <div>
+      <h3>למה הרבה heads?</h3>
+      <p>‏Softmax אחד יכול למצע רק בדרך אחת. פיצול הווקטור, נניח, ל־32 heads של 128 ממדים מאפשר לשכבה לעקוב בו־זמנית אחרי תחביר, הפניות, מיקום ונושא. הפלטים של ה־heads משורשרים ומעורבבים בחזרה על ידי מטריצת פלט W<sub>O</sub>.</p>
+    </div>
+  </div>
+  <aside class="note"><p><strong>המחיר.</strong> השוואה של כל טוקן לכל טוקן אחר היא <span dir="ltr">O(n²)</span> באורך הרצף: הכפלת ה־context מכפילה פי ארבעה את עבודת ה־attention. חלק גדול מההנדסה של LLMs מודרניים — FlashAttention, ‏sliding windows, דחיסת KV cache, ‏linear attention ו־hybrid attention — קיים כדי להילחם בריבוע הזה.</p></aside>
+</section>
+
+<!-- ============ BLOCK ============ -->
+<section class="chapter" id="block" data-title="ה־Block">
+  <p class="layer-tag">שכבה 6</p>
+  <h2>ה־block, וה־stream שהוא יושב עליו</h2>
+  <p>‏Transformer הוא block אחד, ערום שוב ושוב. ב־GPT-2 small יש 12; ב־GPT-3 יש 96. המודל המנטלי הכי שימושי הוא זה שהאתר קרוי על שמו: ה־<strong>residual stream</strong>. לכל טוקן יש וקטור שזורם ישר למעלה דרך הרשת. כל רכיב <em>קורא</em> מה־stream, מחשב משהו, ו<em>מוסיף</em> את התוצאה בחזרה. שום דבר לא נדרס; הכול מצטבר.</p>
+
+  <div class="panel wide">
+    <div class="block-layout">
+      <div class="svg-wrap" dir="ltr"><svg id="blockSvg" viewBox="0 0 320 560" role="img" aria-label="תרשים של block ב־transformer"></svg></div>
+      <div class="block-side">
+        <div class="controls">
+          <button class="btn ghost" id="blkPrev">הקודם</button>
+          <button class="btn" id="blkNext">השלב הבא</button>
+        </div>
+        <h3 id="blkTitle"></h3>
+        <p id="blkText"></p>
+        <canvas id="blkVec" width="420" height="180" aria-label="הווקטור של הטוקן בשלב הזה"></canvas>
+        <p class="caption">הווקטור של טוקן אחד (8 מהממדים שלו) בזמן שהוא עובר דרך ה־block. העמודות החיוורות מראות את הווקטור בשלב הקודם.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3>Attention מעביר מידע</h3>
+      <p>‏Attention הוא המקום היחיד שבו טוקנים מתקשרים. הוא מעתיק מידע <em>בין</em> מיקומים: “הנושא של הפועל הזה נמצא שם”, ‏“השם הזה הופיע קודם”.</p>
+    </div>
+    <div>
+      <h3>ה־MLP שומר ידע</h3>
+      <p>רשת ה־feed-forward פועלת על כל טוקן לבד. היא מרחיבה את הווקטור פי ארבעה בערך, מפעילה פונקציה לא־לינארית ומטילה חזרה. בערך שני שלישים מהפרמטרים של מודל dense יושבים כאן, ומחקרי interpretability מצביעים על כך שחלק גדול משליפת העובדות קורה בשכבות האלה.</p>
+    </div>
+  </div>
+  <p>למה residual connections? בלעדיהם, אות שעובר דרך מאה שכבות מתעוות ללא תקנה, וה־gradients נעלמים בדרך חזרה. הרעיון הגיע מראייה ממוחשבת — ResNet, ‏2015 — והוא מה שהופך עומק לניתן לאימון בכלל. ‏LayerNorm (היום בדרך כלל RMSNorm הזול יותר) שומר על הקלט של כל תת־שכבה בסקאלה יציבה.</p>
+
+  <h3>ספרו את הפרמטרים בעצמכם</h3>
+  <p>בחרו מודל אמיתי או הגדירו ממדים משלכם. המחשבון משתמש בנוסחאות הארכיטקטורה האמיתיות, כולל grouped-query attention ו־gated MLP ‏(SwiGLU). הוא משמיט את איברי ה־norm וה־bias הזעירים.</p>
+  <div class="panel wide">
+    <div class="seg" role="radiogroup" aria-label="מודל" id="calcPresets"></div>
+    <div class="calc-grid" id="calcInputs"></div>
+    <div class="calc-out" id="calcOut"></div>
+  </div>
+</section>
+
+<!-- ============ SAMPLING ============ -->
+<section class="chapter" id="sampling" data-title="Sampling">
+  <p class="layer-tag">שכבה 7</p>
+  <h2>מציונים לבחירה</h2>
+  <p>אחרי ה־block האחרון, הווקטור הסופי של הטוקן האחרון מוכפל במטריצת ה־<strong>unembedding</strong>, ומתקבל ציון אחד — <em>logit</em> — לכל טוקן באוצר המילים. ‏Softmax הופך את ה־logits להסתברויות. ואז מישהו צריך <em>לבחור</em>. הרשת אף פעם לא מחליטה; ה־sampler מחליט, וההגדרות שלו משפיעות על התחושה של הפלט לא פחות מהמודל עצמו.</p>
+
+  <div class="panel wide">
+    <p class="prompt-line">הדרך הטובה ביותר ללמוד משהו חדש היא <span class="pick" id="sampPick">…</span></p>
+    <div class="controls">
+      <label class="slider">Temperature <input type="range" id="sT" min="0" max="2" step="0.05" value="1"><output id="sTOut" dir="ltr">1.00</output></label>
+      <label class="slider">Top-k <input type="range" id="sK" min="1" max="11" value="11"><output id="sKOut">11</output></label>
+      <label class="slider">Top-p <input type="range" id="sP" min="0.05" max="1" step="0.05" value="1"><output id="sPOut">1.00</output></label>
+    </div>
+    <div class="samp-bars" id="sampBars"></div>
+    <div class="controls">
+      <button class="btn" id="sOne">דגימה אחת</button>
+      <button class="btn ghost" id="sMany">200 דגימות</button>
+      <span class="stat" id="sEntropy"></span>
+    </div>
+    <div class="samp-tally" id="sampTally"></div>
+  </div>
+  <div class="two-col">
+    <div>
+      <h3>Temperature</h3>
+      <p>מחלק כל logit לפני ה־softmax. מתחת ל־1 ההתפלגות מתחדדת לכיוון המועדף; מעל 1 היא משתטחת לכיוון כאוס. ב־0 זה הופך ל־greedy decoding: תמיד הטוקן המוביל, ניתן לשחזור מלא, ולרוב משעמם ונוטה ללולאות.</p>
+    </div>
+    <div>
+      <h3>Top-k ו־top-p</h3>
+      <p>חיתוך מסיר את הזנב הארוך של שטויות. ‏Top-k שומר מספר קבוע של מועמדים. ‏Top-p, או nucleus sampling, שומר את הקבוצה הקטנה ביותר שההסתברויות שלה מסתכמות ב־p, ולכן הוא מסתגל: צר כשהמודל בטוח, רחב כשהוא לא.</p>
+    </div>
+  </div>
+  <p>הטוקן שנבחר מצורף לקלט, וכל ה־forward pass רץ שוב בשביל הטוקן הבא. הלולאה הזו נקראת <strong>autoregressive generation</strong>, ובגללה תשובות זורמות מילה אחרי מילה.</p>
+</section>
+
+<!-- ============ TRAINING ============ -->
+<section class="chapter" id="training" data-title="אימון">
+  <p class="layer-tag">שכבה 8</p>
+  <h2>איך הוא לומד</h2>
+  <p>ל־pretraining יש מטרה פשוטה להפליא. מראים למודל טקסט אמיתי, מבקשים ממנו התפלגות הסתברויות לטוקן הבא בכל מיקום, ומודדים כמה הוא הופתע ממה שבאמת הגיע: ה־<strong>cross-entropy loss</strong>, <span dir="ltr">−log p</span> של הטוקן הנכון. ‏Backpropagation מחשב איך כל פרמטר צריך לזוז כדי להקטין את ההפתעה, ו־gradient descent מזיז אותו קצת. חוזרים על זה טריליוני טוקנים.</p>
+  <p>לחצו על אמן. זו רשת נוירונים אמיתית — מודל bigram ברמת התו, עם מטריצת משקלות אחת — שמתאמנת ב־gradient descent עכשיו, בדפדפן שלכם, על טקסט בעברית.</p>
+
+  <div class="panel wide">
+    <div class="controls">
+      <button class="btn" id="trainGo">אמן</button>
+      <button class="btn ghost" id="trainReset">איפוס משקלות</button>
+      <label class="slider">Learning rate <input type="range" id="trainLr" min="1" max="60" value="5"><output id="trainLrOut">5</output></label>
+      <span class="stat" id="trainStat"></span>
+    </div>
+    <div class="train-grid" dir="ltr">
+      <figure><canvas id="lossCanvas" width="560" height="260" aria-label="עקומת ה־loss באימון"></canvas><figcaption dir="rtl">ה־loss לאורך צעדי האימון. הקו המקווקו הוא הטוב ביותר שכל מודל bigram יכול להשיג על הטקסט הזה: ה־entropy של הנתונים עצמם.</figcaption></figure>
+      <figure><canvas id="wCanvas" width="300" height="300" aria-label="הסתברויות התו הבא שנלמדו"></canvas><figcaption dir="rtl">ההסתברות שנלמדה לתו הבא בהינתן התו הנוכחי. השורה היא התו הנוכחי, העמודה היא התו הבא.</figcaption></figure>
+    </div>
+    <p class="sample-out"><span class="caption">דגימה מהמודל ברגע זה:</span> <code id="trainSample">—</code></p>
+  </div>
+  <p>מודל bigram רואה תמיד רק תו אחד של context, ולכן רצפת ה־loss שלו גבוהה. ‏Transformer רואה אלפי טוקנים ויש לו מיליארדי פרמטרים, כך שהוא יכול לדחוף את ה־loss הרבה יותר נמוך — וכדי להגיע לשם הוא חייב ללמוד דקדוק, עובדות ותבניות של חשיבה, כי אלה מה שהופך טקסט לצפוי. <strong>Scaling laws</strong> ‏(2020) הראו שה־loss יורד בצורה חלקה וצפויה כשהפרמטרים, הנתונים וכוח החישוב גדלים. <strong>Chinchilla</strong> ‏(2022) הראה שרוב המודלים של אותה תקופה היו מאומנים פחות מדי, ושהנתונים צריכים לגדול יחד עם גודל המודל — בערך 20 טוקנים לכל פרמטר לאימון אופטימלי מבחינת חישוב.</p>
+
+  <h3>מנבא טקסט לעוזר</h3>
+  <p>מודל אחרי pretraining הוא השלמה אוטומטית מבריקה, לא עוזר. שאלו אותו שאלה והוא עלול להמשיך עם עוד שלוש שאלות. ה־post-training מעצב מחדש את ההתנהגות שלו, בשלבים:</p>
+  <ol class="stages" id="stages">
+    <li><button aria-expanded="false"><b>Pretraining</b><span>טריליוני טוקנים מהרשת, מספרים ומקוד</span></button><div class="stage-body" hidden><p>חיזוי הטוקן הבא על קורפוס עצום ומסונן. כמעט כל הידע והיכולת מגיעים מכאן, וכמעט כל כוח החישוב הולך לכאן. התוצר הוא “base model”.</p></div></li>
+    <li><button aria-expanded="false"><b>Supervised fine-tuning</b><span>שיחות לדוגמה שנבחרו בקפידה</span></button><div class="stage-body" hidden><p>אימון על הדגמות איכותיות של עוזר שמתנהג טוב: מציית להוראות, עונה בבהירות, משתמש בפורמט של צ׳אט. אותו loss, נתונים אחרים. זה מלמד פורמט ופרסונה הרבה יותר מידע חדש.</p></div></li>
+    <li><button aria-expanded="false"><b>Preference tuning</b><span>RLHF, ‏Constitutional AI, ‏DPO</span></button><div class="stage-body" hidden><p>בני אדם — או מודל שמונחה על ידי עקרונות כתובים — משווים זוגות של תשובות. ‏Reward model לומד את ההעדפות האלה, ו־reinforcement learning דוחף את המודל לכיוון התשובות המועדפות (RLHF, שהפך לפופולרי עם InstructGPT ב־2022). ‏DPO ‏(2023) מגיע למטרה דומה עם loss פשוט יותר ובלי לולאת RL נפרדת.</p></div></li>
+    <li><button aria-expanded="false"><b>RL with verifiable rewards</b><span>מתמטיקה, קוד, שימוש בכלים — עידן ה־reasoning</span></button><div class="stage-body" hidden><p>נותנים למודל בעיות שאפשר לבדוק את התשובות שלהן — הטסטים עוברים, החשבון נכון, המשימה הושלמה — ומתגמלים הצלחה. המודלים לומדים לחשוב באריכות לפני שהם עונים, לחזור אחורה ולאמת. כך נבנו מודלי ה־reasoning ‏(מ־2024 והלאה), ומשם מגיע חלק גדל והולך מהשיפור ביכולות.</p></div></li>
+  </ol>
+</section>
+
+<!-- ============ MODERN ============ -->
+<section class="chapter" id="modern" data-title="LLMs מודרניים">
+  <p class="layer-tag">שכבה 9</p>
+  <h2>מה השתנה מאז 2017</h2>
+  <p>מודל שנבנה היום היה מוכר לכותבי המאמר המקורי, אבל כמעט כל רכיב בו כויל מחדש. אלה הרעיונות שהכי חשובים כשבונים על גבי LLMs.</p>
+
+  <h3>ה־KV cache</h3>
+  <p>כשמייצרים את טוקן 500, ה־keys וה־values של טוקנים 1–499 לא השתנו — ה־causal mask מבטיח את זה. לכן ה־inference שומר אותם ומחשב K ו־V רק לטוקן החדש, וכך עבודה ריבועית שחוזרת על עצמה הופכת לשורה חדשה אחת בכל צעד. אותו רעיון הוא הסיבה ש־<em>prompt caching</em> הופך prompts ארוכים שחוזרים על עצמם לזולים. המלכוד: ה־cache אוכל זיכרון GPU, ולעיתים קרובות הזיכרון הזה, ולא כוח החישוב, הוא מה שמגביל כמה משתמשים שרת יכול לשרת במקביל.</p>
+  <div class="panel wide">
+    <div class="controls">
+      <button class="btn" id="kvStep">צור את הטוקן הבא</button>
+      <button class="btn ghost" id="kvReset">איפוס</button>
+      <label class="check"><input type="checkbox" id="kvOn" checked> שימוש ב־KV cache</label>
+      <span class="stat" id="kvStat"></span>
+    </div>
+    <div class="kv-grid ltr-island" dir="ltr" id="kvGrid" aria-live="polite"></div>
+    <p class="caption">כל שורה היא צעד יצירה; כל תא הוא טוקן שה־key וה־value שלו קיימים בצעד הזה. תאים כחולים מחושבים מחדש באותו צעד, תאים חיוורים נקראים מה־cache.</p>
+  </div>
+
+  <h3>Mixture of experts</h3>
+  <p>במקום MLP אחד גדול, שכבת MoE מחזיקה הרבה MLPs קטנים יותר — “experts” — ו־router ששולח כל טוקן רק לכמה מהם. מספר הפרמטרים הכולל גדל מאוד, בזמן שכוח החישוב לכל טוקן נשאר צנוע. ל־Kimi K2, מודל עם משקלות פתוחים שיצא ביולי 2025, יש כטריליון פרמטרים, אבל הוא מפעיל רק 32 מיליארד מהם לכל טוקן. בחרו טוקן ותראו את ה־router בוחר.</p>
+  <div class="panel wide">
+    <div class="seg" role="radiogroup" aria-label="טוקן לניתוב" id="moeSeg" dir="ltr"></div>
+    <div class="svg-wrap" dir="ltr"><svg id="moeSvg" viewBox="0 0 640 240" role="img" aria-label="ניתוב ב־mixture of experts"></svg></div>
+    <p class="caption" id="moeInfo"></p>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3>Context ארוך</h3>
+      <p>חלונות ה־context גדלו מ־512 טוקנים במודלי ה־GPT הראשונים למיליון ויותר. זה דרש טריקים להרחבת RoPE, ‏FlashAttention (חישוב מדויק של attention בלי לכתוב אף פעם את מטריצת ה־n×n המלאה לזיכרון האיטי), ‏grouped-query attention כדי לכווץ את ה־KV cache, ותכנונים היברידיים שמשלבים שכבות linear attention זולות עם attention מלא. חלון ארוך זה לא אותו דבר כמו שימוש טוב בו: שליפה מאמצע של context ענק עדיין חלשה.</p>
+    </div>
+    <div>
+      <h3>Reasoning ו־test-time compute</h3>
+      <p>‏Chain-of-thought prompting ‏(2022) הראה שכשנותנים למודל לכתוב שלבי ביניים, התשובות משתפרות. מודלי reasoning הפכו את זה למובנה: הם מאומנים עם RL להתלבט באריכות לפני שהם עונים. הדיוק עולה היום עם משך החשיבה, לא רק עם גודל המודל — ולכן “תקציב חשיבה” הפך להגדרה במוצר.</p>
+    </div>
+  </div>
+  <div class="two-col">
+    <div>
+      <h3>RAG וכלים</h3>
+      <p>הידע של מודל קפוא ברגע האימון ונשמר באופן חלקי. ‏Retrieval-augmented generation מכניס במקום זאת מסמכים עדכניים ורלוונטיים לתוך ה־context. שימוש בכלים הולך רחוק יותר: המודל מפיק קריאה מובנית, הקוד שלכם מריץ אותה, והתוצאה חוזרת כעוד טוקנים. סטנדרטים כמו Model Context Protocol ‏(2024) הופכים כלים לניתנים לחיבור בין אפליקציות.</p>
+    </div>
+    <div>
+      <h3>Agents הם לולאה</h3>
+      <p>‏Agent הוא הלולאה ה־autoregressive, רמה אחת למעלה: לחשוב, לקרוא לכלי, לקרוא את התוצאה, להחליט שוב — עד שהמשימה הושלמה. רוב ה־frameworks לאורקסטרציה מנהלים את ה־state של הלולאה הזו, את חלון ה־context שלה, ואת הנקודות שבהן אדם צריך לאשר את הצעד הבא. כל מה שבעמוד הזה עדיין רץ מתחת לכל אחד מהצעדים האלה — <a href="#agents">שכבה 11</a> מפרקת את הלולאה.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ INTERPRETABILITY ============ -->
+<section class="chapter" id="interp" data-title="בתוך הקופסה">
+  <p class="layer-tag">שכבה 10</p>
+  <h2>להציץ לתוך הקופסה</h2>
+  <p>אנחנו יודעים בדיוק מה transformer מחשב — כל הכפלה נמצאת שם. מה שאנחנו לא יודעים זה <em>למה</em> מיליארדי המספרים האלה מייצרים את ההתנהגות שהם מייצרים. <strong>Interpretability</strong> הוא המדע של קריאת החישוב: למצוא את המושגים שהמודל מייצג ואת המעגלים שמחברים ביניהם. זה חשוב לבטיחות, לדיבוג, ולשאלה אם אפשר לסמוך על מה שמודל מספר על עצמו.</p>
+
+  <h3>לראות חיזוי נבנה, שכבה אחרי שכבה</h3>
+  <p>ה־<strong>logit lens</strong> הוא הטריק הפשוט ביותר. לוקחים את ה־residual stream באמצע הרשת, מפעילים מוקדם את ה־norm הסופי ואת ה־unembedding, ושואלים: אם המודל היה חייב לענות <em>עכשיו</em>, מה הוא היה אומר? מכיוון שכל שכבה מוסיפה לאותו stream, הניחוש מתחדד ככל שעולים.</p>
+  <div class="panel wide">
+    <p class="prompt-line ltr-island" dir="ltr">The Eiffel Tower is located in the city of <span class="pick" id="lensPick">…</span></p>
+    <div class="controls">
+      <label class="slider">קריאת ה־stream אחרי שכבה <input type="range" id="lensL" min="0" max="12" value="0"><output id="lensLOut">0</output></label>
+      <button class="btn ghost" id="lensPlay">ניגון לאורך השכבות</button>
+    </div>
+    <div class="samp-bars ltr-island" dir="ltr" id="lensBars"></div>
+    <p class="caption" id="lensNote"></p>
+    <p class="caption">המספרים להמחשה, בצורה שדומה לתוצאות logit lens שפורסמו על מודלים בגודל GPT-2: טוקנים כלליים בהתחלה, מושגים קשורים באמצע, התשובה בסוף.</p>
+  </div>
+
+  <h3>Superposition: יותר מושגים מממדים</h3>
+  <p>אם כל נוירון היה מייצג דבר אחד, היינו יכולים פשוט לקרוא אותם. זה לא המצב. מודל צריך לייצג הרבה יותר מושגים ממספר הממדים שיש לו, ולכן הוא דוחס אותם בזוויות שכמעט — אבל לא לגמרי — מאונכות. זה עובד כי רוב המושגים כמעט אף פעם לא פעילים בו־זמנית. כשכן, הם דולפים אחד לשני. זה <strong>superposition</strong>, ובגללו נוירון בודד נראה כמו ערבוביה של משמעויות לא קשורות.</p>
+  <p>כאן חמישה features חולקים מרחב דו־ממדי, בדיוק כמו ב־“Toy Models of Superposition” של Anthropic. הדליקו features ותראו מה המודל קורא בחזרה. אחד בכל פעם עובד. בחרו שניים שאינם שכנים, ו־feature שלישי, כבוי, נדלק — הפרעה.</p>
+  <div class="panel wide">
+    <div class="seg" role="group" aria-label="Features פעילים" id="supSeg"></div>
+    <div class="sup-layout">
+      <div class="svg-wrap" dir="ltr"><svg id="supSvg" viewBox="0 0 300 300" role="img" aria-label="חמישה כיווני features בשני ממדים"></svg></div>
+      <div>
+        <div class="samp-bars" id="supBars"></div>
+        <p class="caption" id="supNote"></p>
+      </div>
+    </div>
+    <p class="caption">חישוב אמיתי: <span dir="ltr">hidden = W·x</span> (5 features ← 2 ממדים), <span dir="ltr">read-back = ReLU(Wᵀ·hidden − 0.35)</span>. ה־bias וה־ReLU מסננים דליפות קטנות; דליפות גדולות עוברות.</p>
+  </div>
+
+  <h3>למצוא את ה־features: sparse autoencoders</h3>
+  <p>אם מושגים הם כיוונים שדחוסים ב־superposition, צריך דרך לפרק אותם. ‏<strong>Sparse autoencoder</strong> ‏(SAE) מאומן לכתוב מחדש כל activation כצירוף של מעט כיוונים מתוך מילון גדול בהרבה — מיליוני features אפשריים במקום אלפי נוירונים. ב־2024, המחקר “Scaling Monosemanticity” של Anthropic הפעיל את זה על מודל פרודקשן, Claude 3 Sonnet, ומצא מיליוני features שלעיתים קרובות נקיים באופן מפתיע: גשר הזהב, באגים בקוד, חנפנות, הטעיה. רבים מהם רב־לשוניים ומולטימודליים — אותו feature נדלק עבור מושג בשפות שונות ובתמונות.</p>
+
+  <h3>Steering: להגביר feature</h3>
+  <p>‏Feature הוא כיוון, אז אפשר לדחוף את ה־residual stream לאורכו ולראות את ההתנהגות משתנה. ‏Anthropic עשתה בדיוק את זה עם “Golden Gate Claude”: כשה־feature של הגשר קובע בעוצמה גבוהה, המודל החזיר כל שיחה לגשר, ואפילו תיאר את עצמו כגשר. סובבו את החוגה למטה. החשבון אמיתי: ה־logit של כל מועמד עולה ביחס לכמה ה־unembedding שלו מיושר עם כיוון ה־feature.</p>
+  <div class="panel wide">
+    <p class="prompt-line ltr-island" dir="ltr">My favourite place to visit is <span class="pick" id="steerPick">…</span></p>
+    <div class="controls">
+      <label class="slider">עוצמת ה־feature של “Golden Gate Bridge” <input type="range" id="steerA" min="0" max="10" step="0.5" value="0"><output id="steerAOut">0</output></label>
+    </div>
+    <div class="samp-bars ltr-island" dir="ltr" id="steerBars"></div>
+    <p class="steer-out ltr-island" dir="ltr" id="steerText"></p>
+    <p class="caption"><span dir="ltr">logitᵢ = baseᵢ + strength × (unembeddingᵢ · feature)</span>. ה־logits הבסיסיים, היישורים וההמשכים לדוגמה הומצאו להמחשה; המנגנון הוא זה שמשמש בניסויי steering אמיתיים.</p>
+  </div>
+
+  <h3>Activation patching: איפה התשובה גרה</h3>
+  <p>לראות feature זו לא הוכחה שהוא משנה משהו. ‏<strong>Activation patching</strong> בודק סיבה ותוצאה. מריצים את המודל פעמיים: על prompt נקי, ועל prompt משובש שמשנה את התשובה. אז לוקחים activation אחד מההרצה הנקייה — שכבה אחת, מיקום אחד — מדביקים אותו בהרצה המשובשת, ובודקים כמה מהתשובה הנקייה חוזרת. איפה שההדבקה משחזרת את התשובה, שם נמצא המידע.</p>
+  <div class="panel wide">
+    <div class="patch-prompts ltr-island" dir="ltr">
+      <p><b class="good-t">Clean</b> When Mary and John went to the store, John gave a drink to → <b>Mary</b></p>
+      <p><b class="bad-t">Corrupted</b> When Mary and John went to the store, Mary gave a drink to → <b>John</b></p>
+    </div>
+    <div class="patch-grid-wrap" dir="ltr"><div class="patch-grid" id="patchGrid" role="grid" aria-label="תוצאות activation patching לפי שכבה ומיקום"></div></div>
+    <p class="step-desc" id="patchInfo"></p>
+    <p class="caption">לחצו על תא. הצבע = כמה מהתשובה הנקייה ההדבקה הבודדת הזו משחזרת. הערכים להמחשה, בהשראת הניתוח שפורסם על indirect object identification ב־GPT-2 small.</p>
+  </div>
+
+  <h3>מעגלים: איך features מתחברים</h3>
+  <p>ה־features הם המשתנים; ה־<strong>circuits</strong> הם האלגוריתם. ההצלחות הראשונות הגיעו ממודלים קטנים. ‏<em>Induction heads</em> ‏(2022) — previous-token head שמזין head שני — מממשים “מצא איפה הטוקן הזה הופיע קודם והעתק את מה שבא אחריו”, והם מופיעים בפתאומיות במהלך האימון, באותו רגע שבו ה־in-context learning משתפר. מעגל ה־<em>indirect object identification</em> ב־GPT-2 small ‏(2022) מיפה כשני תריסר heads שמבינים מי קיבל מה במשפט “When Mary and John went to the store, John gave a drink to…”.</p>
+  <p>ב־2025, ה־<strong>attribution graphs</strong> של Anthropic עקבו אחרי מעגלים בתוך Claude 3.5 Haiku על prompts אמיתיים. בין הממצאים: כשנשאל מהי בירת המדינה שבה נמצאת דאלאס, המודל מייצג בפנים את “Texas” כשלב ביניים לפני “Austin”; כשהוא כותב צמד חרוזים, הוא בוחר את מילת החרוז <em>לפני</em> שהוא מחבר את השורה שמובילה אליה; ובחשבון בראש הוא מריץ במקביל מסלול של סדר גודל משוער ומסלול של הספרה האחרונה המדויקת — בזמן שאם שואלים אותו, הוא מתאר את שיטת ה“מעבירים אחד” שלמד מטקסטים.</p>
+
+  <aside class="note"><p><strong>המגבלות, בכנות.</strong> התחום צעיר. ‏Anthropic דיווחה שה־attribution graphs שלה נתנו תובנה מספקת רק בכרבע מה־prompts שניסתה. ‏Features של SAE הם חלקיים, ולפעמים מפצלים או ממזגים מושגים באופן שרירותי; הצוות של Google DeepMind מצא ש־SAEs ביצעו פחות טוב מ־linear probes פשוטים בחלק מהמשימות המעשיות, והסיט את הפוקוס שלו. אנחנו יכולים לקרוא חלקים מהחישוב, עדיין לא את כולו.</p></aside>
+
+  <div class="two-col">
+    <div>
+      <h3>למה זה צריך לעניין מי שבונה</h3>
+      <p>ההסבר של מודל לחשיבה של עצמו הוא טקסט שנוצר, לא קריאה של מה שקורה בפנים — דוגמת החשבון מראה שהשניים יכולים להיות שונים. זו סיבה לשפוט agents לפי התנהגות ו־evals, ולא לפי מה שהם מדווחים על עצמם. כלי interpretability גם הופכים למעשיים: ‏linear probes על activations יכולים לסמן, בזול ולפני שנוצר טקסט, דברים כמו מודל שאינו בטוח בתשובה או prompt שהוא מתקפה.</p>
+    </div>
+    <div>
+      <h3>הכלים</h3>
+      <p>אבני הבניין שראיתם בעמוד הזה הן אותן אבנים שחוקרים משתמשים בהן: ה־residual stream כמרחב עבודה משותף, תבניות attention, ה־logit lens, ‏activation patching (מחליפים activation אחד בזה של prompt אחר ובודקים אם התשובה מתהפכת), ‏probes, ‏SAEs ו־steering. ספריות קוד פתוח כמו TransformerLens וסיירי features ציבוריים כמו Neuronpedia מאפשרים לנסות אותם על מודלים אמיתיים עם משקלות פתוחים.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ AGENTS ============ -->
+<section class="chapter" id="agents" data-title="Agents">
+  <p class="layer-tag">שכבה 11</p>
+  <h2>Agents: הלולאה, רמה אחת למעלה</h2>
+  <p>שום דבר חדש לא קורה בתוך המודל כשהוא “משתמש בכלי”. הוא עדיין חוזה טוקנים. הגדרות הכלים הן טקסט בתוך ה־context. המודל למד ב־post-training שכאשר כלי יכול לעזור, עליו להפיק קריאה בפורמט מובנה ונוקשה. הקוד שלכם — לא המודל — מפרש את הקריאה, מריץ את הפונקציה האמיתית, ומצרף את התוצאה ל־context כעוד טוקנים. ואז המודל חוזה שוב. ‏<strong>Agent</strong> הוא המחזור הזה, שחוזר על עצמו עד שהמשימה הושלמה.</p>
+
+  <h3>עברו צעד־צעד על ריצת agent בצורה אמיתית</h3>
+  <p>המשימה: <em>“מצא את התלונה הנפוצה ביותר של לקוחות השבוע, ונסח תשובה למקרה הכי חמור.”</em> כל לחיצה מוסיפה הודעה אחת ל־context. שימו לב לשני דברים: ה־context גדל עם כל תוצאת כלי, וכל קריאה למודל קוראת את כולו מחדש.</p>
+  <div class="panel wide">
+    <div class="controls">
+      <button class="btn" id="agNext">הצעד הבא</button>
+      <button class="btn ghost" id="agReset">מההתחלה</button>
+      <label class="check"><input type="checkbox" id="agCache" checked> Prompt caching</label>
+    </div>
+    <div class="ag-meter" id="agMeter" aria-hidden="true"></div>
+    <p class="stat-row" id="agStats"></p>
+    <ol class="ag-log ltr-island" dir="ltr" id="agLog" aria-live="polite"></ol>
+    <div class="ag-gate" id="agGate" hidden>
+      <p id="agGateText"></p>
+      <button class="btn" id="agApprove">אישור</button>
+      <button class="btn ghost" id="agReject">דחייה</button>
+    </div>
+    <p class="caption">מספרי הטוקנים הם סדרי גודל ריאליים לריצה כזו. קלט מה־cache מחויב כאן בעשירית ממחיר הקלט הרגיל, וזה מה שחלק מהספקים גובים על קריאה מה־cache; אחרים נותנים הנחה קטנה יותר.</p>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3>Workflows או agents?</h3>
+      <p>‏<strong>Workflow</strong> מריץ את המודל דרך שלבים שהקוד שלכם קבע מראש: לסווג, לשלוף, לנסח. ‏<strong>Agent</strong> נותן למודל לבחור בעצמו את הצעד הבא. ‏Workflows זולים, מהירים וקלים יותר לבדיקה; agents מתמודדים עם משימות פתוחות שבהן אי אפשר לצפות את המסלול. ברירת מחדל טובה היא המבנה הפשוט ביותר שעובד, ולהוסיף אוטונומיה רק איפה שהיא בבירור מחזירה את עצמה.</p>
+    </div>
+    <div>
+      <h3>MCP: שקע סטנדרטי לכלים</h3>
+      <p>‏Model Context Protocol, שפורסם כקוד פתוח על ידי Anthropic בנובמבר 2024, מגדיר דרך סטנדרטית שבה אפליקציה חושפת למודל כלים, משאבים ותבניות prompt. בונים server פעם אחת — למערכת tickets, למסד נתונים, לריפוזיטורי קוד — וכל client שתומך ב־MCP יכול להשתמש בו. מתחת למכסה זה עדיין אותו דבר: תיאורי הכלים הופכים לטוקנים, והקריאות חוזרות כפלט מובנה.</p>
+    </div>
+  </div>
+
+  <h3>למה משימות ארוכות קשות: טעויות מצטברות</h3>
+  <p>אם כל צעד מצליח באופן בלתי תלוי בהסתברות p, משימה של n צעדים מצליחה בהסתברות <span dir="ltr">pⁿ</span>. גררו את ה־sliders. זו הסיבה ש־agents צריכים צעדים שבודקים את העבודה של עצמם, ניסיונות חוזרים, וכלים טובים שנכשלים בקול רם — ולמה מודל שאמין ב־99% לכל צעד מתנהג אחרת לגמרי ממודל שאמין ב־95%.</p>
+  <div class="panel">
+    <div class="controls">
+      <label class="slider">הצלחה לכל צעד <input type="range" id="relP" min="80" max="99.9" step="0.1" value="95"><output id="relPOut" dir="ltr">95.0%</output></label>
+      <label class="slider">צעדים <input type="range" id="relN" min="1" max="60" value="20"><output id="relNOut">20</output></label>
+    </div>
+    <div class="rel-big" id="relOut"></div>
+    <div class="bar-track rel-track"><div class="bar-fill" id="relBar"></div></div>
+    <p class="caption">זו הפשטה: טעויות אמיתיות אינן בלתי תלויות, ו־agent שמאמת וחוזר אחורה יכול להתאושש מטעויות. ההתאוששות הזו היא בדיוק מה שמודלי reasoning מאומנים לעשות.</p>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3>Context engineering</h3>
+      <p>חלון ה־context הוא זיכרון העבודה היחיד של ה־agent, וכל מה שנמצא בו עולה טוקנים ותשומת לב. ‏Agents מעשיים חותכים תוצאות כלים למה שחשוב, מסכמים או דוחסים תורות ישנים, מעבירים תתי־משימות עצמאיות ל־sub-agents עם context נקי, ושומרים הערות קבועות בקבצים או ב־memory store במקום בשיחה. שימו תוכן יציב — ה־system prompt, הגדרות הכלים — בהתחלה, כדי שה־caching יוכל לעשות בו שימוש חוזר.</p>
+    </div>
+    <div>
+      <h3>בטיחות בתוך הלולאה</h3>
+      <p>תוצאות של כלים הן קלט לא מהימן. דף אינטרנט או מייל יכולים להכיל טקסט שנכתב כדי להשתלט על ה־agent — <strong>prompt injection</strong>. ההגנות הן ארכיטקטוניות: לתת לכל כלי את ההרשאות המינימליות שהוא צריך, להתייחס לטקסט שנשלף כנתונים ולא כהוראות, לתעד כל קריאה, ולדרוש אישור אנושי לפני כל פעולה בלתי הפיכה — שליחה, תשלום, מחיקה, deploy.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="chapter" id="quiz" data-title="בדקו את עצמכם">
+  <p class="layer-tag">שכבה 12</p>
+  <h2>בדקו את עצמכם</h2>
+  <p>ארבע־עשרה שאלות. כל אחת מסבירה את עצמה אחרי שעונים.</p>
+  <div id="quizBox"></div>
+  <p class="quiz-score" id="quizScore" aria-live="polite"></p>
+</section>
+
+<!-- ============ READING ============ -->
+<section class="chapter reading" id="reading" data-title="להעמיק">
+  <h2>להעמיק</h2>
+  <p>המאמרים המקוריים קריאים יותר ממה שנדמה. התחילו מאלה, בערך לפי הסדר.</p>
+  <ul class="refs" dir="ltr">
+    <li><a href="https://arxiv.org/abs/1301.3781">Mikolov et al., 2013 — Efficient Estimation of Word Representations (word2vec)</a></li>
+    <li><a href="https://arxiv.org/abs/1409.3215">Sutskever, Vinyals &amp; Le, 2014 — Sequence to Sequence Learning with Neural Networks</a></li>
+    <li><a href="https://arxiv.org/abs/1409.0473">Bahdanau, Cho &amp; Bengio, 2014 — Neural Machine Translation by Jointly Learning to Align and Translate</a></li>
+    <li><a href="https://arxiv.org/abs/1508.07909">Sennrich, Haddow &amp; Birch, 2015 — Neural Machine Translation of Rare Words with Subword Units</a></li>
+    <li><a href="https://arxiv.org/abs/1512.03385">He et al., 2015 — Deep Residual Learning for Image Recognition</a></li>
+    <li><a href="https://arxiv.org/abs/1706.03762">Vaswani et al., 2017 — Attention Is All You Need</a></li>
+    <li><a href="https://arxiv.org/abs/1810.04805">Devlin et al., 2018 — BERT</a></li>
+    <li><a href="https://arxiv.org/abs/2001.08361">Kaplan et al., 2020 — Scaling Laws for Neural Language Models</a></li>
+    <li><a href="https://arxiv.org/abs/2005.14165">Brown et al., 2020 — Language Models are Few-Shot Learners</a></li>
+    <li><a href="https://arxiv.org/abs/2104.09864">Su et al., 2021 — RoFormer: Enhanced Transformer with Rotary Position Embedding</a></li>
+    <li><a href="https://arxiv.org/abs/2201.11903">Wei et al., 2022 — Chain-of-Thought Prompting Elicits Reasoning</a></li>
+    <li><a href="https://arxiv.org/abs/2203.02155">Ouyang et al., 2022 — Training Language Models to Follow Instructions with Human Feedback</a></li>
+    <li><a href="https://arxiv.org/abs/2203.15556">Hoffmann et al., 2022 — Training Compute-Optimal Large Language Models</a></li>
+    <li><a href="https://arxiv.org/abs/2305.18290">Rafailov et al., 2023 — Direct Preference Optimization</a></li>
+    <li><a href="https://arxiv.org/abs/2507.20534">Kimi Team, 2025 — Kimi K2: Open Agentic Intelligence</a></li>
+    <li><a href="https://arxiv.org/abs/2209.10652">Elhage et al., 2022 — Toy Models of Superposition</a></li>
+    <li><a href="https://arxiv.org/abs/2209.11895">Olsson et al., 2022 — In-context Learning and Induction Heads</a></li>
+    <li><a href="https://arxiv.org/abs/2211.00593">Wang et al., 2022 — Interpretability in the Wild: a Circuit for Indirect Object Identification in GPT-2 small</a></li>
+    <li><a href="https://transformer-circuits.pub/2024/scaling-monosemanticity/">Templeton et al., 2024 — Scaling Monosemanticity: Extracting Interpretable Features from Claude 3 Sonnet</a></li>
+    <li><a href="https://transformer-circuits.pub/2025/attribution-graphs/biology.html">Lindsey et al., 2025 — On the Biology of a Large Language Model</a></li>
+    <li><a href="https://arxiv.org/abs/2210.03629">Yao et al., 2022 — ReAct: Synergizing Reasoning and Acting in Language Models</a></li>
+    <li><a href="https://arxiv.org/abs/2302.04761">Schick et al., 2023 — Toolformer: Language Models Can Teach Themselves to Use Tools</a></li>
+    <li><a href="https://www.anthropic.com/research/building-effective-agents">Anthropic, 2024 — Building Effective Agents</a></li>
+    <li><a href="https://modelcontextprotocol.io">Model Context Protocol — specification and docs</a></li>
+  </ul>
+  <p>לבניית אינטואיציה: סדרת הסרטונים “Neural Networks: Zero to Hero” של אנדריי קרפתי בונה GPT מאפס; סדרת ה־deep learning של 3Blue1Brown מנפישה את ה־attention להפליא; “The Illustrated Transformer” של ג׳יי אלאמר הוא ההסבר הוויזואלי הקלאסי; ו־“A Mathematical Framework for Transformer Circuits” של Anthropic הוא המקור של נקודת המבט של ה־residual stream.</p>
+  <footer class="foot"><p>כל הדמואים בעמוד הזה רצים מקומית בדפדפן שלכם. שום דבר שאתם מקלידים לא יוצא מהעמוד.</p></footer>
+</section>
+
+</main>
+
+<script src="../js/util.js"></script>
+<script src="../js/i18n.js"></script>
+<script src="../js/nav.js"></script>
+<script src="../js/hero.js"></script>
+<script src="../js/history.js"></script>
+<script src="../js/tokenizer.js"></script>
+<script src="../js/embeddings.js"></script>
+<script src="../js/position.js"></script>
+<script src="../js/attention.js"></script>
+<script src="../js/block.js"></script>
+<script src="../js/sampling.js"></script>
+<script src="../js/training.js"></script>
+<script src="../js/modern.js"></script>
+<script src="../js/interp.js"></script>
+<script src="../js/agents.js"></script>
+<script src="../js/quiz.js"></script>
+</body>
+</html>

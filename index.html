@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Residual Stream — how transformers and LLMs actually work</title>
+<meta name="description" content="An interactive, from-first-principles guide to transformers and large language models: history, tokens, embeddings, attention, training, sampling and modern LLM architecture.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="alternate" hreflang="he" href="he/index.html">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<nav class="rail" aria-label="Chapters">
+  <div class="rail-line"><div class="rail-fill" id="railFill"></div></div>
+  <ol class="rail-nodes" id="railNodes"></ol>
+</nav>
+
+<header class="topbar">
+  <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="mobileMenu">Chapters</button>
+  <div class="topbar-progress"><div id="topFill"></div></div>
+  <a class="lang-link" href="he/index.html" lang="he" hreflang="he">עברית</a>
+  <button class="theme-btn" id="themeBtn" aria-label="Toggle dark mode">◐</button>
+</header>
+<div class="mobile-menu" id="mobileMenu" hidden></div>
+<div class="corner">
+  <a class="lang-link" href="he/index.html" lang="he" hreflang="he">עברית</a>
+  <button class="theme-btn" id="themeBtn2" aria-label="Toggle dark mode">◐</button>
+</div>
+
+<main id="main">
+
+<!-- ============ HERO ============ -->
+<section class="chapter hero" id="start" data-title="Start">
+  <div class="hero-text">
+    <h1>The Residual Stream</h1>
+    <p class="lede">A language model does one thing: given some text, it guesses the next piece. Everything else — chat, code, reasoning, agents — is that guess, repeated. This site takes the machine apart, layer by layer, until nothing about it is mysterious.</p>
+  </div>
+
+  <figure class="hero-demo panel" aria-label="Live next-word prediction">
+    <div class="hero-out" id="heroOut" aria-live="polite"></div>
+    <div class="hero-bars" id="heroBars"></div>
+    <figcaption>
+      <span>A real, tiny language model, trained in your browser a moment ago on a few paragraphs of text. It counts which word tends to follow the last two, then samples. A transformer does the same job — predict the next token — with a vastly better way of using context.</span>
+      <span class="hero-controls">
+        <label>Start with <input id="heroSeed" value="the cat" spellcheck="false" maxlength="40"></label>
+        <button id="heroGo" class="btn">Generate</button>
+      </span>
+    </figcaption>
+  </figure>
+
+  <div class="pipeline-wrap">
+    <h2 class="h-small">The whole journey, in one line</h2>
+    <p>Follow one piece of text through the model. Each stop is a chapter below.</p>
+    <ol class="pipeline">
+      <li><a href="#tokens"><b>Text</b> is split into tokens</a></li>
+      <li><a href="#embeddings"><b>Tokens</b> become vectors</a></li>
+      <li><a href="#position"><b>Position</b> is mixed in</a></li>
+      <li><a href="#attention"><b>Attention</b> lets tokens share information</a></li>
+      <li><a href="#block"><b>Blocks</b> repeat this dozens of times</a></li>
+      <li><a href="#sampling"><b>Logits</b> become a choice</a></li>
+      <li><a href="#sampling"><b>The new token</b> is appended, and the loop runs again</a></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ HISTORY ============ -->
+<section class="chapter" id="history" data-title="How it began">
+  <p class="layer-tag">Layer 1</p>
+  <h2>How it began</h2>
+  <p>The transformer did not arrive from nowhere. It is the answer to a problem that took sixty years to state precisely: how do you let a machine use <em>all</em> of its context, at once, at scale? The story has three acts. Pick one.</p>
+
+  <div class="seg era-tabs" role="tablist" id="eraTabs"></div>
+  <ol class="timeline" id="timeline"></ol>
+
+  <aside class="note">
+    <p><strong>The one-paragraph version.</strong> Neural networks learned to represent words as vectors (2013). Recurrent networks learned to translate by squeezing a whole sentence into one vector (2014). Attention removed the squeeze by letting the decoder look back at every word (2014). The transformer threw recurrence away entirely and kept only attention (2017) — and that design turned out to scale almost without limit.</p>
+  </aside>
+</section>
+
+<!-- ============ TOKENS ============ -->
+<section class="chapter" id="tokens" data-title="Tokens">
+  <p class="layer-tag">Layer 2</p>
+  <h2>Text becomes tokens</h2>
+  <p>A model can't read letters or words directly; it reads integers from a fixed vocabulary. Characters keep the vocabulary tiny but make sequences very long. Whole words make sequences short, but the vocabulary explodes and any new word is unknown. <strong>Byte-Pair Encoding</strong> (BPE) splits the difference: start from characters, then repeatedly merge the most frequent adjacent pair into a new token.</p>
+  <p>Below, BPE is genuinely trained on this site's sample text. Slide the number of merges and watch common words fuse into single tokens while rare words stay in pieces.</p>
+
+  <div class="panel wide">
+    <div class="controls">
+      <label class="slider">Merges learned <input type="range" id="bpeMerges" min="0" max="300" value="60"><output id="bpeMergesOut">60</output></label>
+      <label class="grow">Your text <input id="bpeInput" value="The cat learned to predict the next token, unbelievably fast." spellcheck="false"></label>
+    </div>
+    <div class="chips" id="bpeChips" aria-live="polite"></div>
+    <p class="stat-row" id="bpeStats"></p>
+    <details>
+      <summary>Show the merge rules, in the order they were learned</summary>
+      <ol class="merge-list" id="bpeList"></ol>
+    </details>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3>Why this matters in practice</h3>
+      <p>Pricing, context limits and latency are all counted in tokens, not words. English averages roughly four characters per token in modern tokenizers. Languages that are underrepresented in a tokenizer's training data — Hebrew is a classic example — often need noticeably more tokens for the same meaning, so they cost more and fit less into the context window.</p>
+    </div>
+    <div>
+      <h3>Strange behaviour, explained</h3>
+      <p>Ask a model how many r's are in "strawberry" and it may stumble: it never saw letters, only chunks like <code>str</code> <code>aw</code> <code>berry</code>. Arithmetic on long numbers suffers for the same reason. Production tokenizers work on bytes rather than characters, so every possible input — emoji, code, any script — can be encoded.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EMBEDDINGS ============ -->
+<section class="chapter" id="embeddings" data-title="Embeddings">
+  <p class="layer-tag">Layer 3</p>
+  <h2>Tokens become vectors</h2>
+  <p>Each token ID indexes a row in a large learned table, the <strong>embedding matrix</strong>. The row is a vector — 768 numbers in GPT-2 small, 12,288 in GPT-3. Nobody hand-designs these numbers; training nudges them until tokens used in similar ways end up near each other. Directions in this space start to mean things.</p>
+  <p>The map below is a hand-built two-dimensional toy, so you can see the geometry. Pick an analogy and the arithmetic runs on the vectors themselves.</p>
+
+  <div class="panel wide">
+    <div class="controls analogy">
+      <select id="anaA" aria-label="First word"></select><span class="op">−</span>
+      <select id="anaB" aria-label="Word to subtract"></select><span class="op">+</span>
+      <select id="anaC" aria-label="Word to add"></select><span class="op">=</span>
+      <output class="ana-result" id="anaOut">?</output>
+      <button class="btn ghost" id="anaShuffle">Try another</button>
+    </div>
+    <div class="svg-wrap"><svg id="embSvg" viewBox="0 0 640 420" role="img" aria-label="Two-dimensional word embedding map"></svg></div>
+    <p class="caption" id="embInfo">Click any word to see its vector and nearest neighbours.</p>
+  </div>
+
+  <p>Real embeddings live in thousands of dimensions, and a single direction rarely means exactly one human concept. But the core idea holds: <em>meaning is position</em>, and similarity is measured with a dot product. That dot product is about to become the heart of attention.</p>
+</section>
+
+<!-- ============ POSITION ============ -->
+<section class="chapter" id="position" data-title="Position">
+  <p class="layer-tag">Layer 4</p>
+  <h2>Where is each token?</h2>
+  <p>Attention, as you'll see next, treats its input as a <em>set</em>: shuffle the tokens and, without extra help, every token computes the same result. "Dog bites man" and "man bites dog" would look identical. So the model must be told where each token sits.</p>
+  <p>The original transformer added a fixed pattern of sines and cosines to each embedding. Each pair of dimensions oscillates at a different frequency — fast ones distinguish neighbours, slow ones encode coarse position, like the hands of a clock.</p>
+
+  <div class="panel wide">
+    <div class="controls">
+      <label class="slider">Embedding size <input type="range" id="peDim" min="16" max="128" step="16" value="64"><output id="peDimOut">64</output></label>
+      <label class="slider">Compare position <input type="range" id="pePos" min="0" max="63" value="20"><output id="pePosOut">20</output></label>
+    </div>
+    <div class="pe-grid">
+      <figure><canvas id="peCanvas" width="640" height="320" aria-label="Sinusoidal positional encoding heatmap"></canvas><figcaption>Rows are positions 0–63, columns are dimensions. Blue is +1, amber is −1. The outlined row is the position you chose.</figcaption></figure>
+      <figure><canvas id="peSim" width="640" height="200" aria-label="Similarity of the chosen position to every other position"></canvas><figcaption>Dot product between the chosen position's encoding and every other position's. Nearby positions look alike, and the shape depends on distance, not on absolute place.</figcaption></figure>
+    </div>
+  </div>
+
+  <h3>What modern models use: RoPE</h3>
+  <p>Most current LLMs use <strong>rotary position embeddings</strong> (RoPE, 2021). Instead of adding a pattern, they <em>rotate</em> pairs of dimensions of the query and key vectors by an angle proportional to position. When a query and a key are compared, only the <em>difference</em> of their angles survives, so the model sees relative distance directly. Move the slider: each circle is one dimension pair, turning at its own speed.</p>
+  <div class="panel">
+    <div class="controls"><label class="slider">Token position <input type="range" id="ropePos" min="0" max="40" value="3"><output id="ropePosOut">3</output></label></div>
+    <div class="svg-wrap"><svg id="ropeSvg" viewBox="0 0 600 180" role="img" aria-label="Rotary embedding rotation at different frequencies"></svg></div>
+  </div>
+</section>
+
+<!-- ============ ATTENTION ============ -->
+<section class="chapter" id="attention" data-title="Attention">
+  <p class="layer-tag">Layer 5</p>
+  <h2>Attention: tokens talking to tokens</h2>
+  <p>Here is the idea that changed everything. Every token turns its vector into three new vectors, each through its own learned matrix:</p>
+  <ul class="qkv">
+    <li><b class="q">Query</b> — what am I looking for?</li>
+    <li><b class="k">Key</b> — what do I offer, as seen by others?</li>
+    <li><b class="v">Value</b> — what will I hand over if someone attends to me?</li>
+  </ul>
+  <p>Each token compares its query with every earlier token's key using a dot product. A high score means relevant. Softmax turns the scores into weights that sum to one, and the token's output is the weighted average of the values. It is a <em>soft, differentiable dictionary lookup</em> — and because every pair is compared in one matrix multiplication, it runs in parallel on a GPU, which recurrent networks never could.</p>
+
+  <h3>See it resolve a pronoun</h3>
+  <p>In "The animal didn't cross the street because it was too tired", what does <em>it</em> refer to? Change the last word to <em>wide</em> and the answer flips. Click a token on the left to see where it looks. Each head is one independent attention pattern; a layer runs many in parallel.</p>
+  <div class="panel wide">
+    <div class="controls">
+      <div class="seg" role="radiogroup" aria-label="Attention head" id="headSeg"></div>
+      <div class="seg" role="radiogroup" aria-label="Final word" id="adjSeg"></div>
+    </div>
+    <div class="attn-layout">
+      <div class="svg-wrap"><svg id="attnSvg" viewBox="0 0 420 470" role="img" aria-label="Attention lines between tokens"></svg></div>
+      <div class="attn-side">
+        <p class="head-desc" id="headDesc"></p>
+        <canvas id="attnHeat" width="360" height="360" aria-label="Attention matrix heatmap"></canvas>
+        <p class="caption">The full matrix: row is the token doing the looking, column is the token looked at. The empty upper triangle is the causal mask — a token can never look at the future.</p>
+      </div>
+    </div>
+    <p class="caption">These head patterns are hand-set to mirror ones researchers repeatedly find in trained models: previous-token heads, coreference heads, and "attention sinks" on the first token. In a real model they emerge from training; nobody writes them.</p>
+  </div>
+
+  <h3>Now do the maths yourself</h3>
+  <p>Four tokens, tiny dimensions, real numbers. Step through scaled dot-product attention exactly as it runs on a GPU:</p>
+  <p class="formula">Attention(Q, K, V) = softmax( QKᵀ / √d<sub>k</sub> + mask ) · V</p>
+  <div class="panel wide">
+    <div class="controls">
+      <button class="btn ghost" id="mathPrev">Previous step</button>
+      <button class="btn" id="mathNext">Next step</button>
+      <label class="slider">Sharpness <input type="range" id="mathSharp" min="0.2" max="4" step="0.1" value="1"><output id="mathSharpOut">1.0×</output></label>
+      <label class="check"><input type="checkbox" id="mathMask" checked> Causal mask</label>
+      <button class="btn ghost" id="mathReroll">New random weights</button>
+    </div>
+    <p class="step-desc" id="mathDesc"></p>
+    <div class="matrices" id="mathGrid"></div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3>Why divide by √d<sub>k</sub>?</h3>
+      <p>The dot product of two random vectors with d<sub>k</sub> dimensions grows like √d<sub>k</sub>. Large scores push softmax into a near one-hot spike where gradients vanish and learning stalls. Dividing keeps scores in a healthy range. Drag the sharpness slider above to feel what oversized scores do.</p>
+    </div>
+    <div>
+      <h3>Why many heads?</h3>
+      <p>One softmax can only average in one way. Splitting the vector into, say, 32 heads of 128 dimensions lets a layer track syntax, coreference, position and topic at the same time. The heads' outputs are concatenated and mixed back together by an output matrix W<sub>O</sub>.</p>
+    </div>
+  </div>
+  <aside class="note"><p><strong>The cost.</strong> Comparing every token with every other is O(n²) in sequence length: doubling the context quadruples attention work. Much of modern LLM engineering — FlashAttention, sliding windows, KV-cache compression, linear and hybrid attention — exists to fight this square.</p></aside>
+</section>
+
+<!-- ============ BLOCK ============ -->
+<section class="chapter" id="block" data-title="The block">
+  <p class="layer-tag">Layer 6</p>
+  <h2>The block, and the stream it sits on</h2>
+  <p>A transformer is one block, stacked. GPT-2 small has 12; GPT-3 has 96. The most useful mental model is the one this site is named after: the <strong>residual stream</strong>. Each token has a vector flowing straight up through the network. Every component <em>reads</em> from the stream, computes something, and <em>adds</em> its result back. Nothing overwrites; everything accumulates.</p>
+
+  <div class="panel wide">
+    <div class="block-layout">
+      <div class="svg-wrap"><svg id="blockSvg" viewBox="0 0 320 560" role="img" aria-label="Transformer block diagram"></svg></div>
+      <div class="block-side">
+        <div class="controls">
+          <button class="btn ghost" id="blkPrev">Previous</button>
+          <button class="btn" id="blkNext">Next stage</button>
+        </div>
+        <h3 id="blkTitle"></h3>
+        <p id="blkText"></p>
+        <canvas id="blkVec" width="420" height="180" aria-label="The token's vector at this stage"></canvas>
+        <p class="caption">One token's vector (8 of its dimensions) as it moves through the block. Faint bars show the vector at the previous stage.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3>Attention moves information</h3>
+      <p>Attention is the only place tokens interact. It copies information <em>between</em> positions: "the subject of this verb is over there", "this name appeared earlier".</p>
+    </div>
+    <div>
+      <h3>The MLP stores knowledge</h3>
+      <p>The feed-forward network works on each token alone. It expands the vector about four times, applies a nonlinearity, and projects back. Roughly two thirds of a dense model's parameters live here, and interpretability research suggests much factual recall happens in these layers.</p>
+    </div>
+  </div>
+  <p>Why residual connections? Without them, a signal passing through a hundred layers is distorted beyond recovery, and gradients vanish on the way back. The idea came from computer vision — ResNet, 2015 — and it is what makes depth trainable at all. LayerNorm (today usually the cheaper RMSNorm) keeps each sublayer's input at a stable scale.</p>
+
+  <h3>Count the parameters yourself</h3>
+  <p>Pick a real model or set your own dimensions. The calculator uses the actual architecture formulas, including grouped-query attention and gated (SwiGLU) MLPs. It leaves out the tiny norm and bias terms.</p>
+  <div class="panel wide">
+    <div class="seg" role="radiogroup" aria-label="Model preset" id="calcPresets"></div>
+    <div class="calc-grid" id="calcInputs"></div>
+    <div class="calc-out" id="calcOut"></div>
+  </div>
+</section>
+
+<!-- ============ SAMPLING ============ -->
+<section class="chapter" id="sampling" data-title="Sampling">
+  <p class="layer-tag">Layer 7</p>
+  <h2>From scores to a choice</h2>
+  <p>After the last block, the final vector of the last token is multiplied by the <strong>unembedding</strong> matrix, giving one score — a <em>logit</em> — for every token in the vocabulary. Softmax turns logits into probabilities. Then something has to <em>choose</em>. The network never decides; the sampler does, and its settings shape how the output feels as much as the model does.</p>
+
+  <div class="panel wide">
+    <p class="prompt-line">The best way to learn something new is to <span class="pick" id="sampPick">…</span></p>
+    <div class="controls">
+      <label class="slider">Temperature <input type="range" id="sT" min="0" max="2" step="0.05" value="1"><output id="sTOut">1.00</output></label>
+      <label class="slider">Top-k <input type="range" id="sK" min="1" max="11" value="11"><output id="sKOut">11</output></label>
+      <label class="slider">Top-p <input type="range" id="sP" min="0.05" max="1" step="0.05" value="1"><output id="sPOut">1.00</output></label>
+    </div>
+    <div class="samp-bars" id="sampBars"></div>
+    <div class="controls">
+      <button class="btn" id="sOne">Sample once</button>
+      <button class="btn ghost" id="sMany">Sample 200 times</button>
+      <span class="stat" id="sEntropy"></span>
+    </div>
+    <div class="samp-tally" id="sampTally"></div>
+  </div>
+  <div class="two-col">
+    <div>
+      <h3>Temperature</h3>
+      <p>Divides every logit before softmax. Below 1 sharpens the distribution toward the favourite; above 1 flattens it toward chaos. At 0 it becomes greedy decoding: always the top token, fully repeatable, often dull and prone to loops.</p>
+    </div>
+    <div>
+      <h3>Top-k and top-p</h3>
+      <p>Truncation cuts off the long tail of nonsense. Top-k keeps a fixed number of candidates. Top-p, or nucleus sampling, keeps the smallest set whose probabilities add up to p, so it adapts: narrow when the model is sure, wide when it isn't.</p>
+    </div>
+  </div>
+  <p>The chosen token is appended to the input, and the whole forward pass runs again for the next one. That loop is <strong>autoregressive generation</strong>, and it is why answers stream in word by word.</p>
+</section>
+
+<!-- ============ TRAINING ============ -->
+<section class="chapter" id="training" data-title="Training">
+  <p class="layer-tag">Layer 8</p>
+  <h2>How it learns</h2>
+  <p>Pretraining has a beautifully simple objective. Show the model real text, ask it for a probability distribution over the next token at every position, and measure how surprised it was by what actually came next: the <strong>cross-entropy loss</strong>, −log p(correct token). Backpropagation computes how every parameter should move to reduce that surprise, and gradient descent moves it a little. Repeat for trillions of tokens.</p>
+  <p>Press train. This is a real neural network — a character-level bigram model with a single weight matrix — trained by gradient descent right now, in your browser.</p>
+
+  <div class="panel wide">
+    <div class="controls">
+      <button class="btn" id="trainGo">Train</button>
+      <button class="btn ghost" id="trainReset">Reset weights</button>
+      <label class="slider">Learning rate <input type="range" id="trainLr" min="1" max="60" value="5"><output id="trainLrOut">5</output></label>
+      <span class="stat" id="trainStat"></span>
+    </div>
+    <div class="train-grid">
+      <figure><canvas id="lossCanvas" width="560" height="260" aria-label="Training loss curve"></canvas><figcaption>Loss over training steps. The dashed line is the best any bigram model can do on this text: the entropy of the data itself.</figcaption></figure>
+      <figure><canvas id="wCanvas" width="300" height="300" aria-label="Learned next-character probabilities"></canvas><figcaption>Learned P(next char | current char). Row is the current character, column the next.</figcaption></figure>
+    </div>
+    <p class="sample-out"><span class="caption">A sample from the model right now:</span> <code id="trainSample">—</code></p>
+  </div>
+  <p>A bigram model only ever sees one character of context, so its loss floor is high. A transformer sees thousands of tokens and has billions of parameters, so it can push the loss much lower — and to get there it has to learn grammar, facts and patterns of reasoning, because those are what make text predictable. <strong>Scaling laws</strong> (2020) showed that loss falls smoothly and predictably as parameters, data and compute grow. <strong>Chinchilla</strong> (2022) showed most models of the time were undertrained, and that data should grow alongside model size — roughly 20 tokens per parameter for compute-optimal training.</p>
+
+  <h3>From text predictor to assistant</h3>
+  <p>A pretrained model is a brilliant autocomplete, not an assistant. Ask it a question and it may continue with three more questions. Post-training reshapes its behaviour, in stages:</p>
+  <ol class="stages" id="stages">
+    <li><button aria-expanded="false"><b>Pretraining</b><span>trillions of tokens of web, books and code</span></button><div class="stage-body" hidden><p>Next-token prediction over a huge, filtered corpus. Nearly all knowledge and capability comes from here, and nearly all the compute goes here. The output is a "base model".</p></div></li>
+    <li><button aria-expanded="false"><b>Supervised fine-tuning</b><span>curated example conversations</span></button><div class="stage-body" hidden><p>Train on high-quality demonstrations of an assistant behaving well: following instructions, answering clearly, using a chat format. Same loss, different data. It teaches format and persona far more than new knowledge.</p></div></li>
+    <li><button aria-expanded="false"><b>Preference tuning</b><span>RLHF, Constitutional AI, DPO</span></button><div class="stage-body" hidden><p>Humans — or a model guided by written principles — compare pairs of answers. A reward model learns those preferences, and reinforcement learning pushes the model toward preferred answers (RLHF, popularised by InstructGPT in 2022). DPO (2023) reaches a similar goal with a simpler loss and no separate RL loop.</p></div></li>
+    <li><button aria-expanded="false"><b>RL with verifiable rewards</b><span>maths, code, tool use — the reasoning era</span></button><div class="stage-body" hidden><p>Give the model problems whose answers can be checked — tests pass, the maths is right, the task completes — and reward success. Models learn to think at length before answering, to backtrack and to verify. This is how reasoning models (from 2024 on) were built, and it is increasingly where capability gains come from.</p></div></li>
+  </ol>
+</section>
+
+<!-- ============ MODERN ============ -->
+<section class="chapter" id="modern" data-title="Modern LLMs">
+  <p class="layer-tag">Layer 9</p>
+  <h2>What changed since 2017</h2>
+  <p>A model built today would be recognisable to the authors of the original paper, but almost every component has been tuned. These are the ideas that matter most when you build on top of LLMs.</p>
+
+  <h3>The KV cache</h3>
+  <p>When generating token 500, the keys and values of tokens 1–499 haven't changed — the causal mask guarantees it. So inference stores them and computes K and V only for the new token, turning repeated quadratic work into one new row per step. The same idea is why <em>prompt caching</em> makes repeated long prompts cheap. The catch: the cache eats GPU memory, and that memory, rather than compute, often limits how many users a server can handle at once.</p>
+  <div class="panel wide">
+    <div class="controls">
+      <button class="btn" id="kvStep">Generate next token</button>
+      <button class="btn ghost" id="kvReset">Reset</button>
+      <label class="check"><input type="checkbox" id="kvOn" checked> Use KV cache</label>
+      <span class="stat" id="kvStat"></span>
+    </div>
+    <div class="kv-grid" id="kvGrid" aria-live="polite"></div>
+    <p class="caption">Each row is a generation step; each cell is a token whose key and value exist at that step. Blue cells are computed fresh in that step, faint ones are read from the cache.</p>
+  </div>
+
+  <h3>Mixture of experts</h3>
+  <p>Instead of one big MLP, an MoE layer holds many smaller "expert" MLPs and a router that sends each token to just a few of them. Total parameters grow enormously while compute per token stays modest. Kimi K2, an open-weight model released in July 2025, has about a trillion parameters but activates only 32 billion for each token. Pick a token and watch the router choose.</p>
+  <div class="panel wide">
+    <div class="seg" role="radiogroup" aria-label="Token to route" id="moeSeg"></div>
+    <div class="svg-wrap"><svg id="moeSvg" viewBox="0 0 640 240" role="img" aria-label="Mixture of experts routing"></svg></div>
+    <p class="caption" id="moeInfo"></p>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3>Long context</h3>
+      <p>Context windows grew from 512 tokens in the original GPT models to a million and more. It took RoPE scaling tricks, FlashAttention (exact attention computed without ever writing the full n×n matrix to slow memory), grouped-query attention to shrink the KV cache, and hybrid designs that interleave cheap linear-attention layers with full attention. A long window is not the same as using it well: recall from the middle of a huge context remains a weak spot.</p>
+    </div>
+    <div>
+      <h3>Reasoning and test-time compute</h3>
+      <p>Chain-of-thought prompting (2022) showed that letting a model write out intermediate steps improves its answers. Reasoning models made this native: trained with RL to deliberate at length before answering. Accuracy now scales with how long a model thinks, not only with its size — which is why a "thinking budget" became a product setting.</p>
+    </div>
+  </div>
+  <div class="two-col">
+    <div>
+      <h3>RAG and tools</h3>
+      <p>A model's knowledge is frozen at training time and stored lossily. Retrieval-augmented generation puts fresh, relevant documents into the context instead. Tool use goes further: the model emits a structured call, your code runs it, and the result comes back as more tokens. Standards like the Model Context Protocol (2024) make tools pluggable across applications.</p>
+    </div>
+    <div>
+      <h3>Agents are a loop</h3>
+      <p>An agent is the autoregressive loop, one level up: think, call a tool, read the result, decide again — until the task is done. Orchestration frameworks mostly manage this loop's state, its context window, and the points where a human should approve the next step. Everything on this page is still running underneath every one of those steps — <a href="#agents">Layer 11</a> takes the loop apart.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ INTERPRETABILITY ============ -->
+<section class="chapter" id="interp" data-title="Inside the box">
+  <p class="layer-tag">Layer 10</p>
+  <h2>Looking inside the box</h2>
+  <p>We know exactly what a transformer computes — every multiplication is right there. What we don't know is <em>why</em> those billions of numbers produce the behaviour they do. <strong>Interpretability</strong> is the science of reading the computation: finding the concepts a model represents, and the circuits that connect them. It matters for safety, for debugging, and for trusting what a model tells you about itself.</p>
+
+  <h3>Watch a prediction form, layer by layer</h3>
+  <p>The <strong>logit lens</strong> is the simplest trick in the book. Take the residual stream partway through the network, apply the final norm and unembedding early, and ask: if the model had to answer <em>now</em>, what would it say? Because every layer adds to the same stream, the guess sharpens as you climb.</p>
+  <div class="panel wide">
+    <p class="prompt-line ltr-island" dir="ltr">The Eiffel Tower is located in the city of <span class="pick" id="lensPick">…</span></p>
+    <div class="controls">
+      <label class="slider">Read the stream after layer <input type="range" id="lensL" min="0" max="12" value="0"><output id="lensLOut">0</output></label>
+      <button class="btn ghost" id="lensPlay">Play through the layers</button>
+    </div>
+    <div class="samp-bars" id="lensBars"></div>
+    <p class="caption" id="lensNote"></p>
+    <p class="caption">Numbers are illustrative, shaped like published logit-lens results on GPT-2-sized models: generic tokens early, related concepts in the middle, the answer late.</p>
+  </div>
+
+  <h3>Superposition: more concepts than dimensions</h3>
+  <p>If each neuron meant one thing, we could just read them off. They don't. A model has to represent far more concepts than it has dimensions, so it packs them in at angles that are almost — but not quite — perpendicular. This works because most concepts are rarely active at the same time. When two are, they leak into each other. This is <strong>superposition</strong>, and it's why single neurons look like a jumble of unrelated meanings.</p>
+  <p>Here five features share a two-dimensional space, exactly as in Anthropic's "Toy Models of Superposition". Switch features on and watch what the model reads back. One at a time works. Pick two that aren't neighbours, and a third, inactive feature lights up — interference.</p>
+  <div class="panel wide">
+    <div class="seg" role="group" aria-label="Active features" id="supSeg"></div>
+    <div class="sup-layout">
+      <div class="svg-wrap" dir="ltr"><svg id="supSvg" viewBox="0 0 300 300" role="img" aria-label="Five feature directions in two dimensions"></svg></div>
+      <div>
+        <div class="samp-bars" id="supBars"></div>
+        <p class="caption" id="supNote"></p>
+      </div>
+    </div>
+    <p class="caption">Real computation: hidden = W·x (5 features → 2 dimensions), read-back = ReLU(Wᵀ·hidden − 0.35). The bias and ReLU filter out small leaks; large ones get through.</p>
+  </div>
+
+  <h3>Finding the features: sparse autoencoders</h3>
+  <p>If concepts are directions packed in superposition, we need a way to unpack them. A <strong>sparse autoencoder</strong> (SAE) is trained to rewrite each activation as a combination of a few directions from a much larger dictionary — millions of candidate features instead of thousands of neurons. In 2024, Anthropic's "Scaling Monosemanticity" applied this to a production model, Claude 3 Sonnet, and found millions of features that are often strikingly clean: the Golden Gate Bridge, code bugs, sycophantic praise, deception. Many are multilingual and multimodal — the same feature fires for a concept across languages and in images.</p>
+
+  <h3>Steering: turning a feature up</h3>
+  <p>A feature is a direction, so you can push the residual stream along it and watch behaviour change. Anthropic did exactly this with "Golden Gate Claude": with the bridge feature clamped high, the model brought every conversation back to the bridge, and even described itself as the bridge. Turn the dial below. The maths is real: each candidate's logit rises in proportion to how well its unembedding aligns with the feature direction.</p>
+  <div class="panel wide">
+    <p class="prompt-line ltr-island" dir="ltr">My favourite place to visit is <span class="pick" id="steerPick">…</span></p>
+    <div class="controls">
+      <label class="slider">"Golden Gate Bridge" feature strength <input type="range" id="steerA" min="0" max="10" step="0.5" value="0"><output id="steerAOut">0</output></label>
+    </div>
+    <div class="samp-bars ltr-island" dir="ltr" id="steerBars"></div>
+    <p class="steer-out ltr-island" dir="ltr" id="steerText"></p>
+    <p class="caption">logitᵢ = baseᵢ + strength × (unembeddingᵢ · feature). Base logits, alignments and the sample continuations are made up for illustration; the mechanism is the one used in real steering experiments.</p>
+  </div>
+
+  <h3>Activation patching: finding where an answer lives</h3>
+  <p>Seeing a feature isn't proof it matters. <strong>Activation patching</strong> tests cause and effect. Run the model twice: on a clean prompt, and on a corrupted one that changes the answer. Then take one activation from the clean run — one layer, one position — paste it into the corrupted run, and see how much of the clean answer comes back. Where patching restores the answer, that activation carries the information.</p>
+  <div class="panel wide">
+    <div class="patch-prompts ltr-island" dir="ltr">
+      <p><b class="good-t">Clean</b> When Mary and John went to the store, John gave a drink to → <b>Mary</b></p>
+      <p><b class="bad-t">Corrupted</b> When Mary and John went to the store, Mary gave a drink to → <b>John</b></p>
+    </div>
+    <div class="patch-grid-wrap" dir="ltr"><div class="patch-grid" id="patchGrid" role="grid" aria-label="Activation patching results by layer and position"></div></div>
+    <p class="step-desc" id="patchInfo"></p>
+    <p class="caption">Click any cell. Colour = how much of the clean answer that single patch restores. The values are illustrative, modelled on the published indirect-object-identification analysis of GPT-2 small.</p>
+  </div>
+
+  <h3>Circuits: how features connect</h3>
+  <p>Features are the variables; <strong>circuits</strong> are the algorithm. Early wins came from small models. <em>Induction heads</em> (2022) — a previous-token head feeding a second head — implement "find where this token appeared before and copy what came next", and they appear abruptly during training at the same moment in-context learning improves. The <em>indirect object identification</em> circuit in GPT-2 small (2022) mapped around two dozen heads that work out who received what in "When Mary and John went to the store, John gave a drink to…".</p>
+  <p>In 2025 Anthropic's <strong>attribution graphs</strong> traced circuits inside Claude 3.5 Haiku on real prompts. Among the findings: asked for the capital of the state containing Dallas, the model internally represents "Texas" as an intermediate step before "Austin"; writing a rhyming couplet, it picks the rhyme word <em>before</em> composing the line that leads to it; and for mental arithmetic it runs a rough-magnitude path and an exact-last-digit path in parallel — while describing, if asked, the carry-the-one method it learned from text.</p>
+
+  <aside class="note"><p><strong>Honest limits.</strong> Interpretability is young. Anthropic reported that its attribution graphs gave satisfying insight for only about a quarter of the prompts it tried. SAE features are partial and sometimes split or merge concepts arbitrarily; Google DeepMind's team found SAEs underperformed simple linear probes on some practical tasks and shifted its focus. We can read pieces of the computation, not yet the whole of it.</p></aside>
+
+  <div class="two-col">
+    <div>
+      <h3>Why a builder should care</h3>
+      <p>A model's explanation of its own reasoning is generated text, not a readout of its internals — the arithmetic example shows they can differ. That's a reason to judge agents by behaviour and evals, not by their self-reports. Interpretability tools are also becoming practical: linear probes on activations can flag things like a model being unsure or a prompt being an attack, cheaply, before any text is generated.</p>
+    </div>
+    <div>
+      <h3>The tools</h3>
+      <p>The building blocks you've seen on this page are the same ones researchers use: the residual stream as a shared workspace, attention patterns, the logit lens, activation patching (swap one activation from a different prompt and see if the answer flips), probes, SAEs and steering. Open-source libraries such as TransformerLens and public feature explorers like Neuronpedia let you try them on real open-weight models.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ AGENTS ============ -->
+<section class="chapter" id="agents" data-title="Agents">
+  <p class="layer-tag">Layer 11</p>
+  <h2>Agents: the loop, one level up</h2>
+  <p>Nothing new happens inside the model when it "uses a tool". It is still predicting tokens. The tool definitions are text in the context. The model has learned, in post-training, that when a tool would help it should emit a call in a strict structured format. Your code — not the model — parses that call, runs the real function, and appends the result to the context as more tokens. Then the model predicts again. An <strong>agent</strong> is that cycle repeated until the task is done.</p>
+
+  <h3>Step through a real-shaped agent run</h3>
+  <p>The task: <em>"Find this week's most common customer complaint and draft a reply to the worst case."</em> Each click adds one message to the context. Watch two things: the context grows with every tool result, and every model call re-reads all of it.</p>
+  <div class="panel wide">
+    <div class="controls">
+      <button class="btn" id="agNext">Next step</button>
+      <button class="btn ghost" id="agReset">Restart</button>
+      <label class="check"><input type="checkbox" id="agCache" checked> Prompt caching</label>
+    </div>
+    <div class="ag-meter" id="agMeter" aria-hidden="true"></div>
+    <p class="stat-row" id="agStats"></p>
+    <ol class="ag-log ltr-island" dir="ltr" id="agLog" aria-live="polite"></ol>
+    <div class="ag-gate" id="agGate" hidden>
+      <p id="agGateText"></p>
+      <button class="btn" id="agApprove">Approve</button>
+      <button class="btn ghost" id="agReject">Reject</button>
+    </div>
+    <p class="caption">Token counts are realistic orders of magnitude for a run like this. Cached input is billed at a tenth of the normal input price here, which is what some providers charge for cache reads; others discount less.</p>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3>Workflows or agents?</h3>
+      <p>A <strong>workflow</strong> runs the model through steps your code fixes in advance: classify, then retrieve, then draft. An <strong>agent</strong> lets the model choose the next step itself. Workflows are cheaper, faster and easier to test; agents handle open-ended tasks where the path can't be predicted. A good default is the simplest structure that works, adding autonomy only where it clearly pays for itself.</p>
+    </div>
+    <div>
+      <h3>MCP: a standard plug for tools</h3>
+      <p>The Model Context Protocol, open-sourced by Anthropic in November 2024, standardises how an application exposes tools, resources and prompt templates to a model. Build a server once — for a ticketing system, a database, a code repo — and any MCP-compatible client can use it. Under the hood it is still the same thing: tool descriptions become tokens, calls come back as structured output.</p>
+    </div>
+  </div>
+
+  <h3>Why long tasks are hard: errors compound</h3>
+  <p>If every step succeeds independently with probability p, a task of n steps succeeds with probability pⁿ. Drag the sliders. This is why agents need steps that check their own work, retries, and good tools that fail loudly — and why a model that is 99% reliable per step behaves very differently from one that is 95% reliable.</p>
+  <div class="panel">
+    <div class="controls">
+      <label class="slider">Per-step success <input type="range" id="relP" min="80" max="99.9" step="0.1" value="95"><output id="relPOut">95.0%</output></label>
+      <label class="slider">Steps <input type="range" id="relN" min="1" max="60" value="20"><output id="relNOut">20</output></label>
+    </div>
+    <div class="rel-big" id="relOut"></div>
+    <div class="bar-track rel-track"><div class="bar-fill" id="relBar"></div></div>
+    <p class="caption">A simplification: real errors aren't independent, and an agent that verifies and backtracks can recover from mistakes. That recovery is exactly what reasoning models are trained to do.</p>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3>Context engineering</h3>
+      <p>The context window is the agent's only working memory, and everything in it costs tokens and attention. Practical agents trim tool results to what matters, summarise or compact old turns, hand self-contained subtasks to sub-agents with fresh contexts, and keep durable notes in files or a memory store rather than in the conversation. Put stable content — system prompt, tool definitions — first, so caching can reuse it.</p>
+    </div>
+    <div>
+      <h3>Safety in the loop</h3>
+      <p>Tool results are untrusted input. A web page or an email can contain text written to hijack the agent — <strong>prompt injection</strong>. Defences are architectural: give each tool the least privilege it needs, treat retrieved text as data rather than instructions, log every call, and require a human approval step before anything irreversible — sending, paying, deleting, deploying.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="chapter" id="quiz" data-title="Check yourself">
+  <p class="layer-tag">Layer 12</p>
+  <h2>Check yourself</h2>
+  <p>Fourteen questions. Each one explains itself once you answer.</p>
+  <div id="quizBox"></div>
+  <p class="quiz-score" id="quizScore" aria-live="polite"></p>
+</section>
+
+<!-- ============ READING ============ -->
+<section class="chapter reading" id="reading" data-title="Go deeper">
+  <h2>Go deeper</h2>
+  <p>The original papers are more readable than their reputation. Start with these, roughly in order.</p>
+  <ul class="refs">
+    <li><a href="https://arxiv.org/abs/1301.3781">Mikolov et al., 2013 — Efficient Estimation of Word Representations (word2vec)</a></li>
+    <li><a href="https://arxiv.org/abs/1409.3215">Sutskever, Vinyals &amp; Le, 2014 — Sequence to Sequence Learning with Neural Networks</a></li>
+    <li><a href="https://arxiv.org/abs/1409.0473">Bahdanau, Cho &amp; Bengio, 2014 — Neural Machine Translation by Jointly Learning to Align and Translate</a></li>
+    <li><a href="https://arxiv.org/abs/1508.07909">Sennrich, Haddow &amp; Birch, 2015 — Neural Machine Translation of Rare Words with Subword Units</a></li>
+    <li><a href="https://arxiv.org/abs/1512.03385">He et al., 2015 — Deep Residual Learning for Image Recognition</a></li>
+    <li><a href="https://arxiv.org/abs/1706.03762">Vaswani et al., 2017 — Attention Is All You Need</a></li>
+    <li><a href="https://arxiv.org/abs/1810.04805">Devlin et al., 2018 — BERT</a></li>
+    <li><a href="https://arxiv.org/abs/2001.08361">Kaplan et al., 2020 — Scaling Laws for Neural Language Models</a></li>
+    <li><a href="https://arxiv.org/abs/2005.14165">Brown et al., 2020 — Language Models are Few-Shot Learners</a></li>
+    <li><a href="https://arxiv.org/abs/2104.09864">Su et al., 2021 — RoFormer: Enhanced Transformer with Rotary Position Embedding</a></li>
+    <li><a href="https://arxiv.org/abs/2201.11903">Wei et al., 2022 — Chain-of-Thought Prompting Elicits Reasoning</a></li>
+    <li><a href="https://arxiv.org/abs/2203.02155">Ouyang et al., 2022 — Training Language Models to Follow Instructions with Human Feedback</a></li>
+    <li><a href="https://arxiv.org/abs/2203.15556">Hoffmann et al., 2022 — Training Compute-Optimal Large Language Models</a></li>
+    <li><a href="https://arxiv.org/abs/2305.18290">Rafailov et al., 2023 — Direct Preference Optimization</a></li>
+    <li><a href="https://arxiv.org/abs/2507.20534">Kimi Team, 2025 — Kimi K2: Open Agentic Intelligence</a></li>
+    <li><a href="https://arxiv.org/abs/2209.10652">Elhage et al., 2022 — Toy Models of Superposition</a></li>
+    <li><a href="https://arxiv.org/abs/2209.11895">Olsson et al., 2022 — In-context Learning and Induction Heads</a></li>
+    <li><a href="https://arxiv.org/abs/2211.00593">Wang et al., 2022 — Interpretability in the Wild: a Circuit for Indirect Object Identification in GPT-2 small</a></li>
+    <li><a href="https://transformer-circuits.pub/2024/scaling-monosemanticity/">Templeton et al., 2024 — Scaling Monosemanticity: Extracting Interpretable Features from Claude 3 Sonnet</a></li>
+    <li><a href="https://transformer-circuits.pub/2025/attribution-graphs/biology.html">Lindsey et al., 2025 — On the Biology of a Large Language Model</a></li>
+    <li><a href="https://arxiv.org/abs/2210.03629">Yao et al., 2022 — ReAct: Synergizing Reasoning and Acting in Language Models</a></li>
+    <li><a href="https://arxiv.org/abs/2302.04761">Schick et al., 2023 — Toolformer: Language Models Can Teach Themselves to Use Tools</a></li>
+    <li><a href="https://www.anthropic.com/research/building-effective-agents">Anthropic, 2024 — Building Effective Agents</a></li>
+    <li><a href="https://modelcontextprotocol.io">Model Context Protocol — specification and docs</a></li>
+  </ul>
+  <p>For intuition: Andrej Karpathy's "Neural Networks: Zero to Hero" series builds a GPT from scratch; 3Blue1Brown's deep learning series animates attention beautifully; Jay Alammar's "The Illustrated Transformer" is the classic visual walkthrough; and Anthropic's "A Mathematical Framework for Transformer Circuits" is where the residual-stream view comes from.</p>
+  <footer class="foot"><p>Every demo on this page runs locally in your browser. Nothing you type leaves the page.</p></footer>
+</section>
+
+</main>
+
+<script src="js/util.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/hero.js"></script>
+<script src="js/history.js"></script>
+<script src="js/tokenizer.js"></script>
+<script src="js/embeddings.js"></script>
+<script src="js/position.js"></script>
+<script src="js/attention.js"></script>
+<script src="js/block.js"></script>
+<script src="js/sampling.js"></script>
+<script src="js/training.js"></script>
+<script src="js/modern.js"></script>
+<script src="js/interp.js"></script>
+<script src="js/agents.js"></script>
+<script src="js/quiz.js"></script>
+</body>
+</html>
