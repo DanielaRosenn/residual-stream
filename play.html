@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Be the Model — The Residual Stream</title>
+<meta name="description" content="A browser game: you are the language model. Do each step of a transformer's forward pass by hand, then see how close you came to the real computation.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="alternate" hreflang="he" href="he/play.html">
+<script>/* Saved theme, applied before first paint. */
+(function(d){try{var t=localStorage.getItem("rs-theme");if(t)d.dataset.theme=t}catch(e){}})(document.documentElement);</script>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/game.css">
+<link rel="stylesheet" href="css/game-levels.css">
+</head>
+<body class="g-body">
+<a class="skip" href="#gameRoot">Skip to the game</a>
+
+<header class="g-top">
+  <a class="g-brand" href="#" aria-label="Be the Model — route map"><span class="g-brand-mark" aria-hidden="true"></span><span class="g-brand-name">Be the Model</span></a>
+  <nav class="g-top-nav" aria-label="Site">
+    <a class="g-top-link" href="index.html">The guide</a>
+    <a class="lang-link" href="he/play.html" lang="he" hreflang="he">עברית</a>
+    <button type="button" class="theme-btn" id="gThemeBtn" aria-label="Toggle dark mode">◐</button>
+  </nav>
+</header>
+
+<main id="gameRoot" class="g-root"></main>
+
+<script src="js/util.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/game/core.js"></script>
+<script src="js/game/shell.js"></script>
+<script src="js/game/levels/job.js"></script>
+<script src="js/game/levels/chop.js"></script>
+<script src="js/game/levels/dial.js"></script>
+<script src="js/game/start.js"></script>
+</body>
+</html>
