@@ -1,0 +1,72 @@
+{
+  "brand": "The Residual Stream &middot; EP 03 &middot; Embeddings",
+  "output": "Residual-Stream-EP03-Embeddings.mp4",
+  "voices": {
+    "VERA": { "voice": "en-GB-SoniaNeural", "rate": "+18%", "pitch": "+0Hz" },
+    "TOKI": { "voice": "en-US-BrianNeural", "rate": "+20%", "pitch": "+4Hz" }
+  },
+  "cast": { "L": "VERA", "R": "TOKI" },
+  "scenes": [
+    {
+      "id": "s1",
+      "lines": [
+        { "who": "TOKI", "text": "Vera, I'm number 69. Does that mean “cat”?",
+          "say": "Vera, I'm number sixty-nine. Does that mean cat?" },
+        { "who": "VERA", "text": "Nothing. An ID is just a row number in a big learned table." },
+        { "who": "TOKI", "text": "So what's in my row?" },
+        { "who": "VERA", "text": "A long list of numbers: a vector. 768 in GPT-2 small, 12,288 in GPT-3.",
+          "say": "A long list of numbers: a vector. Seven sixty-eight in G P T 2 small, twelve thousand two eighty-eight in G P T 3." }
+      ]
+    },
+    {
+      "id": "s2",
+      "lines": [
+        { "who": "TOKI", "text": "Who fills in all those numbers?" },
+        { "who": "VERA", "text": "Nobody. Training nudges them, a little at a time." },
+        { "who": "VERA", "text": "Until tokens used in similar ways end up near each other." },
+        { "who": "TOKI", "text": "So “cat” and “dog” end up neighbours, because they show up in similar sentences?",
+          "say": "So cat and dog end up neighbours, because they show up in similar sentences?" }
+      ]
+    },
+    {
+      "id": "s3",
+      "lines": [
+        { "who": "TOKI", "text": "Can I see that map?" },
+        { "who": "VERA", "text": "The guide's toy: hand-built and flat, two numbers per word." },
+        { "who": "TOKI", "text": "Look, the animals all huddle together!" },
+        { "who": "VERA", "text": "And countries sit by their capitals. Related means close." },
+        { "who": "VERA", "text": "Type “cat” in the finder: its nearest neighbours light up.",
+          "say": "Type cat in the finder: its nearest neighbours light up." }
+      ]
+    },
+    {
+      "id": "s4",
+      "lines": [
+        { "who": "VERA", "text": "The surprise: directions mean something too." },
+        { "who": "TOKI", "text": "Directions?" },
+        { "who": "VERA", "text": "Start at king. Take away man, add woman." },
+        { "who": "TOKI", "text": "And we land on… queen!", "say": "And we land on... queen!" },
+        { "who": "VERA", "text": "Real arithmetic. Man to woman is the same step as king to queen." }
+      ]
+    },
+    {
+      "id": "s5",
+      "lines": [
+        { "who": "TOKI", "text": "Is a real map flat like this?" },
+        { "who": "VERA", "text": "No: hundreds or thousands of dimensions. And a direction rarely means just one human idea." },
+        { "who": "TOKI", "text": "But close still means similar?" },
+        { "who": "VERA", "text": "Yes. Similarity is a dot product: multiply matching numbers and add." },
+        { "who": "VERA", "text": "That dot product will become the heart of attention." }
+      ]
+    },
+    {
+      "id": "s6",
+      "lines": [
+        { "who": "TOKI", "text": "Can I try this myself?" },
+        { "who": "VERA", "text": "Type a word into the finder in the Embeddings chapter, then build your own analogy." },
+        { "who": "TOKI", "text": "Puppy minus dog plus cat… kitten! I'm a natural.",
+          "say": "Puppy minus dog plus cat... kitten! I'm a natural." }
+      ]
+    }
+  ]
+}

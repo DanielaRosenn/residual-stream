@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Residual Stream - EP 10 - Looking inside the box</title>
+<link rel="stylesheet" href="engine/stage.css">
+<style>
+  /* The Residual Stream palette (the site's dark theme), overriding the engine's Flow Show defaults
+     for this episode only: green #158864, dark green #182D2A, mint #81E5AC, light #DEF6EF, yellow #F5C13D.
+     Same overrides as the pilot, video/next-word/episode.html. */
+  :root {
+    --panel: rgba(16, 36, 32, 0.95);
+    --text: #DEF6EF;
+    --muted: #93b3a9;
+    --teal: #81E5AC;
+    --yellow: #F5C13D;
+    --orange: #FFA45C;
+    --blue: #86BDEB;
+    --red: #FF8F88;
+    --purple: #C7A8FF;
+    --green: #158864;
+    --deep: #0D483D;
+  }
+  #stage { background: radial-gradient(ellipse at 50% 38%, #24453e 0%, #182D2A 45%, #0c1a17 100%); }
+  .spot.l { background: linear-gradient(180deg, rgba(129,229,172,0.30), rgba(129,229,172,0.02)); }
+  .spot.r { background: linear-gradient(180deg, rgba(245,193,61,0.26), rgba(245,193,61,0.02)); }
+  .floor { background: linear-gradient(180deg, rgba(6,16,14,0) 0%, rgba(6,16,14,0.78) 100%); }
+  #cap { background: rgba(10, 26, 23, 0.95); }
+  .card { border-color: rgba(129,229,172,0.22); }
+  .chip { background: rgba(14, 32, 28, 0.9); }
+  .node { background: rgba(14, 32, 28, 0.96); }
+  .real { background: rgba(10,26,23,0.92); }
+  .note { position: absolute; font-size: 18px; color: var(--muted); font-weight: 500; }
+  .hl.y { border-color: var(--yellow); box-shadow: 0 0 36px rgba(245,193,61,0.55), inset 0 0 24px rgba(245,193,61,0.15); }
+  .src { font-size: 17px; color: var(--muted); font-weight: 600; }
+  .src b { color: var(--text); }
+
+  /* S1: hook */
+  #s1 .kick { color: var(--teal); }
+  #s1 .big { top: 250px; }
+  #s1 .sub { top: 428px; }
+  #s1 .demo { left: 390px; top: 498px; width: 1140px; height: 206px; padding: 20px 30px; display: flex; align-items: center; gap: 30px; }
+  #s1 .grid { display: grid; grid-template-columns: repeat(8, 70px); gap: 6px 8px; font-family: var(--mono); font-size: 20px; color: #c4ddd5; }
+  #s1 .grid span { text-align: right; }
+  #s1 .arr { font-size: 40px; color: var(--muted); font-weight: 800; }
+  #s1 .why { font-size: 40px; font-weight: 800; line-height: 1.15; }
+  #s1 .why small { display: block; font-size: 19px; color: var(--muted); font-weight: 600; margin-top: 8px; }
+  #s1 .row { position: absolute; left: 390px; width: 1140px; top: 726px; display: flex; justify-content: center; gap: 14px; }
+  #s1 .row .chip { font-size: 22px; padding: 10px 20px; }
+  #s1 .note { left: 390px; width: 1140px; top: 808px; text-align: center; font-size: 17px; }
+
+  /* S2: logit lens */
+  #s2 .screen { left: 390px; top: 172px; width: 1140px; height: 400px; }
+  #s2 .guess { left: 390px; top: 594px; width: 380px; height: 224px; padding: 18px 26px; border-color: var(--yellow); }
+  #s2 .guess .n { font-size: 64px; font-weight: 800; color: var(--yellow); line-height: 1.1; }
+  #s2 .guess .w { font-size: 30px; font-weight: 800; margin-top: 6px; }
+  #s2 .guess .w span { font-family: var(--mono); color: var(--yellow); font-size: 24px; margin-left: 10px; }
+  #s2 .layers { left: 800px; top: 594px; width: 730px; height: 224px; padding: 18px 24px; }
+  #s2 .cells { display: flex; gap: 6px; margin-top: 14px; }
+  #s2 .cells div { width: 47px; height: 62px; border-radius: 8px; border: 2px solid rgba(129,229,172,0.3); display: flex; align-items: flex-end; justify-content: center;
+    font-family: var(--mono); font-size: 17px; color: var(--muted); padding-bottom: 4px; }
+  #s2 .zones { display: flex; margin-top: 12px; font-size: 18px; font-weight: 700; }
+  #s2 .zones div { text-align: center; }
+
+  /* S3: superposition, the guide's real 5-in-2-D demo */
+  #s3 .sa { left: 390px; top: 176px; width: 470px; height: 362px; }
+  #s3 .sb { left: 890px; top: 176px; width: 640px; height: 362px; }
+  #s3 .pt { top: 566px; width: 365px; height: 196px; padding: 18px 22px; }
+  #s3 .pt h4 { font-size: 25px; font-weight: 800; margin-top: 6px; }
+  #s3 .pt p { font-size: 19px; color: #c4ddd5; margin-top: 8px; line-height: 1.35; }
+
+  /* S4: sparse autoencoders and steering */
+  #s4 .sae { left: 390px; top: 168px; width: 760px; height: 306px; padding: 16px 26px; }
+  #s4 .act { display: flex; gap: 4px; margin-top: 8px; }
+  #s4 .act i { width: 26px; height: 26px; border-radius: 5px; }
+  #s4 .mid { display: flex; align-items: center; gap: 14px; margin: 10px 0 8px; }
+  #s4 .mid .chip { font-size: 20px; padding: 6px 16px; }
+  #s4 .mid .arr { font-size: 28px; color: var(--muted); font-weight: 800; }
+  #s4 .feats { display: flex; gap: 3px; margin-top: 8px; }
+  #s4 .feats i { width: 14px; height: 26px; border-radius: 4px; background: rgba(129,229,172,0.1); }
+  #s4 .names { display: flex; gap: 10px; margin-top: 12px; }
+  #s4 .names .chip { font-size: 19px; padding: 5px 14px; }
+  #s4 .ggc { left: 1170px; top: 168px; width: 360px; height: 306px; padding: 18px 22px; border-color: var(--yellow); }
+  #s4 .ggc h4 { font-size: 27px; font-weight: 800; margin-top: 6px; }
+  #s4 .ggc p { font-size: 19px; color: #c4ddd5; margin-top: 10px; line-height: 1.35; }
+  #s4 .ggc .src { position: absolute; left: 22px; right: 22px; bottom: 16px; }
+  #s4 .screen { left: 390px; top: 492px; width: 1140px; height: 344px; }
+
+  /* S5: activation patching */
+  #s5 .screen { left: 390px; top: 168px; width: 1140px; height: 604px; }
+  #s5 .note { left: 390px; width: 1140px; top: 786px; text-align: center; }
+
+  /* S6: honest limits */
+  #s6 .col { top: 168px; height: 396px; padding: 20px 28px; }
+  #s6 .col .row { margin-top: 18px; padding: 14px 18px; border-radius: 12px; border: 2px solid rgba(129,229,172,0.25); }
+  #s6 .col .row .lbl { font-size: 16px; }
+  #s6 .col .row p { font-size: 22px; font-weight: 700; margin-top: 4px; line-height: 1.3; }
+  #s6 .col .src { position: absolute; left: 28px; right: 28px; bottom: 16px; }
+  #s6 .judge { display: flex; align-items: center; gap: 16px; font-size: 32px; font-weight: 800; margin-top: 22px; }
+  #s6 .judge .ico { width: 34px; height: 34px; }
+  #s6 .judge.no { color: var(--red); text-decoration: line-through; }
+  #s6 .stat { left: 390px; top: 588px; width: 380px; height: 222px; border-color: var(--yellow); }
+  #s6 .stat .n { font-size: 100px; color: var(--yellow); }
+  #s6 .stat .l { font-size: 21px; }
+  #s6 .young { left: 800px; top: 588px; width: 730px; height: 222px; padding: 22px 28px; }
+  #s6 .young h4 { font-size: 30px; font-weight: 800; margin-top: 8px; }
+  #s6 .young p { font-size: 20px; color: #c4ddd5; margin-top: 10px; line-height: 1.35; }
+
+  /* S7: try it yourself */
+  #s7 .title { position: absolute; left: 0; right: 0; top: 120px; text-align: center; font-size: 104px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.05; }
+  #s7 .title small { display: block; font-size: 30px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-top: 14px; }
+  #s7 .url { position: absolute; left: 0; right: 0; top: 322px; text-align: center; }
+  #s7 .url .chip { font-family: var(--mono); font-size: 27px; color: var(--teal); }
+  #s7 .screen { top: 446px; width: 560px; height: 315px; }
+  #s7 .credits { position: absolute; left: 390px; width: 1140px; top: 780px; text-align: center; font-size: 18px; color: var(--muted); font-weight: 500; line-height: 1.4; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- S1: we see every number, not why -->
+  <section class="scene hero" id="s1">
+    <div class="kick" data-at="0.2">THE RESIDUAL STREAM &middot; EP 10</div>
+    <div class="big" data-at="0.4" data-pop>Looking inside the <span class="hl-y">box</span></div>
+    <div class="sub" data-at="0.8">What a model computes, and why</div>
+    <div class="card demo" data-at="L1" data-pop>
+      <div><div class="lbl">EVERY NUMBER IS IN PLAIN VIEW</div><div class="grid" id="s1grid" style="margin-top:10px"></div></div>
+      <div class="arr" data-at="L1@0.55">&rarr;</div>
+      <div class="why" data-at="L1@0.6">But <span class="hl-y">why</span> this behaviour?<small>Billions of numbers, set by training, not written by anyone</small></div>
+    </div>
+    <div class="row">
+      <span class="chip" style="border-color:var(--teal)" data-at="L3@0.05" data-pop><span class="ico" style="color:var(--teal)" data-ico="search"></span>Interpretability: reading the computation</span>
+      <span class="chip" style="border-color:var(--yellow)" data-at="L3@0.55" data-pop><span class="ico" style="color:var(--yellow)" data-ico="shield"></span>Safety</span>
+      <span class="chip" style="border-color:var(--orange)" data-at="L3@0.7" data-pop><span class="ico" style="color:var(--orange)" data-ico="bug"></span>Debugging</span>
+      <span class="chip" style="border-color:var(--blue)" data-at="L3@0.85" data-pop><span class="ico" style="color:var(--blue)" data-ico="check"></span>Trust</span>
+    </div>
+    <div class="note" data-at="L1@0.4">Illustrative numbers</div>
+  </section>
+
+  <!-- S2: the logit lens, on the guide's demo -->
+  <section class="scene" id="s2">
+    <div class="t-title" data-at="0.2">The <span class="hl-t">logit lens</span>: answer early</div>
+    <div class="screen" data-at="L1@0.1" data-pop>
+      <div class="cam" id="s2a"><img src="shots/10-lens-0.png" alt=""></div>
+      <div class="cam" id="s2b"><img src="shots/11-lens-12.png" alt="">
+        <div class="hl y" id="s2hl1" style="left:872px; top:172px; width:96px; height:56px"></div>
+        <div class="hl y" id="s2hl2" style="left:272px; top:606px; width:1530px; height:66px"></div>
+      </div>
+    </div>
+    <div class="real" style="left:1086px; top:186px" data-at="L1@0.3">REAL DEMO &middot; ILLUSTRATIVE NUMBERS</div>
+    <div class="card guess" data-at="L1@0.5" data-pop>
+      <div class="lbl">READ THE STREAM AFTER LAYER</div>
+      <div class="n" id="s2n">0</div>
+      <div class="w"><span style="color:var(--muted); font-size:20px; margin:0">top guess</span> <b id="s2w">the</b><span id="s2p">9%</span></div>
+    </div>
+    <div class="card layers" data-at="L1@0.6" data-pop>
+      <div class="lbl">13 READ-OUTS, LAYER 0 TO 12</div>
+      <div class="cells" id="s2cells"></div>
+      <div class="zones" id="s2zones"></div>
+    </div>
+  </section>
+
+  <!-- S3: superposition, the guide's real demo -->
+  <section class="scene" id="s3">
+    <div class="t-title" data-at="0.2">Superposition: more concepts than <span class="hl-y">dimensions</span></div>
+    <div class="screen sa" data-at="L1@0.2" data-pop>
+      <div class="cam" id="s3a"><img src="shots/12-sup-cat-code.png" alt="">
+        <div class="hl y" id="s3hl1" style="left:296px; top:390px; width:236px; height:92px"></div>
+      </div>
+    </div>
+    <div class="screen sb" data-at="L1@0.4" data-pop>
+      <div class="cam" id="s3b"><img src="shots/12-sup-cat-code.png" alt="">
+        <div class="hl y" id="s3hl2" style="left:830px; top:338px; width:940px; height:50px"></div>
+      </div>
+    </div>
+    <div class="real" style="left:1240px; top:186px" data-at="L1@0.5">REAL DEMO &middot; REAL MATHS</div>
+    <div class="card pt" style="left:390px" data-at="L1@0.3" data-pop>
+      <div class="lbl">5 FEATURES &middot; 2 DIMENSIONS</div>
+      <h4>Packed at angles</h4>
+      <p>Almost, but not quite, perpendicular</p>
+    </div>
+    <div class="card pt" style="left:777px; border-color:var(--teal)" data-at="L2@0.15" data-pop>
+      <div class="lbl" style="color:var(--teal)">RARELY ACTIVE TOGETHER</div>
+      <h4>So it mostly works</h4>
+      <p>One feature at a time reads back cleanly</p>
+    </div>
+    <div class="card pt" style="left:1164px; border-color:var(--red)" data-at="L2@0.65" data-pop>
+      <div class="lbl" style="color:var(--red)">TWO AT ONCE</div>
+      <h4>They leak</h4>
+      <p>cat + code on &rarr; Paris reads 0.27, though it is off</p>
+    </div>
+  </section>
+
+  <!-- S4: sparse autoencoders, then steering on the guide's dial -->
+  <section class="scene" id="s4">
+    <div class="t-title" data-at="0.2">Unpack the features, then <span class="hl-y">steer</span></div>
+    <div class="card sae" data-at="L1" data-pop>
+      <div class="lbl">ONE ACTIVATION: EVERYTHING A LITTLE ON</div>
+      <div class="act" id="s4act"></div>
+      <div class="mid"><span class="arr">&darr;</span><span class="chip" style="border-color:var(--teal)" data-at="L1@0.2">sparse autoencoder (SAE)</span></div>
+      <div class="lbl" data-at="L1@0.45">MILLIONS OF FEATURES: ONLY A FEW ON, EACH CLEANER</div>
+      <div class="feats" id="s4feats"></div>
+      <div class="names">
+        <span class="chip" style="border-color:var(--yellow); color:var(--yellow)" data-at="L2@0.6" data-pop>Golden Gate Bridge</span>
+        <span class="chip" style="border-color:rgba(129,229,172,0.4)" data-at="L2@0.75" data-pop>code bugs</span>
+        <span class="chip" style="border-color:rgba(129,229,172,0.4)" data-at="L2@0.82" data-pop>sycophantic praise</span>
+        <span class="chip" style="border-color:rgba(129,229,172,0.4)" data-at="L2@0.9" data-pop>deception</span>
+      </div>
+    </div>
+    <div class="card ggc" data-at="L4@0.1" data-pop>
+      <div class="lbl" style="color:var(--yellow)">A FEATURE IS A DIRECTION</div>
+      <h4>Golden Gate Claude</h4>
+      <p>Bridge feature clamped high: every conversation came back to the bridge.</p>
+      <div class="src">Source: <b>Anthropic, &ldquo;Scaling Monosemanticity&rdquo; (2024)</b>, Claude 3 Sonnet</div>
+    </div>
+    <div class="screen" data-at="L3@0.2" data-pop>
+      <div class="cam" id="s4a"><img src="shots/15-steer-0.png" alt=""></div>
+      <div class="cam" id="s4b"><img src="shots/16-steer-9.png" alt="">
+        <div class="hl y" id="s4hl" style="left:296px; top:566px; width:1500px; height:36px"></div>
+      </div>
+    </div>
+    <div class="real" style="left:1094px; top:506px" data-at="L3@0.4">REAL DEMO &middot; MADE-UP BASE NUMBERS</div>
+  </section>
+
+  <!-- S5: activation patching, the guide's grid -->
+  <section class="scene" id="s5">
+    <div class="t-title" data-at="0.2">Cause and effect: <span class="hl-t">activation patching</span></div>
+    <div class="screen" data-at="L0@0.3" data-pop>
+      <div class="cam" id="s5a"><img src="shots/13-patch-l3.png" alt="">
+        <div class="hl t" style="left:276px; top:172px; width:830px; height:40px" data-at="L1@0.25" data-pop></div>
+        <div class="hl" style="left:276px; top:214px; width:880px; height:40px" data-at="L1@0.6" data-pop></div>
+      </div>
+      <div class="cam" id="s5b"><img src="shots/14-patch-l3-john2.png" alt="">
+        <div class="hl t" style="left:276px; top:172px; width:830px; height:40px"></div>
+        <div class="hl" style="left:276px; top:214px; width:880px; height:40px"></div>
+        <div class="hl y" id="s5hl" style="left:1064px; top:640px; width:262px; height:62px"></div>
+      </div>
+    </div>
+    <div class="real" style="left:1094px; top:182px" data-at="L0@0.6">REAL DEMO &middot; ILLUSTRATIVE VALUES</div>
+    <div class="note" data-at="L1@0.5">Values modelled on published results for GPT-2 small (who gets the drink); not measured by this guide.</div>
+  </section>
+
+  <!-- S6: honest limits, and why a builder should care -->
+  <section class="scene" id="s6">
+    <div class="t-title" data-at="0.2">Honest <span class="hl-y">limits</span></div>
+    <div class="card col" style="left:390px; width:560px" data-at="L1" data-pop>
+      <div class="lbl">ASKED HOW IT ADDED TWO NUMBERS</div>
+      <div class="row" data-at="L1@0.45"><div class="lbl">WHAT IT SAYS</div><p>The school method: carry the one</p></div>
+      <div class="row" style="border-color:var(--teal)" data-at="L1@0.65"><div class="lbl" style="color:var(--teal)">WHAT IT DOES INSIDE</div><p>A rough-magnitude path and an exact last-digit path, in parallel</p></div>
+      <div class="src" data-at="L1@0.8">Source: <b>Anthropic, attribution graphs (2025)</b>, Claude 3.5 Haiku</div>
+    </div>
+    <div class="card col" style="left:980px; width:550px" data-at="L2" data-pop>
+      <div class="lbl">JUDGE AN AGENT BY</div>
+      <div class="judge" data-at="L3@0.05"><span class="ico" style="color:var(--teal)" data-ico="check"></span>Its behaviour</div>
+      <div class="judge" data-at="L3@0.2"><span class="ico" style="color:var(--teal)" data-ico="check"></span>Evals</div>
+      <div class="judge no" data-at="L2@0.5"><span class="ico" data-ico="stop"></span>Its self-reports</div>
+    </div>
+    <div class="card stat" data-at="L3@0.6" data-pop>
+      <div class="lbl">ATTRIBUTION GRAPHS</div>
+      <div class="n">&asymp;&thinsp;&frac14;</div>
+      <div class="l">of prompts tried gave satisfying insight</div>
+    </div>
+    <div class="card young" data-at="L3@0.4" data-pop>
+      <div class="lbl">A YOUNG SCIENCE</div>
+      <h4>We can read pieces, not yet the whole</h4>
+      <p>A model's explanation of its reasoning is generated text, not a readout of its internals.</p>
+    </div>
+  </section>
+
+  <!-- S7: try it yourself -->
+  <section class="scene" id="s7">
+    <div class="title" data-at="0.3" data-pop>The <span class="hl-t">Residual</span> Stream
+      <small>Inside the box chapter &middot; English and Hebrew</small></div>
+    <div class="url"><span class="chip" style="border-color:var(--teal)" data-at="L1@0.05" data-pop>https://danielarosenn.github.io/residual-stream/</span></div>
+    <div class="screen" style="left:390px" data-at="L1@0.2" data-pop>
+      <div class="cam" id="s7a"><img src="shots/11-lens-12.png" alt=""></div>
+    </div>
+    <div class="screen" style="left:970px" data-at="L1@0.6" data-pop>
+      <div class="cam" id="s7b"><img src="shots/16-steer-9.png" alt=""></div>
+    </div>
+    <div class="real" style="left:390px; top:404px" data-at="L1@0.25">THE GUIDE &middot; LOGIT LENS</div>
+    <div class="real" style="left:970px; top:404px" data-at="L1@0.65">THE GUIDE &middot; STEERING DIAL</div>
+    <div class="credits" data-at="L1@0.8">Sources: Anthropic, &ldquo;Scaling Monosemanticity&rdquo; (2024); Anthropic, attribution graphs (2025).<br>Our own words and pictures; any mistakes are ours.</div>
+  </section>
+
+</div>
+<script src="timeline.js"></script>
+<script src="engine/stage.js"></script>
+<script>
+/* ---------- S1: a block of weights (illustrative, deterministic) ---------- */
+const S1_N = 24;
+const s1val = i => (Math.sin(i * 12.9898 + 4.1) * 43758.5453 % 1);   // fixed pseudo-random, same every frame
+$('#s1grid').innerHTML = Array.from({ length: S1_N }, (_, i) => {
+  const v = s1val(i);
+  return `<span id="s1g${i}">${v < 0 ? '−' : ''}${Math.abs(v).toFixed(2)}</span>`;
+}).join('');
+Stage.scene('s1', (lt, s) => {
+  const g0 = at(s, 1, 0.05), g1 = at(s, 1, 0.45);
+  for (let i = 0; i < S1_N; i++) $('#s1g' + i).style.opacity = prog(lt, g0 + (g1 - g0) * i / S1_N, 0.15);
+});
+
+/* ---------- S2: the guide's logit-lens table, copied from js/interp.js (LENS; illustrative numbers) ---------- */
+const LENS = [
+  [['the', .09]], [['the', .10]], [['the', .09]], [['the', .07]], [['city', .07]], [['Europe', .08]], [['France', .12]],
+  [['France', .16]], [['Paris', .19]], [['Paris', .33]], [['Paris', .52]], [['Paris', .71]], [['Paris', .86]]
+];
+const TOP_LAYER = LENS.length - 1;   // 12, the slider's maximum in the guide
+/* the guide's own three bands (js/interp.js lensNote): early <= 3, middle <= 6, then the answer takes over */
+const ZONES = [['generic words', 4, 'var(--muted)'], ['related concepts', 3, 'var(--blue)'], ['the answer forms', 6, 'var(--yellow)']];
+$('#s2cells').innerHTML = LENS.map((_, i) => `<div id="s2c${i}">${i}</div>`).join('');
+$('#s2zones').innerHTML = ZONES.map(([t, n, c]) => `<div style="width:${n * 53}px; color:${c}">${t}</div>`).join('');
+Stage.scene('s2', (lt, s) => {
+  /* the panel spans shot x 252-1836, y 144-727; show the prompt, slider, bars and caption */
+  ['#s2a', '#s2b'].forEach(id => setCam($(id), [[0, 1032, 420, 1.25], [s.dur, 1032, 424, 1.27]], lt));
+  /* "Low down ... near the top": sweep the read-out from layer 0 to 12 */
+  const k = prog(lt, at(s, 2, 0.05), at(s, 2, 0.75) - at(s, 2, 0.05));
+  const L = Math.round(k * TOP_LAYER);
+  $('#s2n').textContent = L;
+  $('#s2w').textContent = LENS[L][0][0];
+  $('#s2p').textContent = Math.round(LENS[L][0][1] * 100) + '%';
+  LENS.forEach((row, i) => {
+    const c = $('#s2c' + i), on = i <= L && lt >= at(s, 2, 0.05);
+    c.style.background = on ? `rgba(245,193,61,${0.12 + 0.8 * row[0][1]})` : 'transparent';
+    c.style.color = on && row[0][1] > 0.4 ? '#0c1a17' : '';
+    c.style.borderColor = i === L ? 'var(--yellow)' : 'rgba(129,229,172,0.3)';
+  });
+  $('#s2b').style.opacity = prog(lt, at(s, 2, 0.55), 0.4);
+  reveal($('#s2hl1'), prog(lt, at(s, 2, 0.6), 0.35), true);
+  reveal($('#s2hl2'), prog(lt, at(s, 2, 0.82), 0.35), true);
+});
+
+/* ---------- S3: two crops of one real screenshot (cat + code switched on) ---------- */
+Stage.scene('s3', (lt, s) => {
+  setCam($('#s3a'), [[0, 512, 453, 4.0]], lt);    // the five arrows, shot x ~272-752 (the demo's note starts at x 760)
+  setCam($('#s3b'), [[0, 1282, 405, 1.8]], lt);   // bars + the demo's note, shot x ~749-1815, y ~126-693 (above the formula caption)
+  /* "Paris lights up": the leak, on the arrow and on the bar */
+  reveal($('#s3hl1'), prog(lt, at(s, 3, 0.45), 0.35), true);
+  reveal($('#s3hl2'), prog(lt, at(s, 3, 0.55), 0.35), true);
+});
+
+/* ---------- S4: SAE cartoon (illustrative), then the guide's steering dial at 0 and 9 ---------- */
+const S4_ACT = 18, S4_FEATS = 44, S4_LIT = { 9: 'var(--yellow)', 23: 'var(--teal)', 36: 'var(--teal)' };
+$('#s4act').innerHTML = Array.from({ length: S4_ACT }, (_, i) => `<i id="s4a${i}" style="background:rgba(129,229,172,${(0.25 + 0.6 * Math.abs(Math.sin(i * 2.3 + 1))).toFixed(2)})"></i>`).join('');
+$('#s4feats').innerHTML = Array.from({ length: S4_FEATS }, (_, i) => `<i id="s4f${i}"></i>`).join('');
+Stage.scene('s4', (lt, s) => {
+  const f0 = at(s, 1, 0.5), f1 = at(s, 1, 0.85);
+  for (let i = 0; i < S4_FEATS; i++) {
+    const k = prog(lt, f0 + (f1 - f0) * i / S4_FEATS, 0.15), lit = S4_LIT[i];
+    $('#s4f' + i).style.opacity = k;
+    $('#s4f' + i).style.background = lit && lt >= f1 ? lit : 'rgba(129,229,172,0.1)';
+  }
+  /* steering panel: shot x 252-1836, y 143-876; show the prompt, the dial and all eight bars */
+  ['#s4a', '#s4b'].forEach(id => setCam($(id), [[0, 1036, 400, 1.18]], lt));
+  $('#s4b').style.opacity = prog(lt, at(s, 4, 0.2), 0.5);   // "Push along it"
+  reveal($('#s4hl'), prog(lt, at(s, 4, 0.45), 0.35), true);
+});
+
+/* ---------- S5: the guide's patching grid; cell layer 3 x "John (2nd)" restores 83% ---------- */
+Stage.scene('s5', (lt, s) => {
+  const keys = [[0, 1036, 560, 1.22]];   // the whole panel, row labels to the % column, stays in view
+  ['#s5a', '#s5b'].forEach(id => setCam($(id), keys, lt));
+  $('#s5b').style.opacity = prog(lt, at(s, 2, 0.0), 0.5);
+  reveal($('#s5hl'), prog(lt, at(s, 2, 0.35), 0.35), true);
+});
+
+/* ---------- S6: nothing moves but the cards ---------- */
+Stage.scene('s6', () => {});
+
+/* ---------- S7: try it yourself ---------- */
+Stage.scene('s7', (lt, s) => {
+  Stage.spotlight(prog(lt, 0.2, 1.2));
+  setCam($('#s7a'), [[0, 1042, 440, 1.25], [s.dur, 1042, 436, 1.28]], lt);
+  setCam($('#s7b'), [[0, 1042, 510, 1.25], [s.dur, 1042, 506, 1.28]], lt);
+});
+
+Stage.start();
+</script>
+</body>
+</html>

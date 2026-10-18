@@ -1,0 +1,79 @@
+WEBVTT
+
+00:00:00.700 --> 00:00:03.662
+Toki: Vera, I'm number 69. Does that mean “cat”?
+
+00:00:04.062 --> 00:00:07.607
+Vera: Nothing. An ID is just a row number in a big learned table.
+
+00:00:08.007 --> 00:00:08.871
+Toki: So what's in my row?
+
+00:00:09.271 --> 00:00:16.408
+Vera: A long list of numbers: a vector. 768 in GPT-2 small, 12,288 in GPT-3.
+
+00:00:18.008 --> 00:00:19.479
+Toki: Who fills in all those numbers?
+
+00:00:19.879 --> 00:00:22.783
+Vera: Nobody. Training nudges them, a little at a time.
+
+00:00:23.183 --> 00:00:26.047
+Vera: Until tokens used in similar ways end up near each other.
+
+00:00:26.447 --> 00:00:29.926
+Toki: So “cat” and “dog” end up neighbours, because they show up in similar sentences?
+
+00:00:31.526 --> 00:00:32.465
+Toki: Can I see that map?
+
+00:00:32.865 --> 00:00:36.052
+Vera: The guide's toy: hand-built and flat, two numbers per word.
+
+00:00:36.452 --> 00:00:38.574
+Toki: Look, the animals all huddle together!
+
+00:00:38.974 --> 00:00:42.490
+Vera: And countries sit by their capitals. Related means close.
+
+00:00:42.890 --> 00:00:45.580
+Vera: Type “cat” in the finder: its nearest neighbours light up.
+
+00:00:47.180 --> 00:00:49.531
+Vera: The surprise: directions mean something too.
+
+00:00:49.931 --> 00:00:50.485
+Toki: Directions?
+
+00:00:50.885 --> 00:00:53.649
+Vera: Start at king. Take away man, add woman.
+
+00:00:54.049 --> 00:00:55.786
+Toki: And we land on… queen!
+
+00:00:56.186 --> 00:01:00.083
+Vera: Real arithmetic. Man to woman is the same step as king to queen.
+
+00:01:01.683 --> 00:01:03.141
+Toki: Is a real map flat like this?
+
+00:01:03.541 --> 00:01:08.972
+Vera: No: hundreds or thousands of dimensions. And a direction rarely means just one human idea.
+
+00:01:09.372 --> 00:01:10.697
+Toki: But close still means similar?
+
+00:01:11.097 --> 00:01:15.517
+Vera: Yes. Similarity is a dot product: multiply matching numbers and add.
+
+00:01:15.917 --> 00:01:18.220
+Vera: That dot product will become the heart of attention.
+
+00:01:19.820 --> 00:01:20.852
+Toki: Can I try this myself?
+
+00:01:21.252 --> 00:01:25.172
+Vera: Type a word into the finder in the Embeddings chapter, then build your own analogy.
+
+00:01:25.572 --> 00:01:28.854
+Toki: Puppy minus dog plus cat… kitten! I'm a natural.

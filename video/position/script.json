@@ -1,0 +1,68 @@
+{
+  "brand": "The Residual Stream &middot; EP 04 &middot; Position",
+  "output": "Residual-Stream-EP04-Position.mp4",
+  "voices": {
+    "VERA": { "voice": "en-GB-SoniaNeural", "rate": "+18%", "pitch": "+0Hz" },
+    "TOKI": { "voice": "en-US-BrianNeural", "rate": "+20%", "pitch": "+4Hz" }
+  },
+  "cast": { "L": "VERA", "R": "TOKI" },
+  "scenes": [
+    {
+      "id": "s1",
+      "lines": [
+        { "who": "TOKI", "text": "Vera, “dog bites man” or “man bites dog”. Same thing?",
+          "say": "Vera, dog bites man, or man bites dog. Same thing?" },
+        { "who": "VERA", "text": "Not to you. But attention alone treats the tokens as a set." },
+        { "who": "TOKI", "text": "So if you shuffle us, nothing changes?" },
+        { "who": "VERA", "text": "Every token computes the same result. So each token must be told where it sits." }
+      ]
+    },
+    {
+      "id": "s2",
+      "lines": [
+        { "who": "TOKI", "text": "Like a seat number? One, two, three?" },
+        { "who": "VERA", "text": "The original transformer, in 2017, added a fixed pattern of sines and cosines.",
+          "say": "The original transformer, in twenty seventeen, added a fixed pattern of sines and cosines." },
+        { "who": "VERA", "text": "Each row is one position. Each pair of columns is a wave with its own speed." },
+        { "who": "TOKI", "text": "Fast waves on the left, slow ones on the right?" },
+        { "who": "VERA", "text": "Yes. Fast ones tell neighbours apart, slow ones the rough place, like the hands of a clock." }
+      ]
+    },
+    {
+      "id": "s3",
+      "lines": [
+        { "who": "TOKI", "text": "Why waves, and not plain numbers?" },
+        { "who": "VERA", "text": "Compare one position's pattern with every other. Neighbours come out most similar." },
+        { "who": "VERA", "text": "Move from position 20 to 45: the same shape, just shifted.",
+          "say": "Move from position twenty to forty-five: the same shape, just shifted." },
+        { "who": "TOKI", "text": "So it's how far apart we are, not where we are." }
+      ]
+    },
+    {
+      "id": "s4",
+      "lines": [
+        { "who": "TOKI", "text": "Do today's models still add waves?" },
+        { "who": "VERA", "text": "Most use RoPE, from 2021. It rotates pairs of numbers in the query and the key.",
+          "say": "Most use rope, from twenty twenty-one. It rotates pairs of numbers in the query and the key." },
+        { "who": "VERA", "text": "The angle grows with position: a fast pair, a medium pair, a slow pair." },
+        { "who": "TOKI", "text": "And when two tokens compare notes?" },
+        { "who": "VERA", "text": "Only the difference of their angles survives: relative distance, directly." }
+      ]
+    },
+    {
+      "id": "s5",
+      "lines": [
+        { "who": "TOKI", "text": "Does this matter for long documents?" },
+        { "who": "VERA", "text": "Yes. Position is one of the pieces that had to be stretched to make very long contexts possible." }
+      ]
+    },
+    {
+      "id": "s6",
+      "lines": [
+        { "who": "TOKI", "text": "Can I play with the waves?" },
+        { "who": "VERA", "text": "Drag the position slider in the Position chapter; Deep mode adds the circles." },
+        { "who": "TOKI", "text": "Found my seat. Now I'm spinning." }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Residual Stream - EP 01 - How it began</title>
+<link rel="stylesheet" href="engine/stage.css">
+<style>
+  /* The Residual Stream palette (the site's dark theme), overriding the engine's Flow Show defaults
+     for this episode only - same overrides as EP 01-05 (video/tokens/episode.html):
+     green #158864, dark green #182D2A, mint #81E5AC, light #DEF6EF, yellow #F5C13D. */
+  :root {
+    --panel: rgba(16, 36, 32, 0.95);
+    --text: #DEF6EF;
+    --muted: #93b3a9;
+    --teal: #81E5AC;
+    --yellow: #F5C13D;
+    --orange: #FFA45C;
+    --blue: #86BDEB;
+    --red: #FF8F88;
+    --purple: #C7A8FF;
+    --green: #158864;
+    --deep: #0D483D;
+  }
+  #stage { background: radial-gradient(ellipse at 50% 38%, #24453e 0%, #182D2A 45%, #0c1a17 100%); }
+  .spot.l { background: linear-gradient(180deg, rgba(129,229,172,0.30), rgba(129,229,172,0.02)); }
+  .spot.r { background: linear-gradient(180deg, rgba(245,193,61,0.26), rgba(245,193,61,0.02)); }
+  .floor { background: linear-gradient(180deg, rgba(6,16,14,0) 0%, rgba(6,16,14,0.78) 100%); }
+  #cap { background: rgba(10, 26, 23, 0.95); }
+  .card { border-color: rgba(129,229,172,0.22); }
+  .chip { background: rgba(14, 32, 28, 0.9); }
+  .node { background: rgba(14, 32, 28, 0.96); }
+  .real { background: rgba(10,26,23,0.92); }
+  .note { position: absolute; font-size: 18px; color: var(--muted); font-weight: 500; }
+  .hl.y { border-color: var(--yellow); box-shadow: 0 0 36px rgba(245,193,61,0.55), inset 0 0 24px rgba(245,193,61,0.15); }
+  .hl.y span { background: var(--yellow); color: #0c1a17; }
+
+  /* episode-wide: the ILLUSTRATIVE tag for anything drawn rather than computed */
+  .real.illus { border-color: var(--yellow); color: var(--yellow); }
+  .strip { left: 390px; top: 168px; width: 1140px; height: 300px; }
+  .wd { position: absolute; display: flex; align-items: center; justify-content: center; height: 40px; width: 170px;
+        border-radius: 10px; border: 2px solid rgba(129,229,172,0.35); background: rgba(14,32,28,0.95);
+        font-size: 22px; font-weight: 700; color: var(--text); }
+  .wd.fr { border-color: rgba(134,189,235,0.5); }
+  .wires { position: absolute; left: 0; top: 0; width: 1140px; height: 340px; overflow: visible; }
+
+  /* S1: hook - reading through a keyhole */
+  #s1 .kick { color: var(--teal); }
+  #s1 .big { top: 250px; font-size: 112px; }
+  #s1 .sub { top: 400px; }
+  #s1 .demo { left: 430px; top: 476px; width: 1060px; height: 300px; padding: 20px 30px; }
+  #s1 .lbl { font-size: 18px; }
+  #s1 .row { display: flex; gap: 12px; justify-content: center; margin-top: 34px; }
+  #s1 .row span { padding: 10px 18px; border-radius: 12px; border: 2.5px solid rgba(129,229,172,0.25);
+                  font-size: 30px; font-weight: 700; background: rgba(14,32,28,0.95); }
+  #s1 .says { position: absolute; left: 30px; right: 30px; text-align: center; font-size: 23px; font-weight: 600; }
+
+  /* S2: word vectors */
+  #s2 .col { top: 490px; width: 555px; height: 340px; padding: 18px 26px; }
+  #s2 .map { position: absolute; left: 20px; top: 46px; width: 515px; height: 280px; }
+  #s2 .eq { margin-top: 30px; font-family: var(--mono); font-size: 36px; font-weight: 700; line-height: 1.5; height: 112px; }
+  #s2 .eq .ok { color: var(--yellow); }
+  #s2 .why { margin-top: 26px; font-size: 21px; font-weight: 600; line-height: 1.4; color: #c4ddd5; }
+
+  /* S3 + S4: the translation sketch, one card */
+  .tr { left: 390px; top: 490px; width: 1140px; height: 340px; }
+  .tr .lbl { position: absolute; left: 30px; top: 14px; font-size: 18px; }
+  #s3 .vec { position: absolute; left: 500px; top: 110px; width: 140px; height: 130px; border-radius: 22px;
+             border: 3px solid var(--yellow); background: rgba(245,193,61,0.12); display: flex; align-items: center;
+             justify-content: center; font-family: var(--mono); font-size: 26px; font-weight: 800; color: var(--yellow); }
+  #s3 .vlbl { position: absolute; left: 400px; width: 340px; top: 250px; text-align: center; font-size: 19px; font-weight: 600; color: var(--muted); }
+  #s3 .lost { position: absolute; left: 330px; width: 480px; top: 288px; text-align: center; font-size: 21px; font-weight: 700; color: var(--red); }
+  #s4 .bottom { position: absolute; left: 390px; width: 1140px; top: 846px; text-align: center; }
+
+  /* S5: recurrence vs the transformer */
+  #s5 .strip { height: 340px; }
+  #s5 .col { top: 528px; width: 555px; height: 210px; padding: 16px 26px; }
+  #s5 .col .lbl { font-size: 18px; }
+  #s5 .tiles { position: relative; height: 56px; margin-top: 16px; }
+  #s5 .tiles span { position: absolute; top: 0; width: 72px; height: 46px; border-radius: 10px; display: flex; align-items: center;
+                    justify-content: center; font-size: 19px; font-weight: 700; border: 2px solid rgba(129,229,172,0.3); background: rgba(14,32,28,0.95); }
+  #s5 .arcs { position: absolute; left: 26px; top: 108px; width: 503px; height: 40px; overflow: visible; }
+  #s5 .how { position: absolute; left: 26px; right: 26px; top: 158px; font-size: 20px; font-weight: 600; color: #c4ddd5; }
+  #s5 .bottom { position: absolute; left: 390px; width: 1140px; top: 758px; display: flex; justify-content: center; gap: 18px; }
+  #s5 .bottom .chip { font-size: 21px; padding: 9px 18px; }
+
+  /* S6: try it yourself */
+  #s6 .title { position: absolute; left: 0; right: 0; top: 120px; text-align: center; font-size: 104px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.05; }
+  #s6 .title small { display: block; font-size: 30px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-top: 14px; }
+  #s6 .url { position: absolute; left: 0; right: 0; top: 322px; text-align: center; }
+  #s6 .url .chip { font-family: var(--mono); font-size: 27px; color: var(--teal); }
+  #s6 .screen { top: 446px; width: 560px; height: 315px; }
+  #s6 .credits { position: absolute; left: 390px; width: 1140px; top: 784px; text-align: center; font-size: 18px; color: var(--muted); font-weight: 500; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- S1: reading through a keyhole -->
+  <section class="scene hero" id="s1">
+    <div class="kick" data-at="0.2">THE RESIDUAL STREAM &middot; EP 01</div>
+    <div class="big" data-at="0.4" data-pop>How it <span class="hl-t">began</span></div>
+    <div class="sub" data-at="0.8">Sixty years of making the keyhole wider</div>
+    <div class="card demo" data-at="L1@0.1" data-pop>
+      <div class="lbl">READING THROUGH A KEYHOLE: ONE WORD AT A TIME</div>
+      <div class="row" id="s1row"></div>
+      <div class="says" style="top:170px; color:var(--red)" data-at="L2@0.3">Earlier words fade: most of what came before is forgotten</div>
+      <div class="says" style="top:226px; color:var(--teal)" data-at="L3@0.45">Each step in the story: a wider keyhole</div>
+    </div>
+    <div class="real illus" style="left:1306px; top:490px" data-at="L1@0.2">ILLUSTRATIVE</div>
+  </section>
+
+  <!-- S2: 2013, word vectors -->
+  <section class="scene" id="s2">
+    <div class="t-title" data-at="0.2"><span class="hl-y">2013</span>: words become <span class="hl-t">vectors</span></div>
+    <div class="screen strip" data-at="L0@0.4" data-pop>
+      <div class="cam" id="s2a"><img src="shots/02-era-language.png" alt="">
+        <div class="hl y" style="left:1128px; top:214px; width:418px; height:52px" data-at="L2@0.05" data-pop></div>
+      </div>
+    </div>
+    <div class="real" style="left:1340px; top:180px" data-at="L0@0.7">REAL TIMELINE</div>
+    <div class="card col" style="left:390px; border-color:var(--teal)" data-at="L1@0.4" data-pop>
+      <div class="lbl">A MAP OF MEANING (2-D TOY)</div>
+      <svg class="map" viewBox="0 0 515 280">
+        <defs><marker id="s2ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#F5C13D"/></marker></defs>
+        <line id="s2l1" x1="90" y1="230" x2="160" y2="80" stroke="#F5C13D" stroke-width="4" stroke-dasharray="10 7" marker-end="url(#s2ar)"/>
+        <line id="s2l2" x1="330" y1="230" x2="400" y2="80" stroke="#F5C13D" stroke-width="4" stroke-dasharray="10 7" marker-end="url(#s2ar)"/>
+        <g id="s2p0"><circle cx="90" cy="230" r="10" fill="#81E5AC"/><text x="108" y="252" fill="#DEF6EF" font-size="26" font-weight="700">man</text></g>
+        <g id="s2p1"><circle cx="160" cy="72" r="10" fill="#81E5AC"/><text x="178" y="80" fill="#DEF6EF" font-size="26" font-weight="700">woman</text></g>
+        <g id="s2p2"><circle cx="330" cy="230" r="10" fill="#81E5AC"/><text x="348" y="252" fill="#DEF6EF" font-size="26" font-weight="700">king</text></g>
+        <g id="s2p3"><circle cx="400" cy="72" r="10" fill="#81E5AC"/><text x="418" y="80" fill="#DEF6EF" font-size="26" font-weight="700">queen</text></g>
+        <circle id="s2dot" r="14" fill="none" stroke="#F5C13D" stroke-width="4"/>
+      </svg>
+    </div>
+    <div class="real illus" style="left:775px; top:500px" data-at="L1@0.5">ILLUSTRATIVE</div>
+    <div class="card col" style="left:975px; border-color:var(--yellow)" data-at="L2@0.02" data-pop>
+      <div class="lbl">VECTOR ARITHMETIC CAPTURES MEANING</div>
+      <div class="eq" id="s2eq"></div>
+      <div class="why" data-at="L3@0.1">Every LLM still starts by turning tokens into vectors like these.</div>
+    </div>
+  </section>
+
+  <!-- S3: 2014, sequence to sequence squeezes the sentence -->
+  <section class="scene" id="s3">
+    <div class="t-title" data-at="0.2"><span class="hl-y">2014</span>: squeeze it into <span class="hl-r">one vector</span></div>
+    <div class="screen strip" data-at="L0@0.4" data-pop>
+      <div class="cam" id="s3a"><img src="shots/02-era-language.png" alt="">
+        <div class="hl y" style="left:706px; top:552px; width:248px; height:50px" data-at="L1@0.4" data-pop></div>
+        <div class="hl y" style="left:800px; top:640px; width:304px; height:46px" data-at="L3@0.4" data-pop></div>
+      </div>
+    </div>
+    <div class="real" style="left:1340px; top:180px" data-at="L0@0.7">REAL TIMELINE</div>
+    <div class="card tr" data-at="L1@0.1" data-pop>
+      <div class="lbl">ENCODER &rarr; ONE VECTOR &rarr; DECODER</div>
+      <svg class="wires" id="s3w"></svg>
+      <div id="s3src"></div>
+      <div class="vec" id="s3vec">[ &middot;&middot;&middot; ]</div>
+      <div class="vlbl" data-at="L1@0.45">one fixed-size vector</div>
+      <div id="s3dst"></div>
+      <div class="lost" data-at="L3@0.4">Long sentences: details get lost</div>
+    </div>
+    <div class="real illus" style="left:1340px; top:502px" data-at="L1@0.2">ILLUSTRATIVE</div>
+  </section>
+
+  <!-- S4: 2014, attention looks back at every word -->
+  <section class="scene" id="s4">
+    <div class="t-title" data-at="0.2"><span class="hl-y">2014</span>: attention <span class="hl-t">looks back</span></div>
+    <div class="screen strip" data-at="L0@0.4" data-pop>
+      <div class="cam" id="s4a"><img src="shots/02-era-language.png" alt="">
+        <div class="hl y" style="left:1124px; top:800px; width:410px; height:48px" data-at="L1@0.35" data-pop></div>
+        <div class="hl t" style="left:782px; top:942px; width:396px; height:46px" data-at="L2@0.1" data-pop></div>
+      </div>
+    </div>
+    <div class="real" style="left:1340px; top:180px" data-at="L0@0.7">REAL TIMELINE</div>
+    <div class="card tr" style="border-color:var(--teal)" data-at="L1@0.15" data-pop>
+      <div class="lbl">THE DECODER LOOKS BACK AT EVERY WORD</div>
+      <svg class="wires" id="s4w"></svg>
+      <div id="s4src"></div>
+      <div id="s4dst"></div>
+    </div>
+    <div class="real illus" style="left:1270px; top:502px" data-at="L1@0.25">ILLUSTRATIVE WEIGHTS</div>
+  </section>
+
+  <!-- S5: 2017, the transformer -->
+  <section class="scene" id="s5">
+    <div class="t-title" data-at="0.2"><span class="hl-y">2017</span>: keep <span class="hl-t">only attention</span></div>
+    <div class="screen strip" data-at="L0@0.3" data-pop>
+      <div class="cam" id="s5a"><img src="shots/03-era-scale.png" alt="">
+        <div class="hl y" style="left:1004px; top:262px; width:360px; height:46px" data-at="L1@0.3" data-pop></div>
+        <div class="hl t" style="left:1010px; top:306px; width:344px; height:46px" data-at="L1@0.75" data-pop></div>
+      </div>
+    </div>
+    <div class="real" style="left:1340px; top:180px" data-at="L0@0.6">REAL TIMELINE</div>
+    <div class="card col" style="left:390px; border-color:var(--red)" data-at="L1@0.2" data-pop>
+      <div class="lbl">BEFORE: RECURRENCE</div>
+      <div class="tiles" id="s5rec"></div>
+      <div class="how">One word per step, in order: slow to train</div>
+    </div>
+    <div class="card col" style="left:975px; border-color:var(--teal)" data-at="L1@0.55" data-pop>
+      <div class="lbl">THE TRANSFORMER</div>
+      <div class="tiles" id="s5tf"></div>
+      <svg class="arcs" id="s5arcs" viewBox="0 0 503 40"></svg>
+      <div class="how">Every word at once: trains in parallel on GPUs</div>
+    </div>
+    <div class="real illus" style="left:770px; top:542px" data-at="L1@0.3">ILLUSTRATIVE</div>
+    <div class="real illus" style="left:1355px; top:542px" data-at="L1@0.6">ILLUSTRATIVE</div>
+    <div class="bottom">
+      <span class="chip" style="border-color:var(--yellow)" data-at="L2@0.3" data-pop>The &ldquo;T&rdquo; in ChatGPT</span>
+      <span class="chip" style="border-color:var(--teal)" data-at="L3@0.45" data-pop>Kept improving as it was made bigger</span>
+    </div>
+  </section>
+
+  <!-- S6: try it yourself -->
+  <section class="scene" id="s6">
+    <div class="title" data-at="0.3" data-pop>The <span class="hl-t">Residual</span> Stream
+      <small>How it began chapter &middot; sixty years of ideas, three acts on one timeline</small></div>
+    <div class="url"><span class="chip" style="border-color:var(--teal)" data-at="L1@0.1" data-pop>https://danielarosenn.github.io/residual-stream/</span></div>
+    <div class="screen" style="left:390px" data-at="L1@0.25" data-pop>
+      <div class="cam" id="s6a"><img src="shots/01-chapter-top.png" alt=""></div>
+    </div>
+    <div class="screen" style="left:970px" data-at="L1@0.6" data-pop>
+      <div class="cam" id="s6b"><img src="shots/03-era-scale.png" alt=""></div>
+    </div>
+    <div class="real" style="left:390px; top:404px" data-at="L1@0.3">THE KEYHOLE</div>
+    <div class="real" style="left:970px; top:404px" data-at="L1@0.65">THE TIMELINE</div>
+    <div class="credits" data-at="L2@0.2">Our own words and pictures; any mistakes are ours.</div>
+  </section>
+
+</div>
+<script src="timeline.js"></script>
+<script src="engine/stage.js"></script>
+<script>
+/* Timeline strips: the camera frames one entry of the real timeline at 1:1 screenshot pixels.
+   setCam's zoom is relative to fitting the whole 1920 px shot, so 1:1 on an 1140 px screen is 1920/1140. */
+const ONE_TO_ONE = 1920 / 1140;
+const STRIP_X = 1050;   // the timeline column in the shots: x 480-1620
+
+/* ---------- S1: a keyhole moving word by word, then widening (illustrative) ---------- */
+const S1_WORDS = ['programs', 'read', 'text', 'one', 'word', 'at', 'a', 'time'];
+$('#s1row').innerHTML = S1_WORDS.map((w, i) => `<span id="s1w${i}">${w}</span>`).join('');
+Stage.scene('s1', (lt, s) => {
+  const a = at(s, 1, 0.2), b = at(s, 2, 1.0);                 // the keyhole walks the sentence
+  const focus = Math.floor(clamp01((lt - a) / (b - a)) * S1_WORDS.length);
+  const wide = prog(lt, at(s, 3, 0.45), 0.6);                 // "makes the keyhole wider"
+  const fade = prog(lt, at(s, 2, 0.2), 0.5);                  // "forgot most of what came before"
+  S1_WORDS.forEach((_, i) => {
+    const el = $('#s1w' + i);
+    const lit = lt >= a && i === Math.min(focus, S1_WORDS.length - 1);
+    const past = lt >= a && i < focus;
+    let op = lit ? 1 : past ? 1 - 0.75 * fade : 0.35;
+    op = op + (1 - op) * wide;
+    el.style.opacity = op;
+    el.style.borderColor = lit || wide > 0.5 ? 'var(--teal)' : 'rgba(129,229,172,0.25)';
+    el.style.boxShadow = lit || wide > 0.5 ? '0 0 22px rgba(129,229,172,0.55)' : '';
+  });
+});
+
+/* ---------- S2: man -> woman is the same step as king -> queen (illustrative 2-D toy) ---------- */
+const S2_CAM = [[0, STRIP_X, 240, ONE_TO_ONE]];
+const S2_EQ = ['king − man + woman', '≈ queen'];
+Stage.scene('s2', (lt, s) => {
+  setCam($('#s2a'), S2_CAM, lt);
+  [0, 1, 2, 3].forEach(i => { $('#s2p' + i).style.opacity = prog(lt, at(s, 1, 0.5 + 0.08 * i), 0.3); });
+  $('#s2l1').style.opacity = prog(lt, at(s, 2, 0.15), 0.4);
+  $('#s2l2').style.opacity = prog(lt, at(s, 2, 0.55), 0.4);
+  const d = $('#s2dot');
+  d.setAttribute('cx', 400); d.setAttribute('cy', 72);
+  d.style.opacity = prog(lt, at(s, 2, 0.85), 0.3);
+  const a = at(s, 2, 0.0), b = at(s, 2, 0.95), step = (b - a) / S2_EQ.length;
+  typeLines($('#s2eq'), S2_EQ.map((t, i) => [t, a + i * step, a + (i + 0.8) * step, i === S2_EQ.length - 1 ? 'ok' : '']), lt);
+});
+
+/* ---------- translation sketch shared by S3 and S4 (illustrative sentence) ---------- */
+const SRC = ['the', 'cat', 'is', 'on', 'the', 'mat'];
+const DST = ['le', 'chat', 'est', 'sur', 'le', 'tapis'];
+const TILE_TOP = 52, TILE_STEP = 46, TILE_H = 40;   // card-local px
+const SRC_X = 40, DST_X = 930, TILE_W = 170;
+const rowY = i => TILE_TOP + i * TILE_STEP + TILE_H / 2;
+function tiles(box, words, x, cls, id) {
+  box.innerHTML = words.map((w, i) => `<div class="wd ${cls}" id="${id}${i}" style="left:${x}px; top:${TILE_TOP + i * TILE_STEP}px">${w}</div>`).join('');
+}
+function wire(svg, id, x1, y1, x2, y2, color) {
+  svg.insertAdjacentHTML('beforeend', `<line id="${id}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>`);
+}
+
+/* S3: every source word wired into one box, the box wired out to every output word */
+const S3_CAM = [[0, STRIP_X, 552, ONE_TO_ONE]];
+const VEC_L = 500, VEC_R = 640, VEC_Y = 175;
+tiles($('#s3src'), SRC, SRC_X, '', 's3s');
+tiles($('#s3dst'), DST, DST_X, 'fr', 's3d');
+SRC.forEach((_, i) => wire($('#s3w'), 's3in' + i, SRC_X + TILE_W, rowY(i), VEC_L, VEC_Y, '#81E5AC'));
+DST.forEach((_, j) => wire($('#s3w'), 's3out' + j, VEC_R, VEC_Y, DST_X, rowY(j), '#86BDEB'));
+Stage.scene('s3', (lt, s) => {
+  setCam($('#s3a'), S3_CAM, lt);
+  const a = at(s, 1, 0.15), b = at(s, 1, 0.5);   // "squeezes the whole sentence into one vector"
+  const c = at(s, 1, 0.6), d = at(s, 1, 0.95);   // "then writes the translation from it"
+  SRC.forEach((_, i) => {
+    const k = prog(lt, a + (b - a) * i / SRC.length, 0.3);
+    $('#s3s' + i).style.opacity = prog(lt, at(s, 1, 0.1), 0.3);
+    $('#s3in' + i).style.opacity = k;
+  });
+  const squeeze = prog(lt, a, b - a);
+  $('#s3vec').style.opacity = prog(lt, a, 0.3);
+  $('#s3vec').style.transform = `scale(${1 + 0.12 * Math.sin(Math.PI * squeeze)})`;
+  DST.forEach((_, j) => {
+    const k = prog(lt, c + (d - c) * j / DST.length, 0.3);
+    $('#s3d' + j).style.opacity = k;
+    $('#s3out' + j).style.opacity = k;
+  });
+  $('#s3vec').style.borderColor = lt >= at(s, 3, 0.4) ? 'var(--red)' : 'var(--yellow)';
+});
+
+/* S4: each output word looks back at every source word; the aligned one gets most weight */
+const S4_CAM = [[0, STRIP_X, 865, ONE_TO_ONE]];
+const FOCUS_W = 0.75, OTHER_W = 0.05;   // illustrative weights, labelled on screen (sum to 1 over six words)
+tiles($('#s4src'), SRC, SRC_X, '', 's4s');
+tiles($('#s4dst'), DST, DST_X, 'fr', 's4d');
+SRC.forEach((_, i) => wire($('#s4w'), 's4l' + i, SRC_X + TILE_W, rowY(i), DST_X, rowY(0), '#81E5AC'));
+Stage.scene('s4', (lt, s) => {
+  setCam($('#s4a'), S4_CAM, lt);
+  const a = at(s, 1, 0.4), b = s.dur - 0.4;      // "looks back at every word" -> end of scene
+  const on = lt >= a;
+  const j = on ? Math.min(DST.length - 1, Math.floor((lt - a) / (b - a) * DST.length)) : 0;
+  const sharp = on ? prog(lt, Math.max(a, at(s, 1, 0.75)), 0.4) : 0;   // "picks which ones to focus on"
+  SRC.forEach((_, i) => {
+    $('#s4s' + i).style.opacity = prog(lt, at(s, 1, 0.15), 0.3);
+    const w = i === j ? FOCUS_W : OTHER_W;
+    const shown = (1 - sharp) * (1 / SRC.length) + sharp * w;   // even at first, then focused
+    const l = $('#s4l' + i);
+    l.setAttribute('y2', rowY(j));
+    l.style.opacity = on ? 0.25 + 0.75 * shown / FOCUS_W : 0;
+    l.setAttribute('stroke-width', on ? 2 + 10 * shown : 2);
+    const hot = on && i === j && sharp > 0.5;
+    $('#s4s' + i).style.borderColor = hot ? 'var(--yellow)' : 'rgba(129,229,172,0.35)';
+    $('#s4s' + i).style.boxShadow = hot ? '0 0 20px rgba(245,193,61,0.6)' : '';
+  });
+  DST.forEach((_, k) => {
+    $('#s4d' + k).style.opacity = on ? (k <= j ? 1 : 0.3) : 0;
+    $('#s4d' + k).style.borderColor = on && k === j ? 'var(--yellow)' : 'rgba(134,189,235,0.5)';
+  });
+});
+
+/* ---------- S5: recurrence steps through the words; the transformer lights them all at once ---------- */
+const S5_CAM = [[0, STRIP_X, 305, ONE_TO_ONE]];
+const S5_TILE_W = 72, S5_GAP = 14, S5_STEP_S = 0.35;   // one recurrent step every 0.35 s
+['#s5rec', '#s5tf'].forEach((sel, n) => {
+  $(sel).innerHTML = SRC.map((w, i) => `<span id="s5${n}${i}" style="left:${i * (S5_TILE_W + S5_GAP)}px">${w}</span>`).join('');
+});
+const tileX = i => i * (S5_TILE_W + S5_GAP) + S5_TILE_W / 2;
+$('#s5arcs').innerHTML = SRC.flatMap((_, i) => SRC.slice(i + 1).map((__, d) => {
+  const k = i + d + 1, mid = (tileX(i) + tileX(k)) / 2, h = 8 + 5 * (k - i);
+  return `<path d="M${tileX(i)} 0 Q${mid} ${h * 2} ${tileX(k)} 0" fill="none" stroke="#81E5AC" stroke-width="2"/>`;
+})).join('');
+Stage.scene('s5', (lt, s) => {
+  setCam($('#s5a'), S5_CAM, lt);
+  const r0 = at(s, 1, 0.25);
+  const step = lt >= r0 ? Math.floor((lt - r0) / S5_STEP_S) % (SRC.length + 2) : -1;
+  SRC.forEach((_, i) => {
+    const el = $('#s50' + i), lit = i === step;
+    el.style.opacity = step < 0 ? 0.4 : (lit ? 1 : (i < step ? 0.6 : 0.3));
+    el.style.borderColor = lit ? 'var(--red)' : 'rgba(129,229,172,0.3)';
+  });
+  const all = prog(lt, at(s, 1, 0.6), 0.4);
+  SRC.forEach((_, i) => {
+    const el = $('#s51' + i);
+    el.style.opacity = 0.4 + 0.6 * all;
+    el.style.borderColor = all > 0.5 ? 'var(--teal)' : 'rgba(129,229,172,0.3)';
+    el.style.boxShadow = all > 0.5 ? '0 0 18px rgba(129,229,172,0.5)' : '';
+  });
+  $('#s5arcs').style.opacity = all;
+});
+
+/* ---------- S6: try it yourself ---------- */
+Stage.scene('s6', (lt, s) => {
+  Stage.spotlight(prog(lt, 0.2, 1.2));
+  setCam($('#s6a'), [[0, 1040, 560, 1.5], [s.dur, 1040, 560, 1.55]], lt);
+  setCam($('#s6b'), [[0, 1050, 300, 1.7], [s.dur, 1050, 300, 1.8]], lt);
+});
+
+Stage.start();
+</script>
+</body>
+</html>

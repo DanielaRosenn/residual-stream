@@ -1,0 +1,79 @@
+WEBVTT
+
+00:00:00.700 --> 00:00:02.708
+Toki: Vera, does the model read my words?
+
+00:00:03.108 --> 00:00:06.809
+Vera: Not words, not letters. Numbered pieces from a fixed list.
+
+00:00:07.209 --> 00:00:08.720
+Toki: Numbered pieces? Like me?
+
+00:00:09.120 --> 00:00:13.010
+Vera: Like you. Each piece is a token, and the model only sees its number.
+
+00:00:14.610 --> 00:00:15.783
+Toki: Why not just use letters?
+
+00:00:16.183 --> 00:00:19.136
+Vera: The list stays tiny, but every sentence gets very long.
+
+00:00:19.536 --> 00:00:21.199
+Toki: One number per word, then?
+
+00:00:21.599 --> 00:00:24.737
+Vera: Then the list explodes, and any new word is simply unknown.
+
+00:00:26.337 --> 00:00:27.344
+Toki: So what's in between?
+
+00:00:27.744 --> 00:00:32.900
+Vera: Byte-pair encoding. Start from characters, and keep gluing the most frequent neighbouring pair.
+
+00:00:33.300 --> 00:00:35.215
+Toki: So common words end up as one piece?
+
+00:00:35.615 --> 00:00:39.931
+Vera: Right. Here, “learned” is one token, but “unbelievably” stays in pieces.
+
+00:00:40.331 --> 00:00:44.245
+Vera: Real models use lists of about 50,000 to 200,000 pieces.
+
+00:00:45.845 --> 00:00:46.548
+Toki: Why should I care?
+
+00:00:46.948 --> 00:00:51.287
+Vera: Prices, context limits and speed are all counted in tokens, not words.
+
+00:00:51.687 --> 00:00:54.572
+Vera: In English, a token is about four characters on average.
+
+00:00:54.972 --> 00:00:55.628
+Toki: And in Hebrew?
+
+00:00:56.028 --> 00:01:00.530
+Vera: Languages rarer in the training text, like Hebrew, need more tokens for the same meaning.
+
+00:01:00.930 --> 00:01:03.068
+Toki: So the same message costs more and fits less.
+
+00:01:04.668 --> 00:01:06.324
+Toki: Then how many r's are in “strawberry”?
+
+00:01:06.724 --> 00:01:13.160
+Vera: Three. But a chatbot may miscount: it never sees letters, only chunks like str, aw, berry.
+
+00:01:13.560 --> 00:01:15.458
+Toki: So the r's are hidden inside the chunks.
+
+00:01:15.858 --> 00:01:19.097
+Vera: Exactly. Sums with long numbers trip up the same way.
+
+00:01:20.697 --> 00:01:21.949
+Toki: Can I chop some text myself?
+
+00:01:22.349 --> 00:01:25.808
+Vera: Slide the merges in the Tokens chapter, or play Chop Shop in the game.
+
+00:01:26.208 --> 00:01:28.679
+Toki: Eight glues, fewest packets? I'm in.

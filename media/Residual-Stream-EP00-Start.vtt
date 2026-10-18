@@ -1,0 +1,94 @@
+WEBVTT
+
+00:00:00.700 --> 00:00:02.696
+Toki: Vera, how does a chatbot write its answers?
+
+00:00:03.096 --> 00:00:07.640
+Vera: One guess at a time. It predicts the next piece of text, adds it, and goes again.
+
+00:00:08.040 --> 00:00:09.478
+Toki: So it just... guesses?
+
+00:00:09.878 --> 00:00:15.115
+Vera: Very good guesses. Karpathy's framing: it's a next-token predictor, and the rest builds on that.
+
+00:00:16.715 --> 00:00:19.160
+Toki: Next token? That's me! What's a token?
+
+00:00:19.560 --> 00:00:25.360
+Vera: A chunk of text. Common words get one, rarer words several. Each chunk gets an ID number.
+
+00:00:25.760 --> 00:00:27.356
+Toki: Even “token” got chopped up!
+
+00:00:28.956 --> 00:00:29.948
+Toki: So I'm just a number?
+
+00:00:30.348 --> 00:00:36.981
+Vera: Then a long list of numbers: a vector. GPT-3 uses 12,288 of them per token.
+
+00:00:37.381 --> 00:00:43.414
+Vera: As 3Blue1Brown shows, directions mean things: king, minus man, plus woman, lands near queen.
+
+00:00:45.014 --> 00:00:46.973
+Toki: But how does a word know what it refers to?
+
+00:00:47.373 --> 00:00:51.877
+Vera: Attention. Each token looks back at earlier words and asks: who here matters to me?
+
+00:00:52.277 --> 00:00:55.912
+Vera: “The animal didn't cross the street because it was too tired.” Who's tired?
+
+00:00:56.312 --> 00:00:58.262
+Toki: The animal. Streets don't get tired.
+
+00:00:58.662 --> 00:01:03.221
+Vera: Attention makes that link. 3Blue1Brown's attention video shows it beautifully.
+
+00:01:04.821 --> 00:01:05.825
+Toki: Does that happen once?
+
+00:01:06.225 --> 00:01:12.612
+Vera: GPT-2 small has 12 layers, GPT-3 has 96. Each adds a little to the token's vector.
+
+00:01:13.012 --> 00:01:16.104
+Toki: Like a notebook carried upstairs, and every floor adds a note?
+
+00:01:16.504 --> 00:01:20.696
+Vera: Exactly. That running vector is the residual stream, and this guide's name.
+
+00:01:22.296 --> 00:01:24.507
+Toki: And at the top, out pops the next word?
+
+00:01:24.907 --> 00:01:31.799
+Vera: A score for every possible token, turned into probabilities. A dial called temperature makes the pick safer or more adventurous.
+
+00:01:32.199 --> 00:01:33.768
+Toki: Then pick one, add it, and go again.
+
+00:01:35.368 --> 00:01:36.181
+Toki: Who taught it all that?
+
+00:01:36.581 --> 00:01:43.485
+Vera: Training: guess the next token, check the real one, nudge the knobs. GPT-3 has 175 billion of them.
+
+00:01:43.885 --> 00:01:49.059
+Vera: Over a huge pile of text. Karpathy calls the result a kind of lossy compression of the internet.
+
+00:01:49.459 --> 00:01:51.090
+Toki: A blurry zip file of the internet?
+
+00:01:51.490 --> 00:01:54.461
+Vera: Pretty much. So it can sound sure and still be wrong.
+
+00:01:56.061 --> 00:01:57.276
+Toki: Can I try all this myself?
+
+00:01:57.676 --> 00:02:01.969
+Vera: Every demo in the guide runs in your browser. And in the game, you play the model.
+
+00:02:02.369 --> 00:02:03.635
+Toki: Vera, I was born for this.
+
+00:02:04.035 --> 00:02:08.737
+Vera: Inspired by Andrej Karpathy and 3Blue1Brown. Go watch the originals.

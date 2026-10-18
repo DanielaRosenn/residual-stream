@@ -69,7 +69,9 @@ async def main():
             log.append(name+" patch: "+(await pg.inner_text("#patchInfo"))[:120])
             for _ in range(8): await pg.click("#agNext") if not await pg.is_disabled("#agNext") else None
             log.append(name+" gate visible: "+str(await pg.is_visible("#agGate")))
-            await pg.click("#agReject"); await pg.click("#agApprove"); await pg.click("#agNext")
+            await pg.click("#agReject")
+            log.append(name+" gate visible after reject (expect False): "+str(await pg.is_visible("#agGate")))
+            await pg.click("#agNext"); await pg.click("#agApprove"); await pg.click("#agNext")
             log.append(name+" agent: "+await pg.inner_text("#agStats")+" | btn="+await pg.inner_text("#agNext"))
             await pg.fill("#relN","20"); await pg.dispatch_event("#relN","input")
             log.append(name+" rel: "+await pg.inner_text("#relOut"))
@@ -94,6 +96,13 @@ async def main():
                 await pg.click("#pgRole button[data-value=friendly]")
                 await pg.wait_for_selector("#pgAnswer[data-typing=false]", timeout=20000)
                 log.append(name+" playground: made="+str(await pg.get_attribute("#pgHint","data-made"))+" score="+str(await pg.get_attribute("#pgHint","data-score"))+" | "+(await pg.inner_text("#pgAnswer"))[:70])
+                # Video cards: count them, open one, and check the player points at the release and the local subtitles.
+                vids = await pg.locator(".vid-card").count()
+                await pg.click("#vid-tokens .vid-play")
+                src = await pg.get_attribute("#vid-tokens video source", "src")
+                trk = await pg.get_attribute("#vid-tokens video track", "src")
+                await pg.evaluate("document.querySelector('#vid-tokens video').pause()")
+                log.append(f"{name} videos: {vids} cards | {src} | {trk}")
             except Exception as e: log.append(f"{name} TRYIT ERROR: {str(e)[:300]}")
             for sid in SECTIONS:
                 if not await clip(pg, sid, str(SHOTS / f"{TAG}_{name}_{sid}.png"), vp["width"]): log.append(f"{name} deep: no section #{sid}")

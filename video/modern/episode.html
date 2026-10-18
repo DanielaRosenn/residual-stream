@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Residual Stream - EP 09 - What changed since 2017</title>
+<link rel="stylesheet" href="engine/stage.css">
+<style>
+  /* The Residual Stream palette (the site's dark theme), overriding the engine's Flow Show defaults
+     for this episode only - same overrides as EP 01-05 (video/tokens/episode.html):
+     green #158864, dark green #182D2A, mint #81E5AC, light #DEF6EF, yellow #F5C13D. */
+  :root {
+    --panel: rgba(16, 36, 32, 0.95);
+    --text: #DEF6EF;
+    --muted: #93b3a9;
+    --teal: #81E5AC;
+    --yellow: #F5C13D;
+    --orange: #FFA45C;
+    --blue: #86BDEB;
+    --red: #FF8F88;
+    --purple: #C7A8FF;
+    --green: #158864;
+    --deep: #0D483D;
+  }
+  #stage { background: radial-gradient(ellipse at 50% 38%, #24453e 0%, #182D2A 45%, #0c1a17 100%); }
+  .spot.l { background: linear-gradient(180deg, rgba(129,229,172,0.30), rgba(129,229,172,0.02)); }
+  .spot.r { background: linear-gradient(180deg, rgba(245,193,61,0.26), rgba(245,193,61,0.02)); }
+  .floor { background: linear-gradient(180deg, rgba(6,16,14,0) 0%, rgba(6,16,14,0.78) 100%); }
+  #cap { background: rgba(10, 26, 23, 0.95); }
+  .card { border-color: rgba(129,229,172,0.22); }
+  .chip { background: rgba(14, 32, 28, 0.9); }
+  .node { background: rgba(14, 32, 28, 0.96); }
+  .real { background: rgba(10,26,23,0.92); }
+  .note { position: absolute; font-size: 18px; color: var(--muted); font-weight: 500; }
+  .hl.y { border-color: var(--yellow); box-shadow: 0 0 36px rgba(245,193,61,0.55), inset 0 0 24px rgba(245,193,61,0.15); }
+  .hl.y span { background: var(--yellow); color: #0c1a17; }
+  .kind .i .ico { color: #0c1a17; }
+  .kind p { color: #c4ddd5; }
+
+  /* S1: hook */
+  #s1 .kick { color: var(--teal); }
+  #s1 .big { top: 250px; font-size: 112px; }
+  #s1 .sub { top: 412px; }
+  #s1 .demo { left: 430px; top: 486px; width: 1060px; height: 284px; padding: 20px 30px; }
+  #s1 .lbl { font-size: 18px; display: flex; align-items: center; gap: 14px; }
+  #s1 .recipe { margin-top: 10px; font-family: var(--mono); font-size: 23px; color: var(--text); }
+  #s1 .recipe i { font-style: normal; color: var(--muted); margin: 0 8px; }
+  #s1 .badge { font-size: 16px; padding: 2px 12px; border-color: var(--yellow); color: var(--yellow); }
+  #s1 .ideas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
+  #s1 .ideas .chip { font-size: 22px; padding: 8px 18px; }
+  #s1 .ideas .ico { width: 24px; height: 24px; }
+
+  /* S2: the KV cache, the guide's real step-through */
+  #s2 .screen { left: 390px; top: 168px; width: 1140px; height: 300px; }
+  #s2 .kvs { top: 490px; width: 555px; height: 170px; padding: 18px 26px; }
+  #s2 .kvs .row { display: flex; align-items: baseline; gap: 16px; margin-top: 6px; }
+  #s2 .kvs .n { font-size: 84px; font-weight: 800; line-height: 1; }
+  #s2 .kvs .u { font-size: 22px; font-weight: 700; }
+  #s2 .kvs .u small { display: block; font-size: 18px; color: var(--muted); font-weight: 500; margin-top: 4px; }
+  #s2 .bottom { position: absolute; left: 390px; width: 1140px; text-align: center; }
+  #s2 .bottom .chip { font-size: 22px; padding: 9px 20px; }
+  #s2 .bottom .ico { width: 26px; height: 26px; }
+
+  /* S3: mixture of experts, the guide's routing demo */
+  #s3 .screen { left: 390px; top: 168px; width: 1140px; height: 470px; }
+  #s3 .dim { position: absolute; left: 1322px; top: 364px; width: 486px; height: 382px; border-radius: 10px; background: rgba(12,26,22,0.74); }
+  #s3 .kimi { left: 390px; top: 662px; width: 1140px; height: 166px; padding: 16px 28px; border-color: var(--yellow); }
+  #s3 .kimi .lbl { font-size: 18px; }
+  #s3 .bar { display: flex; align-items: center; gap: 18px; margin-top: 14px; }
+  #s3 .bar .t { width: 330px; font-size: 22px; font-weight: 700; }
+  #s3 .bar .t b { color: var(--yellow); }
+  #s3 .track { position: relative; flex: 1; height: 30px; border-radius: 8px; background: rgba(129,229,172,0.08); border: 1.5px solid rgba(129,229,172,0.25); overflow: hidden; }
+  #s3 .track i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; }
+
+  /* S4: long context (left) and reasoning (right) */
+  #s4 .col { top: 168px; width: 555px; height: 520px; padding: 20px 26px; }
+  #s4 .col .lbl { font-size: 18px; }
+  #s4 .col .note { right: 26px; font-size: 17px; }
+  #s4 .bar { display: flex; align-items: center; gap: 14px; margin-top: 16px; }
+  #s4 .bar .t { width: 150px; font-size: 20px; font-weight: 700; }
+  #s4 .bar .v { width: 150px; text-align: right; font-family: var(--mono); font-size: 25px; font-weight: 700; color: var(--yellow); }
+  #s4 .track { position: relative; flex: 1; height: 30px; border-radius: 8px; background: rgba(129,229,172,0.08); border: 1.5px solid rgba(129,229,172,0.25); overflow: hidden; }
+  #s4 .track i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; background: var(--teal); }
+  #s4 .tech { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+  #s4 .tech .chip { font-size: 19px; padding: 7px 14px; border-color: var(--blue); }
+  #s4 .pages { display: flex; gap: 5px; margin-top: 14px; }
+  #s4 .pages span { width: 22px; height: 44px; border-radius: 4px; background: rgba(129,229,172,0.55); }
+  #s4 .cot { margin-top: 8px; font-family: var(--mono); font-size: 22px; line-height: 1.45; height: 128px; }
+  #s4 .cot .ok { color: var(--teal); font-weight: 700; }
+  #s4 .rl { margin-top: 6px; font-size: 21px; font-weight: 600; line-height: 1.35; }
+  #s4 .curve { display: block; margin-top: 4px; width: 500px; height: 200px; }
+
+  /* S5: RAG, tools and agents */
+  #s5 .kind { top: 176px; width: 360px; height: 226px; padding: 20px 24px; }
+  #s5 .kind h4 { font-size: 26px; }
+  #s5 .kind p { font-size: 20px; }
+  #s5 .loopnote { position: absolute; left: 390px; width: 1140px; top: 556px; text-align: center; font-size: 23px; font-weight: 700; color: var(--teal); }
+  #s5 .bottom { position: absolute; left: 390px; width: 1140px; top: 636px; text-align: center; }
+  #s5 .bottom .chip { font-size: 23px; padding: 10px 22px; }
+
+  /* S6: try it yourself */
+  #s6 .title { position: absolute; left: 0; right: 0; top: 120px; text-align: center; font-size: 104px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.05; }
+  #s6 .title small { display: block; font-size: 30px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-top: 14px; }
+  #s6 .url { position: absolute; left: 0; right: 0; top: 322px; text-align: center; }
+  #s6 .url .chip { font-family: var(--mono); font-size: 27px; color: var(--teal); }
+  #s6 .screen { top: 446px; width: 560px; height: 315px; }
+  #s6 .credits { position: absolute; left: 390px; width: 1140px; top: 784px; text-align: center; font-size: 18px; color: var(--muted); font-weight: 500; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- S1: same recipe, tuned almost everywhere -->
+  <section class="scene hero" id="s1">
+    <div class="kick" data-at="0.2">THE RESIDUAL STREAM &middot; EP 09</div>
+    <div class="big" data-at="0.4" data-pop>What changed since <span class="hl-t">2017</span></div>
+    <div class="sub" data-at="0.8">Same recipe, tuned almost everywhere</div>
+    <div class="card demo" data-at="L1@0.25" data-pop>
+      <div class="lbl">THE 2017 RECIPE, STILL UNDERNEATH <span class="badge" data-at="L1@0.75">TUNED SINCE</span></div>
+      <div class="recipe">tokens<i>&rarr;</i>embeddings<i>&rarr;</i>attention + MLP blocks<i>&rarr;</i>next token</div>
+      <div class="lbl" style="margin-top:22px" data-at="L2@0.05">FIVE IDEAS THAT MATTER WHEN YOU BUILD ON LLMs</div>
+      <div class="ideas">
+        <span class="chip" style="border-color:var(--teal)" data-at="L2@0.15" data-pop><span class="ico" style="color:var(--teal)" data-ico="clock"></span>KV cache</span>
+        <span class="chip" style="border-color:var(--yellow)" data-at="L2@0.3" data-pop><span class="ico" style="color:var(--yellow)" data-ico="user"></span>Mixture of experts</span>
+        <span class="chip" style="border-color:var(--blue)" data-at="L2@0.45" data-pop><span class="ico" style="color:var(--blue)" data-ico="doc"></span>Long context</span>
+        <span class="chip" style="border-color:var(--purple)" data-at="L2@0.6" data-pop><span class="ico" style="color:var(--purple)" data-ico="spark"></span>Reasoning</span>
+        <span class="chip" style="border-color:var(--orange)" data-at="L2@0.75" data-pop><span class="ico" style="color:var(--orange)" data-ico="gear"></span>RAG, tools &amp; agents</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- S2: the KV cache, the guide's real step-through after three steps -->
+  <section class="scene" id="s2">
+    <div class="t-title" data-at="0.2">The <span class="hl-t">KV cache</span>: remember, don't redo</div>
+    <div class="screen" data-at="L0@0.3" data-pop>
+      <div class="cam" id="s2a"><img src="shots/02-kv-nocache.png" alt="">
+        <div class="hl y below" style="left:388px; top:469px; width:304px; height:178px" data-at="L1@0.3" data-pop><span>Never change</span></div>
+      </div>
+      <div class="cam" id="s2b"><img src="shots/01-kv-cache.png" alt="">
+        <div class="hl t" style="left:684px; top:513px; width:80px; height:48px" data-at="L1@0.8" data-pop></div>
+        <div class="hl t" style="left:758px; top:555px; width:80px; height:48px" data-at="L1@0.85" data-pop></div>
+        <div class="hl t" style="left:831px; top:597px; width:80px; height:48px" data-at="L1@0.9" data-pop></div>
+        <div class="hl y" style="left:930px; top:402px; width:712px; height:52px" data-at="L2@0.1" data-pop></div>
+      </div>
+    </div>
+    <div class="real" style="left:1340px; top:424px" data-at="L0@0.6">REAL DEMO</div>
+    <div class="card kvs" style="left:390px; border-color:var(--red)" data-at="L2@0.05" data-pop>
+      <div class="lbl">WITHOUT THE CACHE</div>
+      <div class="row"><span class="n" style="color:var(--red)" id="s2n0">0</span><span class="u">key/value computations<small>everything recomputed at every step</small></span></div>
+    </div>
+    <div class="card kvs" style="left:975px; border-color:var(--teal)" data-at="L2@0.3" data-pop>
+      <div class="lbl">WITH THE CACHE</div>
+      <div class="row"><span class="n" style="color:var(--teal)" id="s2n1">0</span><span class="u">key/value computations<small>one new token per step</small></span></div>
+    </div>
+    <div class="bottom" style="top:676px"><span class="chip" style="border-color:var(--teal)" data-at="L3@0.05" data-pop>
+      <span class="ico" style="color:var(--teal)" data-ico="check"></span>Prompt caching: the same idea, for long prompts you send again</span></div>
+    <div class="bottom" style="top:750px"><span class="chip" style="border-color:var(--yellow)" data-at="L3@0.4" data-pop>
+      <span class="ico" style="color:var(--yellow)" data-ico="stop"></span>The catch: the cache fills GPU memory, which often limits users per server</span></div>
+  </section>
+
+  <!-- S3: mixture of experts, the guide's routing demo -->
+  <section class="scene" id="s3">
+    <div class="t-title" data-at="0.2">Mixture of <span class="hl-y">experts</span></div>
+    <div class="screen" data-at="L0@0.5" data-pop>
+      <div class="cam" id="s3a"><img src="shots/03-moe-route.png" alt="">
+        <div class="hl y" style="left:1318px; top:296px; width:306px; height:70px" data-at="L1@0.55" data-pop></div>
+        <div class="hl y" style="left:1318px; top:746px; width:306px; height:70px" data-at="L1@0.6" data-pop></div>
+        <div class="dim" data-at="L1@0.85"></div>
+      </div>
+    </div>
+    <div class="real" style="left:410px; top:592px" data-at="L1@0.1">REAL DEMO &middot; ILLUSTRATIVE ROUTING</div>
+    <div class="card kimi" data-at="L2@0.02" data-pop>
+      <div class="lbl">KIMI K2 &middot; OPEN-WEIGHT MODEL &middot; JULY 2025</div>
+      <div class="bar"><div class="t"><b>&asymp; 1 trillion</b> parameters</div><div class="track"><i id="s3all" style="background:rgba(129,229,172,0.45)"></i></div></div>
+      <div class="bar"><div class="t"><b>32 billion</b> active per token</div><div class="track"><i id="s3act" style="background:var(--yellow)"></i></div></div>
+    </div>
+  </section>
+
+  <!-- S4: long context and reasoning, two cards -->
+  <section class="scene" id="s4">
+    <div class="t-title" data-at="0.2">Longer <span class="hl-b">context</span>, longer <span class="hl-p">thinking</span></div>
+    <div class="card col" style="left:390px; border-color:var(--blue)" data-at="L1@0.02" data-pop>
+      <div class="lbl">CONTEXT WINDOW, ROUGHLY TO SCALE</div>
+      <div class="bar" data-at="L1@0.15"><div class="t">Original GPT</div><div class="track"><i style="width:3px"></i></div><div class="v">512</div></div>
+      <div class="bar" data-at="L1@0.5"><div class="t">Today</div><div class="track"><i id="s4fill"></i></div><div class="v"><span id="s4n">0</span>+</div></div>
+      <div class="lbl" style="margin-top:24px" data-at="L1@0.85">MADE POSSIBLE BY</div>
+      <div class="tech">
+        <span class="chip" data-at="L1@0.88" data-pop>RoPE scaling</span>
+        <span class="chip" data-at="L1@0.92" data-pop>FlashAttention</span>
+        <span class="chip" data-at="L1@0.96" data-pop>Grouped-query attention</span>
+        <span class="chip" data-at="L1@1.0" data-pop>Hybrid designs</span>
+      </div>
+      <div class="lbl" style="margin-top:26px; color:var(--red)" data-at="L2@0.05">A LONG WINDOW IS NOT THE SAME AS USING IT WELL</div>
+      <div class="pages" id="s4pages" data-at="L2@0.1"></div>
+      <div class="note" style="top:432px" data-at="L2@0.5">Illustrative: details in the middle get missed</div>
+    </div>
+    <div class="card col" style="left:975px; border-color:var(--purple)" data-at="L3@0.3" data-pop>
+      <div class="lbl">2022 &middot; CHAIN-OF-THOUGHT</div>
+      <div class="note" style="top:20px">Illustrative example</div>
+      <div class="cot" id="s4cot"></div>
+      <div class="lbl" style="margin-top:12px" data-at="L4@0.5">REASONING MODELS</div>
+      <div class="rl" data-at="L4@0.55">Trained with RL to think at length before answering</div>
+      <div class="lbl" style="margin-top:18px" data-at="L5@0.05">&ldquo;THINKING BUDGET&rdquo; &middot; A PRODUCT SETTING</div>
+      <svg class="curve" viewBox="0 0 500 200" data-at="L5@0.05">
+        <line x1="30" y1="160" x2="490" y2="160" stroke="#93b3a9" stroke-width="2"/>
+        <line x1="30" y1="160" x2="30" y2="10" stroke="#93b3a9" stroke-width="2"/>
+        <text x="490" y="190" text-anchor="end" fill="#93b3a9" font-size="18" font-weight="600">thinking time &rarr;</text>
+        <text x="40" y="22" fill="#93b3a9" font-size="18" font-weight="600">accuracy</text>
+        <text x="470" y="128" text-anchor="end" fill="#93b3a9" font-size="17" font-weight="500">illustrative shape</text>
+        <path id="s4path" d="" fill="none" stroke="#C7A8FF" stroke-width="5" stroke-linecap="round"/>
+        <circle id="s4dot" r="11" fill="#F5C13D"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- S5: RAG, tools and agents -->
+  <section class="scene" id="s5">
+    <div class="t-title" data-at="0.2">Look it up, <span class="hl-y">use tools</span>, loop</div>
+    <div class="card kind" style="left:390px; border-color:var(--blue)" data-at="L1@0.05" data-pop>
+      <div class="i" style="background:var(--blue)"><span class="ico" data-ico="doc"></span></div>
+      <h4>RAG</h4><p>Fresh, relevant documents go into the context. Training knowledge stays frozen.</p></div>
+    <div class="card kind" style="left:780px; border-color:var(--yellow)" data-at="L1@0.5" data-pop>
+      <div class="i" style="background:var(--yellow)"><span class="ico" data-ico="gear"></span></div>
+      <h4>Tools</h4><p>The model writes a structured call. Your code runs it. The result comes back as tokens.</p></div>
+    <div class="card kind" style="left:1170px; border-color:var(--teal)" data-at="L2@0.05" data-pop>
+      <div class="i" style="background:var(--teal)"><span class="ico" data-ico="undo"></span></div>
+      <h4>Agents</h4><p>The same loop, one level up: think, call, read, decide again.</p></div>
+    <div id="s5loop"></div>
+    <div class="loopnote" data-at="L2@0.55">&#8634; and around again, until the task is done</div>
+    <div class="bottom"><span class="chip" style="border-color:var(--teal)" data-at="L2@0.75" data-pop>
+      <span class="ico" style="color:var(--teal)" data-ico="play"></span>Coming up: EP 11 &middot; Agents</span></div>
+  </section>
+
+  <!-- S6: try it yourself -->
+  <section class="scene" id="s6">
+    <div class="title" data-at="0.3" data-pop>The <span class="hl-t">Residual</span> Stream
+      <small>Modern LLMs chapter &middot; step through the KV cache, route a token</small></div>
+    <div class="url"><span class="chip" style="border-color:var(--teal)" data-at="L1@0.1" data-pop>https://danielarosenn.github.io/residual-stream/</span></div>
+    <div class="screen" style="left:390px" data-at="L1@0.25" data-pop>
+      <div class="cam" id="s6a"><img src="shots/01-kv-cache.png" alt=""></div>
+    </div>
+    <div class="screen" style="left:970px" data-at="L1@0.6" data-pop>
+      <div class="cam" id="s6b"><img src="shots/03-moe-route.png" alt=""></div>
+    </div>
+    <div class="real" style="left:390px; top:404px" data-at="L1@0.3">THE KV CACHE</div>
+    <div class="real" style="left:970px; top:404px" data-at="L1@0.65">MIXTURE OF EXPERTS</div>
+    <div class="credits" data-at="L2@0.2">Our own words and pictures; any mistakes are ours.</div>
+  </section>
+
+</div>
+<script src="timeline.js"></script>
+<script src="engine/stage.js"></script>
+<script>
+/* ---------- S2: the guide's KV demo after three "Generate next token" clicks (out/shots-data.json):
+   "Key/value computations so far: 7 (without the cache it would be 22)." ---------- */
+/* the demo panel's controls row, grid and caption: shot x 275-1640, y 392-751; 1140 px wide -> zoom 1.406 */
+const S2_CAM = [[0, 957, 571, 1.406]];
+const KV_WITHOUT = 22, KV_WITH = 7;
+Stage.scene('s2', (lt, s) => {
+  setCam($('#s2a'), S2_CAM, lt);
+  setCam($('#s2b'), S2_CAM, lt);
+  /* "It keeps them": cut from the all-fresh grid to the cached one */
+  $('#s2b').style.opacity = prog(lt, at(s, 1, 0.7), 0.5);
+  countTo($('#s2n0'), KV_WITHOUT, lt, at(s, 2, 0.1), 0.7);
+  countTo($('#s2n1'), KV_WITH, lt, at(s, 2, 0.35), 0.6);
+});
+
+/* ---------- S3: the guide's MoE demo routing "purred" (Experts 8 and 1, top 2 of 8) ---------- */
+/* the token buttons, router and all eight experts: shot x 290-1800, y 215-837; 1140 px wide -> zoom 1.271 */
+const S3_CAM = [[0, 1045, 526, 1.271]];
+const KIMI_ACTIVE = 32 / 1000;   // 32 billion active of about 1 trillion total (the guide's Kimi K2 numbers)
+Stage.scene('s3', (lt, s) => {
+  setCam($('#s3a'), S3_CAM, lt);
+  $('#s3all').style.width = 100 * easeOut(prog(lt, at(s, 2, 0.25), 0.8)) + '%';
+  $('#s3act').style.width = 100 * KIMI_ACTIVE * easeOut(prog(lt, at(s, 2, 0.6), 0.5)) + '%';
+  $('#s3act').style.boxShadow = lt >= at(s, 3, 0.1) ? '0 0 18px rgba(245,193,61,0.9)' : '';
+});
+
+/* ---------- S4: 512 -> a million and more; a written-out sum; the thinking-budget curve ---------- */
+const S4_PAGES = 20;
+$('#s4pages').innerHTML = Array.from({ length: S4_PAGES }, (_, i) => `<span id="s4p${i}"></span>`).join('');
+const S4_COT = ['17 × 24 = ?', '17 × 20 = 340', '17 × 4 = 68', '340 + 68 = 408'];
+const S4_X0 = 30, S4_X1 = 480, S4_Y0 = 160, S4_Y1 = 36;    // the curve's box in the SVG viewBox
+const s4curve = u => [S4_X0 + (S4_X1 - S4_X0) * u, S4_Y0 - (S4_Y0 - S4_Y1) * (1 - Math.exp(-3 * u)) / (1 - Math.exp(-3))];
+$('#s4path').setAttribute('d', 'M' + Array.from({ length: 41 }, (_, i) => s4curve(i / 40).map(v => v.toFixed(1)).join(' ')).join(' L'));
+Stage.scene('s4', (lt, s) => {
+  const t0 = at(s, 1, 0.5);
+  $('#s4fill').style.width = 100 * easeOut(prog(lt, t0, 1.0)) + '%';
+  countTo($('#s4n'), 1000000, lt, t0, 1.0, v => Math.round(v).toLocaleString('en-US'));
+  /* "the middle still gets missed": the middle pages fade */
+  const k = prog(lt, at(s, 2, 0.6), 0.7);
+  for (let i = 0; i < S4_PAGES; i++) {
+    const mid = 1 - Math.abs((i - (S4_PAGES - 1) / 2) / ((S4_PAGES - 1) / 2));   // 0 at the ends, 1 in the middle
+    $('#s4p' + i).style.opacity = 1 - 0.85 * k * Math.min(1, mid * 1.6);
+  }
+  /* "Writing out steps helps": the sum, one step per line */
+  const a = at(s, 4, 0.0), b = at(s, 4, 0.45), d = (b - a) / S4_COT.length;
+  typeLines($('#s4cot'), S4_COT.map((t, i) => [t, a + i * d, a + (i + 0.8) * d, i === S4_COT.length - 1 ? 'ok' : '']), lt);
+  /* "Accuracy grows with thinking time": the dot climbs the curve */
+  const u = 0.06 + 0.88 * easeInOut(prog(lt, at(s, 5, 0.1), Math.max(0.5, at(s, 5, 0.7) - at(s, 5, 0.1))));
+  const [x, y] = s4curve(u);
+  $('#s4dot').setAttribute('cx', x);
+  $('#s4dot').setAttribute('cy', y);
+});
+
+/* ---------- S5: the agent loop ---------- */
+const S5_LOOP = [['Think', 'spark', '--purple'], ['Call a tool', 'gear', '--yellow'], ['Read the result', 'doc', '--blue'], ['Decide again', 'undo', '--teal']];
+buildChain($('#s5loop'), 's5', S5_LOOP, { w: 250, gap: 46, y: 440, h: 88 });
+Stage.scene('s5', (lt, s) => {
+  runChain('s5', S5_LOOP, [at(s, 1, 0.55), at(s, 1, 0.7), at(s, 1, 0.9), at(s, 2, 0.2)], lt);
+  /* the connector tracks stay hidden until the chain starts, so the stage is clean while Toki asks */
+  $$('#s5loop .conn').forEach(c => { c.style.opacity = prog(lt, at(s, 1, 0.5), 0.3); });
+});
+
+/* ---------- S6: try it yourself ---------- */
+Stage.scene('s6', (lt, s) => {
+  Stage.spotlight(prog(lt, 0.2, 1.2));
+  setCam($('#s6a'), [[0, 700, 560, 2.2], [s.dur, 700, 560, 2.3]], lt);
+  setCam($('#s6b'), [[0, 1000, 540, 1.4], [s.dur, 1000, 540, 1.5]], lt);
+});
+
+Stage.start();
+</script>
+</body>
+</html>

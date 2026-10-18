@@ -1,0 +1,74 @@
+{
+  "brand": "The Residual Stream &middot; EP 07 &middot; Sampling",
+  "output": "Residual-Stream-EP07-Sampling.mp4",
+  "voices": {
+    "VERA": { "voice": "en-GB-SoniaNeural", "rate": "+18%", "pitch": "+0Hz" },
+    "TOKI": { "voice": "en-US-BrianNeural", "rate": "+20%", "pitch": "+4Hz" }
+  },
+  "cast": { "L": "VERA", "R": "TOKI" },
+  "scenes": [
+    {
+      "id": "s1",
+      "lines": [
+        { "who": "TOKI", "text": "Vera, who actually picks the next word?" },
+        { "who": "VERA", "text": "Nobody, yet. The network gives every token a score: a logit." },
+        { "who": "VERA", "text": "Then a separate, simple step chooses one: the sampler." },
+        { "who": "TOKI", "text": "So the network scores, and the sampler picks." }
+      ]
+    },
+    {
+      "id": "s2",
+      "lines": [
+        { "who": "TOKI", "text": "But a score isn't a chance." },
+        { "who": "VERA", "text": "Softmax makes them probabilities that add up to one. “Practice” gets almost 32%.",
+          "say": "Softmax makes them probabilities that add up to one. Practice gets almost thirty-two percent." },
+        { "who": "TOKI", "text": "From a real model?" },
+        { "who": "VERA", "text": "Hand-set words and scores. Real maths." }
+      ]
+    },
+    {
+      "id": "s3",
+      "lines": [
+        { "who": "TOKI", "text": "And the “creativity” setting in AI tools?", "say": "And the creativity setting in A I tools?" },
+        { "who": "VERA", "text": "Temperature. The scores are divided by it before softmax." },
+        { "who": "VERA", "text": "Turn it down: the favourite takes over. At zero, always the top token." },
+        { "who": "TOKI", "text": "Reliable!" },
+        { "who": "VERA", "text": "Repeatable. Also dull, and prone to loops. Turn it up: the bars flatten." },
+        { "who": "TOKI", "text": "So even “banana” gets a chance? Chaos.", "say": "So even banana gets a chance? Chaos." }
+      ]
+    },
+    {
+      "id": "s4",
+      "lines": [
+        { "who": "TOKI", "text": "How do you keep the nonsense out?" },
+        { "who": "VERA", "text": "Cut the long tail. Top-k keeps a fixed number, say three.",
+          "say": "Cut the long tail. Top K keeps a fixed number, say three." },
+        { "who": "VERA", "text": "Top-p keeps the smallest set adding up to 80%.",
+          "say": "Top P keeps the smallest set adding up to eighty percent." },
+        { "who": "TOKI", "text": "What's the difference?" },
+        { "who": "VERA", "text": "Top-p adapts. Sure, like “Paris”: one word. Unsure: more.",
+          "say": "Top P adapts. Sure, like Paris: one word. Unsure: more." }
+      ]
+    },
+    {
+      "id": "s5",
+      "lines": [
+        { "who": "TOKI", "text": "Say it picks “practice”. Then what?", "say": "Say it picks practice. Then what?" },
+        { "who": "VERA", "text": "The pick joins the text, and the whole model runs again." },
+        { "who": "TOKI", "text": "The whole model? Every time?" },
+        { "who": "VERA", "text": "Every token. That's autoregressive generation.",
+          "say": "Every token. That's auto-regressive generation." },
+        { "who": "TOKI", "text": "So that's why answers appear word by word!" }
+      ]
+    },
+    {
+      "id": "s6",
+      "lines": [
+        { "who": "TOKI", "text": "Vera, can I turn these dials myself?" },
+        { "who": "VERA", "text": "Drag them in the Sampling chapter, or play The Dial in the game: you're the sampler." },
+        { "who": "TOKI", "text": "Mission one: “make it boring”. Finally, something I'm good at.",
+          "say": "Mission one: make it boring. Finally, something I'm good at." }
+      ]
+    }
+  ]
+}

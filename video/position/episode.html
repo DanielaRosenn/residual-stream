@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Residual Stream - EP 04 - Where is each token?</title>
+<link rel="stylesheet" href="engine/stage.css">
+<style>
+  /* The Residual Stream palette (the site's dark theme), overriding the engine's Flow Show defaults
+     for this episode only - same overrides as EP 02 (video/tokens/episode.html):
+     green #158864, dark green #182D2A, mint #81E5AC, light #DEF6EF, yellow #F5C13D. */
+  :root {
+    --panel: rgba(16, 36, 32, 0.95);
+    --text: #DEF6EF;
+    --muted: #93b3a9;
+    --teal: #81E5AC;
+    --yellow: #F5C13D;
+    --orange: #FFA45C;
+    --blue: #86BDEB;
+    --red: #FF8F88;
+    --purple: #C7A8FF;
+    --green: #158864;
+    --deep: #0D483D;
+  }
+  #stage { background: radial-gradient(ellipse at 50% 38%, #24453e 0%, #182D2A 45%, #0c1a17 100%); }
+  .spot.l { background: linear-gradient(180deg, rgba(129,229,172,0.30), rgba(129,229,172,0.02)); }
+  .spot.r { background: linear-gradient(180deg, rgba(245,193,61,0.26), rgba(245,193,61,0.02)); }
+  .floor { background: linear-gradient(180deg, rgba(6,16,14,0) 0%, rgba(6,16,14,0.78) 100%); }
+  #cap { background: rgba(10, 26, 23, 0.95); }
+  .card { border-color: rgba(129,229,172,0.22); }
+  .chip { background: rgba(14, 32, 28, 0.9); }
+  .node { background: rgba(14, 32, 28, 0.96); }
+  .real { background: rgba(10,26,23,0.92); }
+  .note { position: absolute; font-size: 18px; color: var(--muted); font-weight: 500; }
+  .hl.y { border-color: var(--yellow); box-shadow: 0 0 36px rgba(245,193,61,0.55), inset 0 0 24px rgba(245,193,61,0.15); }
+  .cam.over { pointer-events: none; }
+
+  /* token tile, as in EP 01's s2 and EP 02 */
+  .tok { display: inline-flex; flex-direction: column; align-items: center; padding: 6px 14px 4px; border-radius: 12px; border: 2.5px solid var(--teal);
+    background: rgba(13,72,61,0.85); font-family: var(--mono); font-size: 29px; font-weight: 600; color: var(--text); }
+  .tok i { font-style: normal; font-size: 19px; color: var(--yellow); margin-top: 2px; }
+
+  /* S1: hook - word order, and attention that cannot see it */
+  #s1 .kick { color: var(--teal); }
+  #s1 .big { top: 250px; font-size: 120px; }
+  #s1 .sub { top: 410px; }
+  #s1 .ex { top: 486px; width: 540px; height: 200px; padding: 18px 28px; }
+  #s1 .ex .row { position: relative; height: 120px; margin-top: 14px; }
+  #s1 .ex .tok { position: absolute; top: 18px; width: 140px; height: 76px; justify-content: center; }
+  #s1 .eq { position: absolute; left: 934px; width: 52px; top: 548px; text-align: center; font-size: 64px; font-weight: 800; line-height: 1; }
+  #s1 .msg { position: absolute; left: 0; right: 0; top: 714px; text-align: center; }
+  #s1 .msg .chip { font-size: 23px; padding: 10px 22px; }
+
+  /* S2: the sinusoidal pattern, the guide's real heatmap */
+  #s2 .screen { left: 390px; top: 176px; width: 760px; height: 434px; }
+  #s2 .under { position: absolute; top: 628px; font-size: 20px; font-weight: 800; letter-spacing: 1.5px; }
+  #s2 .info { left: 1180px; width: 350px; height: 124px; padding: 16px 22px; }
+  #s2 .info h4 { font-size: 25px; font-weight: 800; }
+  #s2 .info p { font-size: 19px; color: #c4ddd5; margin-top: 6px; }
+  #s2 .clock { left: 1180px; top: 456px; width: 350px; height: 340px; padding: 16px 22px; border-color: var(--yellow); }
+  #s2 .clock svg { display: block; margin: 8px auto 0; }
+  #s2 .clock .lg { font-size: 19px; font-weight: 600; margin-top: 6px; }
+  #s2 .clock .lg b { font-weight: 800; }
+  #s2 .clock .note { right: 22px; top: 18px; font-size: 17px; }
+
+  /* S3: similarity curve, the guide's real demo */
+  #s3 .screen { left: 410px; top: 176px; width: 1100px; height: 353px; }
+  #s3 .cmp { top: 556px; width: 535px; height: 120px; padding: 16px 24px; }
+  #s3 .cmp h4 { font-size: 26px; font-weight: 800; margin-top: 8px; }
+  #s3 .msg { position: absolute; left: 0; right: 0; top: 706px; text-align: center; }
+  #s3 .msg .chip { font-size: 23px; padding: 10px 22px; }
+
+  /* S4: RoPE, the guide's real circles */
+  #s4 .screen { left: 390px; top: 172px; width: 1140px; height: 426px; }
+  #s4 .gap { left: 390px; top: 620px; width: 590px; height: 214px; padding: 14px 22px; }
+  #s4 .gap svg { position: absolute; left: 18px; top: 18px; }
+  #s4 .gap .txt { position: absolute; left: 222px; top: 20px; right: 20px; }
+  #s4 .gap .q { font-family: var(--mono); font-size: 22px; font-weight: 700; margin-top: 12px; }
+  #s4 .gap .g { font-size: 24px; font-weight: 800; color: var(--yellow); margin-top: 10px; }
+  #s4 .gap .s { font-size: 19px; color: #c4ddd5; margin-top: 8px; }
+  #s4 .rel { left: 1000px; top: 620px; width: 530px; height: 214px; padding: 18px 24px; border-color: var(--teal); }
+  #s4 .rel h4 { font-size: 28px; font-weight: 800; margin-top: 10px; line-height: 1.25; }
+  #s4 .rel p { font-size: 19px; color: #c4ddd5; margin-top: 10px; }
+
+  /* S5: stretched for long contexts */
+  #s5 .track { left: 390px; top: 190px; width: 1140px; height: 440px; padding: 18px 30px; }
+  #s5 .track svg { position: absolute; left: 30px; top: 70px; }
+  #s5 .track .note { right: 30px; top: 18px; font-size: 17px; }
+  #s5 .msg { position: absolute; left: 0; right: 0; top: 670px; text-align: center; }
+  #s5 .msg .chip { font-size: 23px; padding: 10px 22px; }
+
+  /* S6: try it yourself */
+  #s6 .title { position: absolute; left: 0; right: 0; top: 120px; text-align: center; font-size: 104px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.05; }
+  #s6 .title small { display: block; font-size: 30px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-top: 14px; }
+  #s6 .url { position: absolute; left: 0; right: 0; top: 322px; text-align: center; }
+  #s6 .url .chip { font-family: var(--mono); font-size: 27px; color: var(--teal); }
+  #s6 .screen { top: 446px; width: 560px; height: 315px; }
+  #s6 .credits { position: absolute; left: 390px; width: 1140px; top: 784px; text-align: center; font-size: 18px; color: var(--muted); font-weight: 500; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- S1: attention alone sees a set; the model must be told the order -->
+  <section class="scene hero" id="s1">
+    <div class="kick" data-at="0.2">THE RESIDUAL STREAM &middot; EP 04</div>
+    <div class="big" data-at="0.4" data-pop>Where is each <span class="hl-t">token?</span></div>
+    <div class="sub" data-at="0.8">Position: how a model knows the order of the words</div>
+    <div class="card ex" style="left:384px" data-at="L0@0.3" data-pop>
+      <div class="lbl">SENTENCE A</div>
+      <div class="row" id="s1a"></div>
+    </div>
+    <div class="card ex" style="left:996px" data-at="L0@0.6" data-pop>
+      <div class="lbl">SENTENCE B</div>
+      <div class="row" id="s1b"></div>
+    </div>
+    <div class="eq" id="s1eq">=</div>
+    <div class="msg" id="s1m1"><span class="chip" style="border-color:var(--red); color:var(--red)">
+      <span class="ico" data-ico="stop"></span>Attention alone: same tokens, same results, in any order</span></div>
+    <div class="msg" id="s1m2"><span class="chip" style="border-color:var(--teal)">
+      <span class="ico" style="color:var(--teal)" data-ico="check"></span>So every token is told where it sits</span></div>
+  </section>
+
+  <!-- S2: the original trick, a fixed pattern of sines and cosines (the guide's real heatmap) -->
+  <section class="scene" id="s2">
+    <div class="t-title" data-at="0.2">Add a pattern of <span class="hl-t">sines and cosines</span></div>
+    <div class="screen" data-at="L0@0.4" data-pop>
+      <div class="cam" id="s2cam"><img src="shots/01-pe-pos20.png" alt="">
+        <div class="hl y" id="s2row" style="left:276px; top:262px; width:830px; height:30px"></div>
+        <div class="hl t" id="s2fast" style="left:278px; top:142px; width:206px; height:420px"></div>
+        <div class="hl y" id="s2slow" style="left:818px; top:142px; width:288px; height:420px"></div>
+      </div>
+    </div>
+    <div class="real" style="left:706px; top:628px" data-at="L0@0.7">REAL DEMO</div>
+    <div class="under" style="left:398px; color:var(--teal)" data-at="L3@0.3">&larr; FAST PAIRS</div>
+    <div class="under" style="left:960px; color:var(--yellow)" data-at="L3@0.65">SLOW PAIRS &rarr;</div>
+    <div class="card info" style="top:176px" data-at="L2@0.1" data-pop>
+      <h4>Row = a position</h4><p>Positions 0 to 63, top to bottom</p></div>
+    <div class="card info" style="top:316px" data-at="L2@0.5" data-pop>
+      <h4>Column pair = a wave</h4><p>A sine and a cosine, each pair at its own speed</p></div>
+    <div class="card clock" data-at="L4@0.15" data-pop>
+      <div class="lbl">LIKE A CLOCK</div>
+      <div class="note">Illustrative</div>
+      <svg width="190" height="190" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="90" fill="rgba(13,72,61,0.6)" stroke="rgba(129,229,172,0.5)" stroke-width="4"/>
+        <g id="s2ticks"></g>
+        <line id="s2slowHand" x1="100" y1="100" x2="100" y2="48" stroke="#F5C13D" stroke-width="10" stroke-linecap="round"/>
+        <line id="s2fastHand" x1="100" y1="100" x2="100" y2="24" stroke="#81E5AC" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="100" cy="100" r="7" fill="#DEF6EF"/>
+      </svg>
+      <div class="lg" data-at="L4@0.25"><b class="hl-t">Fast hand:</b> tells neighbours apart</div>
+      <div class="lg" data-at="L4@0.45"><b class="hl-y">Slow hand:</b> the rough place</div>
+    </div>
+  </section>
+
+  <!-- S3: nearby positions look alike; the shape depends on distance (the guide's real curve) -->
+  <section class="scene" id="s3">
+    <div class="t-title" data-at="0.2">Neighbours look <span class="hl-t">alike</span></div>
+    <div class="screen" data-at="L0@0.5" data-pop>
+      <div class="cam" id="s3a"><img src="shots/01-pe-pos20.png" alt=""></div>
+      <div class="cam" id="s3b"><img src="shots/03-pe-pos45.png" alt=""></div>
+      <div class="cam over" id="s3o">
+        <div class="hl t" id="s3h20" style="left:1296px; top:142px; width:134px; height:118px"></div>
+        <div class="hl y" id="s3h45" style="left:1540px; top:142px; width:134px; height:118px"></div>
+      </div>
+    </div>
+    <div class="real" style="left:1350px; top:470px" data-at="L0@0.8">REAL DEMO</div>
+    <div class="card cmp" id="s3c0" style="left:410px" data-at="L1@0.55" data-pop>
+      <div class="lbl">SIMILARITY TO POSITION 20</div><h4>Peak at 20, neighbours close behind</h4></div>
+    <div class="card cmp" id="s3c1" style="left:975px" data-at="L2@0.5" data-pop>
+      <div class="lbl">SIMILARITY TO POSITION 45</div><h4>The same shape, shifted 25 places</h4></div>
+    <div class="msg"><span class="chip" style="border-color:var(--teal)" data-at="L3@0.35" data-pop>
+      <span class="ico" style="color:var(--teal)" data-ico="search"></span>It depends on distance, not on absolute place</span></div>
+  </section>
+
+  <!-- S4: RoPE, rotate the query and key (the guide's real circles, Deep mode) -->
+  <section class="scene" id="s4">
+    <div class="t-title" data-at="0.2">Modern models <span class="hl-y">rotate</span> instead</div>
+    <div class="screen" data-at="L0@0.5" data-pop>
+      <div class="cam" id="s4a"><img src="shots/04-rope-0.png" alt=""></div>
+      <div class="cam" id="s4b"><img src="shots/05-rope-3.png" alt=""></div>
+      <div class="cam" id="s4c"><img src="shots/06-rope-12.png" alt=""></div>
+      <div class="cam" id="s4d"><img src="shots/07-rope-40.png" alt=""></div>
+      <div class="cam over" id="s4o">
+        <div class="hl t" id="s4h0" style="left:620px; top:172px; width:220px; height:262px"></div>
+        <div class="hl t" id="s4h1" style="left:935px; top:172px; width:220px; height:262px"></div>
+        <div class="hl y" id="s4h2" style="left:1250px; top:172px; width:220px; height:262px"></div>
+      </div>
+    </div>
+    <div class="real" style="left:1370px; top:186px" data-at="L0@0.8">REAL DEMO</div>
+    <div class="card gap" data-at="L3@0.6" data-pop>
+      <svg width="190" height="190" viewBox="0 0 180 180">
+        <circle cx="90" cy="90" r="74" fill="rgba(13,72,61,0.5)" stroke="rgba(129,229,172,0.35)" stroke-width="3"/>
+        <path id="s4arc" fill="none" stroke="#F5C13D" stroke-width="5" stroke-linecap="round"/>
+        <line id="s4q" x1="90" y1="90" stroke="#81E5AC" stroke-width="6" stroke-linecap="round"/>
+        <line id="s4k" x1="90" y1="90" stroke="#86BDEB" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="90" cy="90" r="6" fill="#DEF6EF"/>
+      </svg>
+      <div class="txt">
+        <div class="lbl">ONLY THE GAP COUNTS &middot; ILLUSTRATIVE</div>
+        <div class="q"><span class="hl-t">query</span> at <span id="s4pq">3</span> &middot; <span class="hl-b">key</span> at <span id="s4pk">7</span></div>
+        <div class="g">Gap: 4 positions</div>
+        <div class="s">Turn both together: the angle between them stays the same</div>
+      </div>
+    </div>
+    <div class="card rel" data-at="L4@0.45" data-pop>
+      <div class="lbl">ROPE &middot; 2021</div>
+      <h4>Relative distance, seen directly</h4>
+      <p>It rotates the query and key; nothing is added to the token itself.</p>
+    </div>
+  </section>
+
+  <!-- S5: one consequence - stretched for very long contexts -->
+  <section class="scene" id="s5">
+    <div class="t-title" data-at="0.2">Stretched for <span class="hl-y">long contexts</span></div>
+    <div class="card track" data-at="L0@0.3" data-pop>
+      <div class="lbl" id="s5lbl">THE POSITION SIGNAL</div>
+      <div class="note">Illustrative</div>
+      <svg width="1080" height="340" viewBox="0 0 1080 340">
+        <path id="s5wave" fill="none" stroke="#81E5AC" stroke-width="5" stroke-linecap="round"/>
+        <g id="s5tiles"></g>
+        <path id="s5br0" fill="none" stroke="#93b3a9" stroke-width="3"/>
+        <text id="s5t0" x="180" y="330" text-anchor="middle" fill="#93b3a9" style="font: 600 21px 'Segoe UI', sans-serif">lengths seen in training</text>
+        <path id="s5br1" fill="none" stroke="#F5C13D" stroke-width="3"/>
+        <text id="s5t1" x="720" y="330" text-anchor="middle" fill="#F5C13D" style="font: 700 21px 'Segoe UI', sans-serif">a much longer context</text>
+      </svg>
+    </div>
+    <div class="msg"><span class="chip" style="border-color:var(--yellow)" data-at="L1@0.55" data-pop>
+      <span class="ico" style="color:var(--yellow)" data-ico="rocket"></span>One of the pieces stretched to make very long contexts possible</span></div>
+  </section>
+
+  <!-- S6: try it yourself -->
+  <section class="scene" id="s6">
+    <div class="title" data-at="0.3" data-pop>The <span class="hl-t">Residual</span> Stream
+      <small>Position chapter &middot; drag the position slider</small></div>
+    <div class="url"><span class="chip" style="border-color:var(--teal)" data-at="L1@0.1" data-pop>https://danielarosenn.github.io/residual-stream/</span></div>
+    <div class="screen" style="left:390px" data-at="L1@0.25" data-pop>
+      <div class="cam" id="s6a"><img src="shots/01-pe-pos20.png" alt=""></div>
+    </div>
+    <div class="screen" style="left:970px" data-at="L1@0.65" data-pop>
+      <div class="cam" id="s6b"><img src="shots/07-rope-40.png" alt=""></div>
+    </div>
+    <div class="real" style="left:390px; top:404px" data-at="L1@0.3">THE POSITION CHAPTER</div>
+    <div class="real" style="left:970px; top:404px" data-at="L1@0.7">DEEP MODE &middot; ROPE</div>
+    <div class="credits" data-at="L2@0.2">Our own words and pictures; any mistakes are ours.</div>
+  </section>
+
+</div>
+<script src="timeline.js"></script>
+<script src="engine/stage.js"></script>
+<script>
+/* ---------- S1: "dog bites man" vs "man bites dog"; attention alone sees the same set ---------- */
+const S1_SLOT = 160;               // px between tile slots in a card
+const S1_ARC = 34;                 // px the swapping tiles lift / dip so they pass each other
+const S1_MOVE = 0.8;               // s a reorder takes
+const S1_A = ['dog', 'bites', 'man'];
+const S1_B = ['man', 'bites', 'dog'];
+const tiles = (id, words) => words.map((w, i) =>
+  `<div class="tok" id="${id}${i}" style="left:${i * S1_SLOT}px">${w}<i id="${id}p${i}">pos ${i}</i></div>`).join('');
+$('#s1a').innerHTML = tiles('s1a', S1_A);
+$('#s1b').innerHTML = tiles('s1b', S1_B);
+Stage.scene('s1', (lt, s) => {
+  /* "treats the tokens as a set": sentence B's tiles slide into A's order; "told where each sits": back, with positions */
+  const set0 = at(s, 1, 0.55), back0 = at(s, 3, 0.5);
+  const k = easeInOut(prog(lt, set0, S1_MOVE)) - easeInOut(prog(lt, back0, S1_MOVE));
+  const lift = Math.sin(Math.PI * k) * S1_ARC;
+  $('#s1b0').style.transform = `translate(${2 * S1_SLOT * k}px, ${-lift}px)`;   // man -> last slot and back
+  $('#s1b2').style.transform = `translate(${-2 * S1_SLOT * k}px, ${lift}px)`;   // dog -> first slot and back
+  $('#s1b1').style.transform = '';
+  /* position labels appear once B is back in its own order */
+  const kp = prog(lt, back0 + S1_MOVE * 0.7, 0.4);
+  [0, 1, 2].forEach(i => { $('#s1ap' + i).style.opacity = kp; $('#s1bp' + i).style.opacity = kp; });
+  /* "=" while the two look identical, then a "not equal" once positions are added */
+  const eq = $('#s1eq'), after = lt >= back0 + S1_MOVE * 0.7;
+  eq.textContent = after ? '≠' : '=';
+  eq.style.color = after ? 'var(--teal)' : 'var(--yellow)';
+  eq.style.opacity = after ? kp : prog(lt, set0 + S1_MOVE * 0.7, 0.3);
+  reveal($('#s1m1'), Math.min(prog(lt, at(s, 1, 0.85), 0.35), 1 - prog(lt, back0 - 0.3, 0.3)), true);
+  reveal($('#s1m2'), prog(lt, back0 + S1_MOVE, 0.35), true);
+});
+
+/* ---------- S2: the guide's sinusoidal heatmap (64 dims, positions 0-63, row 20 outlined) ---------- */
+/* heatmap + its caption span shot x 270-1110, y 136-616; at 2.29x the 760x434 screen shows exactly that,
+   so the camera pushes in from 2.2x to 2.29x over the scene */
+const S2_FAST_TURN = 2.0;          // s per turn of the illustrative clock's fast hand
+const S2_RATIO = 12;               // the slow hand turns 12 times slower, as on a clock
+$('#s2ticks').innerHTML = [...Array(12)].map((_, i) => {
+  const a = i * Math.PI / 6, x1 = 100 + 78 * Math.sin(a), y1 = 100 - 78 * Math.cos(a), x2 = 100 + 88 * Math.sin(a), y2 = 100 - 88 * Math.cos(a);
+  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="rgba(222,246,239,0.6)" stroke-width="3"/>`;
+}).join('');
+Stage.scene('s2', (lt, s) => {
+  setCam($('#s2cam'), [[0, 690, 376, 2.2], [s.dur, 690, 376, 2.29]], lt);
+  /* "each row is one position" -> the outlined row; then fast (left) and slow (right) columns */
+  reveal($('#s2row'), Math.min(prog(lt, at(s, 2, 0.1), 0.35), 1 - prog(lt, at(s, 3, 0.1), 0.3)), true);
+  reveal($('#s2fast'), prog(lt, at(s, 3, 0.25), 0.35), true);
+  reveal($('#s2slow'), prog(lt, at(s, 3, 0.6), 0.35), true);
+  /* the clock hands turn from when the clock appears */
+  const t = Math.max(0, lt - at(s, 4, 0.15));
+  const fast = 360 * t / S2_FAST_TURN, slow = 300 + fast / S2_RATIO;
+  $('#s2fastHand').setAttribute('transform', `rotate(${fast} 100 100)`);
+  $('#s2slowHand').setAttribute('transform', `rotate(${slow} 100 100)`);
+});
+
+/* ---------- S3: the guide's similarity curve for position 20, then 45 (same scroll position in both shots) ---------- */
+/* the curve canvas incl. its axis labels spans shot x 1110-1815, y 140-366; 2.72x fills the 1100x353 screen */
+const S3_CAM = [[0, 1462, 253, 2.72]];
+Stage.scene('s3', (lt, s) => {
+  ['#s3a', '#s3b', '#s3o'].forEach(id => setCam($(id), S3_CAM, lt));
+  const sw = at(s, 2, 0.45);
+  $('#s3b').style.opacity = prog(lt, sw, 0.5);
+  reveal($('#s3h20'), Math.min(prog(lt, at(s, 1, 0.6), 0.35), 1 - prog(lt, sw, 0.3)), true);
+  reveal($('#s3h45'), prog(lt, sw + 0.4, 0.35), true);
+  /* the card for the state on screen glows */
+  const cur = lt >= sw ? 1 : 0;
+  [0, 1].forEach(i => {
+    const c = $('#s3c' + i);
+    c.style.borderColor = i === cur ? (i ? 'var(--yellow)' : 'var(--teal)') : 'rgba(129,229,172,0.22)';
+    c.style.boxShadow = i === cur ? '0 0 22px rgba(129,229,172,0.35)' : '';
+  });
+});
+
+/* ---------- S4: the guide's RoPE circles at positions 0, 3, 12 and 40 (the slider's maximum) ---------- */
+/* the panel (slider row + three circles + their angle labels) spans shot x 560-1530, y 78-440 */
+const S4_CAM = [[0, 1045, 259, 1.98]];
+const S4_OMEGA = 0.35;             // rad per position for the illustrative gap dial (not the demo's frequencies)
+const S4_GAP = 4;                  // positions between query and key in the illustration
+const S4_R = 66;                   // arrow length in the gap dial's viewBox
+Stage.scene('s4', (lt, s) => {
+  ['#s4a', '#s4b', '#s4c', '#s4d', '#s4o'].forEach(id => setCam($(id), S4_CAM, lt));
+  $('#s4b').style.opacity = prog(lt, at(s, 1, 0.55), 0.4);
+  $('#s4c').style.opacity = prog(lt, at(s, 2, 0.3), 0.4);
+  $('#s4d').style.opacity = prog(lt, at(s, 2, 0.75), 0.4);
+  /* "a fast pair, a medium pair, a slow pair" */
+  reveal($('#s4h0'), prog(lt, at(s, 2, 0.5), 0.3), true);
+  reveal($('#s4h1'), prog(lt, at(s, 2, 0.66), 0.3), true);
+  reveal($('#s4h2'), prog(lt, at(s, 2, 0.84), 0.3), true);
+  /* gap dial: query at 3 and key at 7, then both slide to 10 and 14 - the angle between them never changes */
+  const pq = 3 + 7 * easeInOut(prog(lt, at(s, 4, 0.05), 1.6));
+  const aq = -S4_OMEGA * pq, ak = -S4_OMEGA * (pq + S4_GAP);       // negative: counter-clockwise on screen
+  const pt = (a, r) => [90 + r * Math.cos(a), 90 + r * Math.sin(a)];
+  const [qx, qy] = pt(aq, S4_R), [kx, ky] = pt(ak, S4_R), [ax, ay] = pt(aq, 40), [bx, by] = pt(ak, 40);
+  $('#s4q').setAttribute('x2', qx); $('#s4q').setAttribute('y2', qy);
+  $('#s4k').setAttribute('x2', kx); $('#s4k').setAttribute('y2', ky);
+  $('#s4arc').setAttribute('d', `M${ax},${ay} A40,40 0 0 0 ${bx},${by}`);
+  $('#s4pq').textContent = Math.round(pq);
+  $('#s4pk').textContent = Math.round(pq) + S4_GAP;
+});
+
+/* ---------- S5: illustrative - the position signal stretched over a much longer context ---------- */
+const S5_W = 1080;                 // svg width
+const S5_TRAIN = 360;              // svg px of the "seen in training" stretch (one third of the track)
+const S5_TILE = 30;                // svg px per token tile slot
+const S5_WAVES = 3;                // the wave always fits three periods: stretching lowers its frequency
+$('#s5tiles').innerHTML = [...Array(S5_W / S5_TILE)].map((_, i) =>
+  `<rect id="s5k${i}" x="${i * S5_TILE + 3}" y="210" width="${S5_TILE - 6}" height="44" rx="6" fill="rgba(13,72,61,0.85)" stroke="#81E5AC" stroke-width="2.5"/>`).join('');
+Stage.scene('s5', (lt, s) => {
+  const k = easeInOut(prog(lt, at(s, 1, 0.2), 2.2));
+  const ext = S5_TRAIN + (S5_W - S5_TRAIN) * k, lam = ext / S5_WAVES;
+  let d = '';
+  for (let x = 0; x <= ext; x += 6) d += `${x ? 'L' : 'M'}${x},${(110 - 70 * Math.sin(2 * Math.PI * x / lam)).toFixed(1)} `;
+  $('#s5wave').setAttribute('d', d);
+  for (let i = 0; i < S5_W / S5_TILE; i++) {
+    const x = i * S5_TILE;
+    $('#s5k' + i).style.opacity = clamp01((ext - x) / S5_TILE);
+    $('#s5k' + i).setAttribute('stroke', x >= S5_TRAIN ? '#F5C13D' : '#81E5AC');
+  }
+  $('#s5br0').setAttribute('d', `M3,272 L3,284 L${S5_TRAIN - 3},284 L${S5_TRAIN - 3},272`);
+  $('#s5br1').setAttribute('d', `M${S5_TRAIN + 3},272 L${S5_TRAIN + 3},284 L${S5_W - 3},284 L${S5_W - 3},272`);
+  const kb = prog(lt, at(s, 1, 0.2) + 1.6, 0.5);
+  $('#s5br1').style.opacity = kb; $('#s5t1').style.opacity = kb;
+});
+
+/* ---------- S6: try it yourself ---------- */
+Stage.scene('s6', (lt, s) => {
+  Stage.spotlight(prog(lt, 0.2, 1.2));
+  setCam($('#s6a'), [[0, 1044, 354, 1.2], [s.dur, 1044, 354, 1.27]], lt);
+  setCam($('#s6b'), [[0, 1044, 320, 1.8], [s.dur, 1044, 320, 1.9]], lt);
+});
+
+Stage.start();
+</script>
+</body>
+</html>

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Residual Stream - EP 07 - From scores to a choice</title>
+<link rel="stylesheet" href="engine/stage.css">
+<style>
+  /* The Residual Stream palette (the site's dark theme), overriding the engine's Flow Show defaults
+     for this episode only: green #158864, dark green #182D2A, mint #81E5AC, light #DEF6EF, yellow #F5C13D.
+     Same overrides as the pilot, video/next-word/episode.html. */
+  :root {
+    --panel: rgba(16, 36, 32, 0.95);
+    --text: #DEF6EF;
+    --muted: #93b3a9;
+    --teal: #81E5AC;
+    --yellow: #F5C13D;
+    --orange: #FFA45C;
+    --blue: #86BDEB;
+    --red: #FF8F88;
+    --purple: #C7A8FF;
+    --green: #158864;
+    --deep: #0D483D;
+  }
+  #stage { background: radial-gradient(ellipse at 50% 38%, #24453e 0%, #182D2A 45%, #0c1a17 100%); }
+  .spot.l { background: linear-gradient(180deg, rgba(129,229,172,0.30), rgba(129,229,172,0.02)); }
+  .spot.r { background: linear-gradient(180deg, rgba(245,193,61,0.26), rgba(245,193,61,0.02)); }
+  .floor { background: linear-gradient(180deg, rgba(6,16,14,0) 0%, rgba(6,16,14,0.78) 100%); }
+  #cap { background: rgba(10, 26, 23, 0.95); }
+  .card { border-color: rgba(129,229,172,0.22); }
+  .chip { background: rgba(14, 32, 28, 0.9); }
+  .node { background: rgba(14, 32, 28, 0.96); }
+  .step .s { color: #c4ddd5; }
+  .real { background: rgba(10,26,23,0.92); }
+  .note { position: absolute; font-size: 18px; color: var(--muted); font-weight: 500; }
+
+  /* S1: hook - the network scores, the sampler picks */
+  #s1 .kick { color: var(--teal); }
+  #s1 .big { top: 250px; }
+  #s1 .sub { top: 428px; }
+  #s1 .pipe { left: 390px; top: 506px; width: 1140px; height: 178px; padding: 0 30px; display: flex; align-items: center; gap: 16px; }
+  #s1 .blk { width: 216px; padding: 14px 16px; border-radius: 14px; border: 2.5px solid; background: rgba(13,72,61,0.6); }
+  #s1 .blk .lbl { font-size: 16px; }
+  #s1 .blk b { display: block; font-size: 23px; margin-top: 4px; }
+  #s1 .arr { font-size: 34px; color: var(--muted); font-weight: 800; }
+  #s1 .logits { width: 236px; font-family: var(--mono); font-size: 20px; line-height: 1.28; }
+  #s1 .logits div { display: flex; justify-content: space-between; }
+  #s1 .logits div span:last-child { color: var(--yellow); }
+  #s1 .logits .more { color: var(--muted); justify-content: center; }
+  #s1 .pick { font-size: 36px; font-weight: 800; color: var(--yellow); border-bottom: 4px solid var(--yellow); padding: 0 6px; }
+  #s1 .credit { position: absolute; left: 390px; width: 1140px; top: 706px; text-align: center; }
+
+  /* S2: softmax */
+  #s2 .flow { left: 390px; top: 172px; width: 1140px; height: 132px; padding: 18px 30px; display: flex; align-items: center; gap: 22px; }
+  #s2 .flow .col .v { font-family: var(--mono); font-size: 22px; margin-top: 8px; white-space: nowrap; }
+  #s2 .flow .chip { font-size: 22px; padding: 8px 16px; }
+  #s2 .flow .sum { margin-left: auto; font-size: 50px; font-weight: 800; color: var(--yellow); white-space: nowrap; }
+  #s2 .screen { left: 390px; top: 324px; width: 1140px; height: 436px; }
+  #s2 .note { left: 390px; width: 1140px; top: 776px; text-align: center; }
+
+  /* S3: temperature over the guide's real demo */
+  #s3 .screen { left: 390px; top: 172px; width: 1140px; height: 450px; }
+  #s3 .cam + .cam { opacity: 0; }
+  #s3 .tc { top: 642px; width: 366px; height: 170px; padding: 18px 22px; }
+  #s3 .tc h4 { font-size: 26px; font-weight: 800; margin-top: 8px; }
+  #s3 .tc p { font-size: 19px; color: #c4ddd5; margin-top: 8px; line-height: 1.35; }
+
+  /* S4: top-k and top-p */
+  #s4 .prompt { left: 390px; top: 172px; width: 1140px; height: 74px; padding: 0 30px; font-size: 30px; font-weight: 700; }
+  #s4 .prompt span { position: absolute; left: 30px; top: 17px; white-space: nowrap; }
+  #s4 .prompt .gap { color: var(--yellow); }
+  #s4 .cut { top: 262px; width: 555px; height: 486px; padding: 18px 24px; }
+  #s4 .cut h4 { font-size: 26px; font-weight: 800; margin-top: 4px; }
+  #s4 .rows { margin-top: 12px; }
+  #s4 .r { display: flex; align-items: center; height: 30px; gap: 14px; font-size: 19px; font-weight: 600; }
+  #s4 .r .w { width: 110px; text-align: right; }
+  #s4 .r .bar { position: relative; width: 262px; height: 14px; border-radius: 4px; background: rgba(129,229,172,0.08); }
+  #s4 .r .bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--teal); }
+  #s4 .r .p { font-family: var(--mono); font-size: 18px; color: #c4ddd5; width: 84px; }
+  #s4 .foot { margin-top: 12px; font-size: 24px; font-weight: 700; }
+  #s4 .foot b { color: var(--yellow); font-size: 30px; }
+  #s4 .note { left: 390px; width: 1140px; top: 764px; text-align: center; }
+
+  /* S5: the loop */
+  #s5 .sent { left: 390px; top: 172px; width: 1140px; height: 92px; padding: 22px 30px; font-size: 34px; font-weight: 700; white-space: pre; }
+  #s5 .sent .tk { color: var(--yellow); }
+  #s5 .sent .old { color: var(--text); }
+  #s5 .note { left: 390px; width: 1140px; top: 274px; text-align: right; font-size: 17px; }
+  #s5 .back { position: absolute; left: 390px; top: 418px; width: 1140px; height: 90px; overflow: visible; }
+  #s5 .backlbl { position: absolute; left: 0; right: 0; top: 458px; text-align: center; }
+  #s5 .backlbl .chip { font-size: 21px; padding: 8px 18px; }
+  #s5 .pass { left: 390px; top: 588px; width: 330px; height: 150px; padding: 18px 26px; }
+  #s5 .pass .n { font-size: 76px; font-weight: 800; color: var(--yellow); line-height: 1.05; }
+  #s5 .ar { left: 750px; top: 588px; width: 780px; height: 150px; padding: 22px 28px; border-color: var(--teal); }
+  #s5 .ar h4 { font-size: 30px; font-weight: 800; margin-top: 10px; }
+  #s5 .ar p { font-size: 19px; color: #c4ddd5; margin-top: 8px; }
+  #s5 .why { position: absolute; left: 0; right: 0; top: 760px; text-align: center; }
+
+  /* S6: try it yourself */
+  #s6 .title { position: absolute; left: 0; right: 0; top: 120px; text-align: center; font-size: 104px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.05; }
+  #s6 .title small { display: block; font-size: 30px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-top: 14px; }
+  #s6 .url { position: absolute; left: 0; right: 0; top: 322px; text-align: center; }
+  #s6 .url .chip { font-family: var(--mono); font-size: 27px; color: var(--teal); }
+  #s6 .screen { top: 446px; width: 560px; height: 315px; }
+  #s6 .credits { position: absolute; left: 390px; width: 1140px; top: 784px; text-align: center; font-size: 19px; color: var(--muted); font-weight: 500; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- S1: the network scores, the sampler picks -->
+  <section class="scene hero" id="s1">
+    <div class="kick" data-at="0.2">THE RESIDUAL STREAM &middot; EP 07</div>
+    <div class="big" data-at="0.4" data-pop>From scores to a <span class="hl-y">choice</span></div>
+    <div class="sub" data-at="0.8">How the next token actually gets picked</div>
+    <div class="card pipe" data-at="L1" data-pop>
+      <div class="blk" style="border-color:var(--teal)" data-at="L1@0.1"><div class="lbl">THE NETWORK</div><b>scores every token</b></div>
+      <div class="arr" data-at="L1@0.3">&rarr;</div>
+      <div class="logits" id="s1logits"></div>
+      <div class="arr" data-at="L2@0.2">&rarr;</div>
+      <div class="blk" id="s1samp" style="border-color:var(--yellow)" data-at="L2@0.3"><div class="lbl">THE SAMPLER</div><b>picks one</b></div>
+      <div class="arr" data-at="L2@0.6">&rarr;</div>
+      <div class="pick" data-at="L2@0.75" data-pop>practice</div>
+    </div>
+    <div class="credit"><span class="note" style="position:static" data-at="L1@0.6">Words and scores: hand-set examples from the guide's Sampling demo. A real model scores every token it knows.</span></div>
+  </section>
+
+  <!-- S2: softmax turns scores into probabilities -->
+  <section class="scene" id="s2">
+    <div class="t-title" data-at="0.2">Softmax: scores become <span class="hl-t">probabilities</span></div>
+    <div class="card flow" data-at="L1" data-pop>
+      <div class="col"><div class="lbl">SCORES (LOGITS)</div><div class="v" id="s2z"></div></div>
+      <span class="chip" style="border-color:var(--teal)" data-at="L1@0.1" data-pop>softmax &rarr;</span>
+      <div class="col" data-at="L1@0.3"><div class="lbl">PROBABILITIES</div><div class="v" id="s2p"></div></div>
+      <div class="sum" id="s2sum" data-at="L1@0.45" data-pop>= 100%</div>
+    </div>
+    <div class="screen" data-at="L1@0.55" data-pop>
+      <div class="cam" id="s2cam"><img src="shots/01-samp-t100.png" alt="">
+        <div class="hl t" style="left:1606px; top:316px; width:104px; height:484px" data-at="L1@0.45" data-pop></div>
+        <div class="hl" style="left:326px; top:318px; width:1388px; height:42px" data-at="L1@0.7" data-pop></div>
+      </div>
+    </div>
+    <div class="real" style="left:1376px; top:306px" data-at="L1@0.65">REAL DEMO</div>
+    <div class="note" data-at="L3@0.1">Hand-set words and scores from the guide's demo; the softmax maths on them is real.</div>
+  </section>
+
+  <!-- S3: temperature, on the guide's own slider -->
+  <section class="scene" id="s3">
+    <div class="t-title" data-at="0.2">Temperature: <span class="hl-y">scores &divide; T</span>, then softmax</div>
+    <div class="screen" data-at="L1" data-pop>
+      <div class="cam" id="s3a"><img src="shots/01-samp-t100.png" alt="">
+        <div class="hl t" style="left:268px; top:254px; width:548px; height:54px" data-at="L1@0.4" data-pop></div></div>
+      <div class="cam" id="s3b"><img src="shots/02-samp-t030.png" alt="">
+        <div class="hl t" style="left:268px; top:254px; width:548px; height:54px"></div></div>
+      <div class="cam" id="s3c"><img src="shots/03-samp-t000.png" alt="">
+        <div class="hl t" style="left:268px; top:254px; width:548px; height:54px"></div></div>
+      <div class="cam" id="s3d"><img src="shots/04-samp-t180.png" alt="">
+        <div class="hl t" style="left:268px; top:254px; width:548px; height:54px"></div></div>
+    </div>
+    <div class="real" style="left:1196px; top:186px" data-at="L1@0.2">REAL DEMO &middot; HAND-SET SCORES</div>
+    <div class="card tc" style="left:390px; border-color:var(--teal)" data-at="L2@0.2" data-pop>
+      <div class="lbl" style="color:var(--teal)">TURN IT DOWN &middot; 0.30</div>
+      <h4>The favourite takes over</h4>
+      <p>&ldquo;practice&rdquo;: 31.8% &rarr; 75.3%</p>
+    </div>
+    <div class="card tc" style="left:777px; border-color:var(--yellow)" data-at="L2@0.65" data-pop>
+      <div class="lbl" style="color:var(--yellow)">AT ZERO &middot; GREEDY</div>
+      <h4>Always the top token</h4>
+      <p data-at="L4@0.15">Repeatable, but dull and prone to loops</p>
+    </div>
+    <div class="card tc" style="left:1164px; border-color:var(--orange)" data-at="L4@0.7" data-pop>
+      <div class="lbl" style="color:var(--orange)">TURN IT UP &middot; 1.80</div>
+      <h4>The bars flatten</h4>
+      <p>&ldquo;banana&rdquo;: 0.1% &rarr; 0.9%</p>
+    </div>
+  </section>
+
+  <!-- S4: top-k and top-p cut off the long tail -->
+  <section class="scene" id="s4">
+    <div class="t-title" data-at="0.2">Cut off the <span class="hl-t">long tail</span></div>
+    <div class="card prompt" data-at="0.4" data-pop>
+      <span id="s4qa">The best way to learn something new is to <b class="gap">&hellip;</b></span>
+      <span id="s4qb">The capital of France is <b class="gap">&hellip;</b></span>
+    </div>
+    <div class="card cut" style="left:390px; border-color:var(--teal)" data-at="L1" data-pop>
+      <div class="lbl" style="color:var(--teal)">TOP-K = 3</div>
+      <h4>Keep a fixed number</h4>
+      <div class="rows" id="s4k"></div>
+      <div class="foot" id="s4kf"></div>
+    </div>
+    <div class="card cut" style="left:975px; border-color:var(--yellow)" data-at="L2" data-pop>
+      <div class="lbl" style="color:var(--yellow)">TOP-P = 0.8</div>
+      <h4>Smallest set that adds up to 80%</h4>
+      <div class="rows" id="s4p"></div>
+      <div class="foot" id="s4pf"></div>
+    </div>
+    <div class="note" data-at="L1@0.3">Hand-set words and scores from the guide's demo, at temperature 1; the top-k and top-p maths is real.</div>
+  </section>
+
+  <!-- S5: append and run again -->
+  <section class="scene" id="s5">
+    <div class="t-title" data-at="0.2">Append, and run it <span class="hl-y">again</span></div>
+    <div class="card sent" data-at="0.4" data-pop><span class="old">The best way to learn something new is to</span><span id="s5tk"></span></div>
+    <div class="note" data-at="L1@0.2">&ldquo;practice&rdquo; comes from the guide's demo; the words after it are illustrative.</div>
+    <div id="s5chain"></div>
+    <svg class="back" viewBox="0 0 1140 90"><path id="s5back" d="M 1002 4 V 62 H 138 V 14" fill="none" stroke="#81E5AC" stroke-width="5" stroke-linecap="round" pathLength="1"/>
+      <path id="s5head" d="M 124 22 L 138 2 L 152 22" fill="none" stroke="#81E5AC" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div class="backlbl"><span class="chip" style="border-color:var(--teal)" data-at="L1@0.35" data-pop>
+      <span class="ico" style="color:var(--teal)" data-ico="undo"></span>add the pick to the text, go again</span></div>
+    <div class="card pass" data-at="L1@0.4" data-pop>
+      <div class="lbl">TOKENS WRITTEN</div>
+      <div class="n" id="s5n">1</div>
+    </div>
+    <div class="card ar" data-at="L3@0.3" data-pop>
+      <div class="lbl" style="color:var(--teal)">AUTOREGRESSIVE GENERATION</div>
+      <h4>Each pick becomes input for the next pass</h4>
+      <p>One full run of the model per token</p>
+    </div>
+    <div class="why"><span class="chip" style="border-color:var(--yellow); color:var(--yellow)" data-at="L4@0.4" data-pop>
+      <span class="ico" data-ico="chat"></span>Why answers stream in, word by word</span></div>
+  </section>
+
+  <!-- S6: try it yourself -->
+  <section class="scene" id="s6">
+    <div class="title" data-at="0.3" data-pop>The <span class="hl-t">Residual</span> Stream
+      <small>Turn the dials yourself &middot; English and Hebrew</small></div>
+    <div class="url"><span class="chip" style="border-color:var(--teal)" data-at="L1@0.05" data-pop>https://danielarosenn.github.io/residual-stream/</span></div>
+    <div class="screen" style="left:390px" data-at="L1@0.15" data-pop>
+      <div class="cam" id="s6a"><img src="shots/04-samp-t180.png" alt=""></div>
+    </div>
+    <div class="screen" style="left:970px" data-at="L1@0.55" data-pop>
+      <div class="cam" id="s6b"><img src="shots/05-dial.png" alt="">
+        <div class="hl" style="left:452px; top:222px; width:796px; height:52px" data-at="L2@0.15" data-pop></div></div>
+    </div>
+    <div class="real" style="left:390px; top:404px" data-at="L1@0.25">THE GUIDE &middot; SAMPLING</div>
+    <div class="real" style="left:970px; top:404px" data-at="L1@0.65">THE GAME &middot; THE DIAL</div>
+    <div class="credits" data-at="L1@0.8">The guide's Sampling demo uses hand-set words and scores. The Dial samples from a tiny model running in your browser.</div>
+  </section>
+
+</div>
+<script src="timeline.js"></script>
+<script src="engine/stage.js"></script>
+<script>
+/* The guide's hand-set candidates and scores (js/sampling.js, PROMPTS[0] and the "capital of France" prompt).
+   Both lists are sorted from highest to lowest score, as in the guide. */
+const LEARN = [['practice', 3.1], ['read', 2.6], ['teach', 2.4], ['try', 2.0], ['ask', 1.7], ['build', 1.6],
+  ['fail', 1.0], ['sleep', 0.2], ['dance', -0.3], ['panic', -0.8], ['banana', -2.5]];
+const FRANCE = [['Paris', 6.2], ['the', 2.2], ['a', 1.8], ['located', 1.6], ['Lyon', 1.2], ['called', 1.0],
+  ['known', 0.7], ['also', 0.3], ['London', -0.2], ['Berlin', -0.6], ['banana', -3.0]];
+/* Real softmax with temperature, the same formula as the guide's util.js softmax(arr, T). */
+function softmaxT(cands, T) {
+  const z = cands.map(c => c[1] / T), m = Math.max(...z), e = z.map(v => Math.exp(v - m)), s = e.reduce((a, b) => a + b, 0);
+  return e.map(v => v / s);
+}
+const pct = p => (100 * p).toFixed(1) + '%';
+const minus = v => String(v).replace('-', '−');
+
+/* ---------- S1: a few of the scores, then the sampler's pick ---------- */
+const S1_SHOW = [0, 1, 2];
+$('#s1logits').innerHTML = S1_SHOW.map(i => `<div id="s1l${i}"><span>${LEARN[i][0]}</span><span>${LEARN[i][1].toFixed(1)}</span></div>`).join('') +
+  `<div class="more" id="s1lm">&middot; &middot; &middot;</div><div id="s1l10"><span>banana</span><span>${minus(LEARN[10][1].toFixed(1))}</span></div>`;
+Stage.scene('s1', (lt, s) => {
+  const ids = ['#s1l0', '#s1l1', '#s1l2', '#s1lm', '#s1l10'], t0 = at(s, 1, 0.35), t1 = at(s, 1, 0.8);
+  ids.forEach((id, i) => reveal($(id), prog(lt, t0 + (t1 - t0) * i / ids.length, 0.3)));
+  const active = lt >= at(s, 2, 0.3) && lt < at(s, 3, 0);
+  $('#s1samp').style.boxShadow = active ? '0 0 30px rgba(245,193,61,0.55)' : '';
+});
+
+/* ---------- S2: scores -> probabilities that add up to one ---------- */
+const S2_P = softmaxT(LEARN, 1);
+const S2_IDX = [0, 1, 2];
+$('#s2z').innerHTML = S2_IDX.map(i => LEARN[i][1].toFixed(1)).join(' &middot; ') + ' &middot; &hellip; &middot; ' + minus(LEARN[10][1].toFixed(1));
+$('#s2p').innerHTML = S2_IDX.map(i => pct(S2_P[i])).join(' &middot; ') + ' &middot; &hellip; &middot; ' + pct(S2_P[10]);
+const S2_SUM = Math.round(100 * S2_P.reduce((a, b) => a + b, 0));  // 100: softmax always sums to one
+Stage.scene('s2', (lt, s) => {
+  countTo($('#s2sum'), S2_SUM, lt, at(s, 1, 0.45), 0.8, v => '= ' + Math.round(v) + '%');
+  /* the bars and the % column of the guide's demo at temperature 1 */
+  setCam($('#s2cam'), [[at(s, 1, 0.55), 990, 522, 1.3], [s.dur, 990, 528, 1.34]], lt);
+});
+
+/* ---------- S3: real screenshots of the guide's demo at 1.00, 0.30, 0.00 and 1.80 ---------- */
+Stage.scene('s3', (lt, s) => {
+  const cams = ['#s3a', '#s3b', '#s3c', '#s3d'];
+  /* visible region: shot y ~239-821, the temperature slider row down to "banana" */
+  cams.forEach(id => setCam($(id), [[at(s, 1, 0), 990, 530, 1.3], [s.dur, 990, 532, 1.34]], lt));
+  $('#s3b').style.opacity = prog(lt, at(s, 2, 0.12), 0.5);   // "turn it down"
+  $('#s3c').style.opacity = prog(lt, at(s, 2, 0.6), 0.5);    // "at zero"
+  $('#s3d').style.opacity = prog(lt, at(s, 4, 0.62), 0.5);   // "turn it up"
+});
+
+/* ---------- S4: top-k 3 and top-p 0.8 on two of the guide's prompts, real maths at temperature 1 ---------- */
+const TOP_K = 3, TOP_P = 0.8;   // the values the dialogue names
+function keepTopK(p) { return new Set(p.map((_, i) => i).sort((a, b) => p[b] - p[a]).slice(0, TOP_K)); }
+function keepTopP(p) {  // the guide's rule: add words in order until the running total reaches p
+  const keep = new Set(); let cum = 0;
+  for (const i of p.map((_, i) => i).sort((a, b) => p[b] - p[a])) { if (cum >= TOP_P && keep.size) break; keep.add(i); cum += p[i]; }
+  return keep;
+}
+['k', 'p'].forEach(c => {
+  $('#s4' + c).innerHTML = LEARN.map((_, i) =>
+    `<div class="r" id="s4${c}r${i}"><span class="w" id="s4${c}w${i}"></span><span class="bar"><i id="s4${c}b${i}"></i></span><span class="p" id="s4${c}p${i}"></span></div>`).join('');
+});
+function s4card(c, cands, keep) {
+  const p = softmaxT(cands, 1);
+  const kept = keep ? [...keep].reduce((a, i) => a + p[i], 0) : 1;
+  const shown = p.map((x, i) => (!keep || keep.has(i) ? x / kept : 0));
+  const max = Math.max(...shown);
+  cands.forEach(([w], i) => {
+    const cut = keep && !keep.has(i);
+    $(`#s4${c}w${i}`).textContent = w;
+    $(`#s4${c}b${i}`).style.width = 100 * shown[i] / max + '%';
+    $(`#s4${c}p${i}`).textContent = cut ? 'cut' : pct(shown[i]);
+    const row = $(`#s4${c}r${i}`);
+    row.style.opacity = cut ? 0.32 : 1;
+    row.style.textDecoration = cut ? 'line-through' : 'none';
+  });
+  $(`#s4${c}f`).innerHTML = keep ? `keeps <b>${keep.size}</b> of ${cands.length}` : `all ${cands.length} words`;
+}
+Stage.scene('s4', (lt, s) => {
+  const france = lt >= at(s, 4, 0.4);   // "like Paris"
+  const cands = france ? FRANCE : LEARN, p = softmaxT(cands, 1);
+  s4card('k', cands, lt >= at(s, 1, 0.8) ? keepTopK(p) : null);
+  s4card('p', cands, lt >= at(s, 2, 0.8) ? keepTopP(p) : null);
+  $('#s4qa').style.opacity = france ? 0 : 1;
+  $('#s4qb').style.opacity = france ? prog(lt, at(s, 4, 0.4), 0.3) : 0;
+  const glow = france ? '0 0 30px rgba(245,193,61,0.5)' : '';
+  $('#s4pf').style.textShadow = glow;
+});
+
+/* ---------- S5: the autoregressive loop ---------- */
+const S5_TOKS = [' practice', ' a', ' little', ' every', ' day', '.'];  // after "practice": illustrative
+const S5_NODES = [['Text so far', 'doc', '--blue'], ['The whole model', 'gear', '--teal'],
+  ['A score per token', 'braces', '--yellow'], ['Sampler picks one', 'spark', '--orange']];
+buildChain($('#s5chain'), 's5', S5_NODES, { w: 236, gap: 52, y: 330, h: 88, x0: 410 });
+Stage.scene('s5', (lt, s) => {
+  const first = at(s, 0, 0.6);                 // "practice" lands as the line names it
+  const p0 = at(s, 1, 0.15), p1 = at(s, 4, 0.7), per = (p1 - p0) / (S5_TOKS.length - 1);
+  const done = lt < first ? 0 : 1 + Math.max(0, Math.min(S5_TOKS.length - 1, Math.floor((lt - p0) / per)));
+  $('#s5tk').innerHTML = S5_TOKS.slice(0, done).map((t, i) => `<span class="${i === done - 1 ? 'tk' : 'old'}">${t}</span>`).join('');
+  $('#s5n').textContent = Math.max(1, done);
+  /* nodes: shown from line 1; while passes run, light one node at a time */
+  const running = lt >= p0 && lt < p1, f = running ? ((lt - p0) / per) % 1 : -1;
+  S5_NODES.forEach(([, , c], i) => {
+    const el = $('#s5_n' + i);
+    reveal(el, prog(lt, at(s, 1, 0) + i * 0.12, 0.45), true);
+    el.style.boxShadow = running && Math.floor(f * 4) === i ? `0 0 34px color-mix(in srgb, var(${c}) 60%, transparent)` : '';
+    if (i) $(`#s5_c${i} i`).style.width = 100 * prog(lt, at(s, 1, 0) + i * 0.12, 0.35) + '%';
+  });
+  const k = prog(lt, at(s, 1, 0.3), 0.6);
+  $('#s5back').setAttribute('stroke-dasharray', `${k} 1`);
+  $('#s5head').setAttribute('opacity', k >= 1 ? 1 : 0);
+  const hot = running && f > 0.85;
+  $('#s5back').setAttribute('stroke', hot ? '#F5C13D' : '#81E5AC');
+  $('#s5head').setAttribute('stroke', hot ? '#F5C13D' : '#81E5AC');
+});
+
+/* ---------- S6: try it yourself ---------- */
+Stage.scene('s6', (lt, s) => {
+  Stage.spotlight(prog(lt, 0.2, 1.2));
+  /* the guide: sentence, sliders and bars at temperature 1.80 */
+  setCam($('#s6a'), [[0, 990, 540, 1.3], [s.dur, 990, 520, 1.36]], lt);
+  /* the game: mission card and bars, below the sticky header and the skipped-ahead notice */
+  setCam($('#s6b'), [[0, 960, 560, 1.22], [s.dur, 960, 540, 1.3]], lt);
+});
+
+Stage.start();
+</script>
+</body>
+</html>

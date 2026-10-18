@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Residual Stream - EP 08 - How it learns</title>
+<link rel="stylesheet" href="engine/stage.css">
+<style>
+  /* The Residual Stream palette (the site's dark theme), overriding the engine's Flow Show defaults
+     for this episode only: green #158864, dark green #182D2A, mint #81E5AC, light #DEF6EF, yellow #F5C13D.
+     Same overrides as the pilot, video/next-word/episode.html. */
+  :root {
+    --panel: rgba(16, 36, 32, 0.95);
+    --text: #DEF6EF;
+    --muted: #93b3a9;
+    --teal: #81E5AC;
+    --yellow: #F5C13D;
+    --orange: #FFA45C;
+    --blue: #86BDEB;
+    --red: #FF8F88;
+    --purple: #C7A8FF;
+    --green: #158864;
+    --deep: #0D483D;
+  }
+  #stage { background: radial-gradient(ellipse at 50% 38%, #24453e 0%, #182D2A 45%, #0c1a17 100%); }
+  .spot.l { background: linear-gradient(180deg, rgba(129,229,172,0.30), rgba(129,229,172,0.02)); }
+  .spot.r { background: linear-gradient(180deg, rgba(245,193,61,0.26), rgba(245,193,61,0.02)); }
+  .floor { background: linear-gradient(180deg, rgba(6,16,14,0) 0%, rgba(6,16,14,0.78) 100%); }
+  #cap { background: rgba(10, 26, 23, 0.95); }
+  .card { border-color: rgba(129,229,172,0.22); }
+  .chip { background: rgba(14, 32, 28, 0.9); }
+  .node { background: rgba(14, 32, 28, 0.96); }
+  .step .s { color: #c4ddd5; }
+  .kind p { color: #c4ddd5; }
+  .real { background: rgba(10,26,23,0.92); }
+  .note { position: absolute; font-size: 18px; color: var(--muted); font-weight: 500; }
+  .hl.y { border-color: var(--yellow); box-shadow: 0 0 36px rgba(245,193,61,0.55), inset 0 0 24px rgba(245,193,61,0.15); }
+
+  /* S1: hook - next-token probabilities and the loss */
+  #s1 .kick { color: var(--teal); }
+  #s1 .big { top: 250px; }
+  #s1 .sub { top: 428px; }
+  #s1 .demo { left: 390px; top: 496px; width: 1140px; height: 236px; padding: 20px 30px; }
+  #s1 .left { position: absolute; left: 30px; top: 20px; width: 520px; }
+  #s1 .ctx { font-family: var(--mono); font-size: 26px; color: var(--text); white-space: nowrap; }
+  #s1 .ctx b { color: var(--yellow); }
+  #s1 .rows { margin-top: 10px; }
+  #s1 .r { display: flex; align-items: center; height: 36px; gap: 14px; font-size: 21px; font-weight: 600; border-radius: 8px; padding: 0 6px; }
+  #s1 .r .w { width: 74px; text-align: right; font-family: var(--mono); }
+  #s1 .r .bar { position: relative; width: 210px; height: 14px; border-radius: 4px; background: rgba(129,229,172,0.08); }
+  #s1 .r .bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 4px; background: var(--teal); }
+  #s1 .r .p { font-family: var(--mono); font-size: 19px; color: #c4ddd5; width: 64px; }
+  #s1 .r .tag { font-size: 16px; font-weight: 800; letter-spacing: 1px; color: var(--yellow); white-space: nowrap; }
+  #s1 .right { position: absolute; left: 600px; top: 20px; width: 510px; height: 196px; padding-left: 30px; border-left: 2px solid rgba(129,229,172,0.18); }
+  #s1 .fx { font-family: var(--mono); font-size: 27px; font-weight: 700; margin-top: 10px; }
+  #s1 .lr { margin-top: 14px; font-size: 21px; font-weight: 600; line-height: 1.3; }
+  #s1 .lr b { font-family: var(--mono); font-size: 30px; margin-left: 6px; }
+  #s1 .lr small { display: block; font-size: 17px; color: var(--muted); font-weight: 500; }
+  #s1 .note { left: 390px; width: 1140px; top: 746px; text-align: center; }
+
+  /* S2: the training loop */
+  #s2 .back { position: absolute; left: 390px; top: 290px; width: 1140px; height: 70px; overflow: visible; }
+  #s2 .gd { top: 392px; width: 555px; height: 286px; padding: 20px 26px; }
+  #s2 .gd h4 { font-size: 26px; font-weight: 800; margin-top: 6px; }
+  #s2 .knobs { display: flex; gap: 14px; margin-top: 22px; }
+  #s2 .kn { width: 48px; text-align: center; }
+  #s2 .kn .dial { width: 48px; height: 48px; border-radius: 50%; border: 3px solid var(--teal); position: relative; background: rgba(13,72,61,0.7); }
+  #s2 .kn .dial i { position: absolute; left: 21px; top: 4px; width: 4px; height: 18px; border-radius: 2px; background: var(--text); transform-origin: 2px 18px; }
+  #s2 .kn .ar { font-size: 28px; font-weight: 800; height: 36px; line-height: 36px; }
+  #s2 .gd .foot { position: absolute; left: 26px; right: 26px; bottom: 18px; font-size: 18px; color: var(--muted); font-weight: 500; }
+  #s2 .valley { position: absolute; left: 26px; top: 100px; width: 503px; height: 140px; overflow: visible; }
+  #s2 .more { position: absolute; left: 0; right: 0; top: 706px; text-align: center; }
+  #s2 .more .chip { font-size: 24px; padding: 10px 24px; }
+
+  /* S3: the guide's real training demo */
+  #s3 .screen { left: 390px; top: 170px; width: 1140px; height: 512px; }
+  #s3 .cam + .cam { opacity: 0; }
+  #s3 .num { top: 702px; width: 360px; height: 116px; padding: 14px 22px; }
+  #s3 .num .m { font-size: 19px; font-weight: 700; color: var(--muted); }
+  #s3 .num .n { font-size: 50px; font-weight: 800; line-height: 1.12; font-family: var(--mono); }
+
+  /* S4: bigram vs transformer */
+  #s4 .cmp { top: 170px; width: 555px; height: 318px; padding: 20px 26px; }
+  #s4 .cmp .row { margin-top: 18px; }
+  #s4 .cmp .row .k { font-size: 18px; color: var(--muted); font-weight: 700; letter-spacing: 1px; }
+  #s4 .cmp .row .v { font-size: 34px; font-weight: 800; margin-top: 2px; }
+  #s4 .ctxrow { display: flex; gap: 6px; margin-top: 8px; height: 40px; align-items: center; overflow: hidden; }
+  #s4 .ct { display: inline-block; min-width: 30px; text-align: center; padding: 3px 6px; border-radius: 8px; border: 2px solid rgba(129,229,172,0.55);
+    background: rgba(13,72,61,0.7); font-family: var(--mono); font-size: 18px; font-weight: 600; color: var(--text); white-space: nowrap; flex: none; }
+  #s4 .ct.q { border-color: var(--yellow); color: var(--yellow); }
+  #s4 .learn { position: absolute; left: 390px; width: 1140px; top: 508px; text-align: center; font-size: 24px; font-weight: 700; color: var(--muted); }
+  #s4 .kind { top: 550px; width: 360px; height: 150px; }
+  #s4 .kind h4 { font-size: 27px; }
+  #s4 .why { position: absolute; left: 0; right: 0; top: 728px; text-align: center; }
+  #s4 .why .chip { font-size: 23px; padding: 10px 22px; }
+
+  /* S5: scaling laws and Chinchilla */
+  #s5 .chart { left: 390px; top: 170px; width: 700px; height: 560px; padding: 20px 26px; }
+  #s5 .chart h4 { font-size: 26px; font-weight: 800; margin-top: 6px; }
+  #s5 .plot { position: absolute; left: 26px; top: 116px; width: 648px; height: 330px; overflow: visible; }
+  #s5 .axes { position: absolute; left: 26px; right: 26px; top: 460px; display: flex; gap: 12px; justify-content: center; }
+  #s5 .axes .chip { font-size: 20px; padding: 7px 16px; }
+  #s5 .chart .note { left: 26px; right: 26px; top: 516px; font-size: 17px; text-align: center; }
+  #s5 .chin { left: 1120px; top: 170px; width: 410px; height: 560px; border-color: var(--yellow); }
+  #s5 .chin .n { color: var(--yellow); font-size: 132px; margin-top: 18px; }
+  #s5 .chin .l { font-size: 26px; }
+  #s5 .chin .d { font-size: 20px; margin-top: 16px; line-height: 1.4; }
+  #s5 .chin .eg { position: absolute; left: 30px; right: 30px; bottom: 26px; font-size: 20px; font-weight: 700; line-height: 1.4; padding-top: 14px; border-top: 2px solid rgba(245,193,61,0.25); }
+  #s5 .chin .eg b { color: var(--yellow); }
+
+  /* S6: post-training */
+  #s6 .ac { left: 390px; top: 170px; width: 1140px; height: 150px; padding: 18px 28px; }
+  #s6 .ac .q { font-size: 26px; font-weight: 700; margin-top: 8px; }
+  #s6 .ac .a { font-size: 24px; color: var(--yellow); font-weight: 600; margin-top: 8px; height: 34px; white-space: nowrap; overflow: hidden; }
+  #s6 .ac .note { right: 28px; top: 18px; font-size: 17px; }
+  #s6 .step { padding: 20px 22px; }
+  #s6 .step .h { font-size: 24px; }
+  #s6 .step .s { font-size: 19px; }
+  #s6 .tag { position: absolute; left: 390px; width: 1140px; top: 640px; text-align: center; }
+  #s6 .tag .chip { font-size: 22px; padding: 9px 20px; }
+
+  /* S7: try it yourself */
+  #s7 .title { position: absolute; left: 0; right: 0; top: 120px; text-align: center; font-size: 104px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.05; }
+  #s7 .title small { display: block; font-size: 30px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-top: 14px; }
+  #s7 .url { position: absolute; left: 0; right: 0; top: 322px; text-align: center; }
+  #s7 .url .chip { font-family: var(--mono); font-size: 27px; color: var(--teal); }
+  #s7 .screen { top: 446px; width: 560px; height: 315px; }
+  #s7 .credits { position: absolute; left: 390px; width: 1140px; top: 784px; text-align: center; font-size: 19px; color: var(--muted); font-weight: 500; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- S1: the objective - a probability for every next token, and the surprise at the real one -->
+  <section class="scene hero" id="s1">
+    <div class="kick" data-at="0.2">THE RESIDUAL STREAM &middot; EP 08</div>
+    <div class="big" data-at="0.4" data-pop>How it <span class="hl-t">learns</span></div>
+    <div class="sub" data-at="0.8">Guess the next token. Measure the surprise.</div>
+    <div class="card demo" data-at="L1" data-pop>
+      <div class="left">
+        <div class="ctx">the cat sat on the <b>___</b></div>
+        <div class="rows" id="s1rows"></div>
+      </div>
+      <div class="right" data-at="L2@0.05">
+        <div class="lbl">THE LOSS &middot; CROSS-ENTROPY</div>
+        <div class="fx">&minus;log p(real next token)</div>
+        <div class="lr" id="s1a"></div>
+        <div class="lr" id="s1b" style="color:var(--red)"></div>
+      </div>
+    </div>
+    <div class="note" data-at="L1@0.6">Illustrative words and probabilities; the formula is the real one (natural log, as in the guide's demo)</div>
+  </section>
+
+  <!-- S2: guess, compare, nudge every knob, repeat -->
+  <section class="scene" id="s2">
+    <div class="t-title" data-at="0.2">Guess, compare, <span class="hl-y">nudge</span>, repeat</div>
+    <div id="s2chain"></div>
+    <svg class="back" viewBox="0 0 1140 70"><path id="s2back" d="M 1022 4 V 50 H 138 V 12" fill="none" stroke="#81E5AC" stroke-width="5" stroke-linecap="round" pathLength="1"/>
+      <path id="s2head" d="M 124 20 L 138 2 L 152 20" fill="none" stroke="#81E5AC" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div class="card gd" style="left:390px; border-color:var(--teal)" data-at="L1@0.1" data-pop>
+      <div class="lbl" style="color:var(--teal)">BACKPROPAGATION</div>
+      <h4>Which way should each knob move?</h4>
+      <div class="knobs" id="s2knobs"></div>
+      <div class="foot">Illustrative knobs; a real model has billions</div>
+    </div>
+    <div class="card gd" style="left:975px; border-color:var(--orange)" data-at="L2@0.05" data-pop>
+      <div class="lbl" style="color:var(--orange)">GRADIENT DESCENT</div>
+      <h4>A small step downhill, every time</h4>
+      <svg class="valley" viewBox="0 0 503 140">
+        <path id="s2curve" fill="none" stroke="rgba(129,229,172,0.55)" stroke-width="4" stroke-linecap="round"/>
+        <circle id="s2ball" r="13" fill="#F5C13D"/>
+      </svg>
+      <div class="foot">Loss (up) against one knob's value: an illustrative valley</div>
+    </div>
+    <div class="more"><span class="chip" style="border-color:var(--yellow)" data-at="L4@0.1" data-pop>
+      <span class="ico" style="color:var(--yellow)" data-ico="undo"></span>Repeat for trillions of tokens</span></div>
+  </section>
+
+  <!-- S3: the guide's real bigram network, trained in the browser -->
+  <section class="scene" id="s3">
+    <div class="t-title" data-at="0.2">A real network, <span class="hl-t">training</span></div>
+    <div class="screen" data-at="L0@0.3" data-pop>
+      <div class="cam" id="s3a"><img src="shots/01-train-start.png" alt=""></div>
+      <div class="cam" id="s3b"><img src="shots/02-train-early.png" alt=""></div>
+      <div class="cam" id="s3c"><img src="shots/03-train-trained.png" alt="">
+        <div class="hl t" id="s3grid" style="left:1250px; top:348px; width:564px; height:556px"></div>
+        <div class="hl y" id="s3stat" style="left:272px; top:264px; width:850px; height:44px"></div>
+        <div class="hl y" id="s3floor" style="left:338px; top:620px; width:862px; height:50px"></div>
+      </div>
+    </div>
+    <div class="real" style="left:1376px; top:186px" data-at="L0@0.6">REAL DEMO</div>
+    <div class="card num" id="s3n0" style="left:390px" data-at="L2@0.1" data-pop>
+      <div class="m">START &middot; a blind guess, ln 26</div><div class="n">3.258</div></div>
+    <div class="card num" id="s3n1" style="left:780px" data-at="L2@0.3" data-pop>
+      <div class="m">AFTER 586 STEPS</div><div class="n" style="color:var(--teal)">2.008</div></div>
+    <div class="card num" id="s3n2" style="left:1170px; border-color:var(--yellow)" data-at="L2@0.55" data-pop>
+      <div class="m">BEST ANY BIGRAM CAN DO</div><div class="n" style="color:var(--yellow)">1.961</div></div>
+  </section>
+
+  <!-- S4: one character of context vs thousands of tokens -->
+  <section class="scene" id="s4">
+    <div class="t-title" data-at="0.2">More context, <span class="hl-y">more knobs</span></div>
+    <div class="card cmp" style="left:390px" data-at="L0@0.3" data-pop>
+      <div class="lbl">THE GUIDE'S BIGRAM</div>
+      <div class="row"><div class="k">SEES</div><div class="ctxrow"><span class="ct">e</span><span class="ct q">?</span></div><div class="v" style="font-size:26px">1 character</div></div>
+      <div class="row"><div class="k">KNOBS</div><div class="v">676 <span style="font-size:20px; color:var(--muted); font-weight:600">weights (26 &times; 26)</span></div></div>
+    </div>
+    <div class="card cmp" style="left:975px; border-color:var(--teal)" data-at="L1@0.05" data-pop>
+      <div class="lbl" style="color:var(--teal)">A TRANSFORMER</div>
+      <div class="row"><div class="k">SEES</div><div class="ctxrow" id="s4ctx"></div><div class="v" style="font-size:26px">thousands of tokens</div></div>
+      <div class="row" data-at="L1@0.8"><div class="k">KNOBS</div><div class="v" style="color:var(--teal)">billions</div></div>
+    </div>
+    <div class="learn" data-at="L2@0.1">To lower the loss, it has to learn&hellip;</div>
+    <div class="card kind" style="left:390px" data-at="L2@0.5" data-pop>
+      <div class="lbl" style="color:var(--teal)">GRAMMAR</div><h4>How sentences go</h4><p>so the next word fits</p></div>
+    <div class="card kind" style="left:780px" data-at="L2@0.62" data-pop>
+      <div class="lbl" style="color:var(--blue)">FACTS</div><h4>What is true</h4><p>so &ldquo;Paris&rdquo; follows &ldquo;capital of France&rdquo;</p></div>
+    <div class="card kind" style="left:1170px" data-at="L2@0.8" data-pop>
+      <div class="lbl" style="color:var(--yellow)">REASONING</div><h4>Patterns of reasoning</h4><p>so the next step follows</p></div>
+    <div class="why"><span class="chip" style="border-color:var(--teal)" data-at="L3@0.3" data-pop>
+      <span class="ico" style="color:var(--teal)" data-ico="check"></span>Those are what make text predictable</span></div>
+  </section>
+
+  <!-- S5: scaling laws (2020) and Chinchilla (2022) -->
+  <section class="scene" id="s5">
+    <div class="t-title" data-at="0.2">Bigger, and <span class="hl-t">fed more</span></div>
+    <div class="card chart" data-at="L1" data-pop>
+      <div class="lbl" style="color:var(--teal)">SCALING LAWS &middot; 2020</div>
+      <h4>Loss falls smoothly as they grow</h4>
+      <svg class="plot" viewBox="0 0 648 330">
+        <line x1="40" y1="10" x2="40" y2="300" stroke="rgba(147,179,169,0.6)" stroke-width="2"/>
+        <line x1="40" y1="300" x2="640" y2="300" stroke="rgba(147,179,169,0.6)" stroke-width="2"/>
+        <text x="30" y="24" fill="#93b3a9" font-size="18" font-weight="700" text-anchor="end" transform="rotate(-90 22 60)">LOSS</text>
+        <text x="640" y="326" fill="#93b3a9" font-size="18" font-weight="700" text-anchor="end">SCALE (LOG) &rarr;</text>
+        <path id="s5curve" fill="none" stroke="#81E5AC" stroke-width="5" stroke-linecap="round" pathLength="1"/>
+        <g id="s5dots"></g>
+      </svg>
+      <div class="axes">
+        <span class="chip" style="border-color:var(--teal)" data-at="L1@0.62" data-pop>parameters</span>
+        <span class="chip" style="border-color:var(--blue)" data-at="L1@0.72" data-pop>data</span>
+        <span class="chip" style="border-color:var(--orange)" data-at="L1@0.84" data-pop>compute</span>
+      </div>
+      <div class="note">Illustrative curve: the shape of the finding, not its data</div>
+    </div>
+    <div class="card stat chin" data-at="L2@0.2" data-pop>
+      <div class="lbl" style="color:var(--yellow)">CHINCHILLA &middot; 2022</div>
+      <div class="n">&asymp;<span id="s5n">0</span></div>
+      <div class="l">training tokens per parameter</div>
+      <div class="d">Grow the data with the model, for the best use of compute</div>
+      <div class="eg" data-at="L2@0.85">1 billion parameters &rarr; <b>about 20 billion tokens</b></div>
+    </div>
+  </section>
+
+  <!-- S6: from text predictor to assistant, the four stages -->
+  <section class="scene" id="s6">
+    <div class="t-title" data-at="0.2">From text predictor to <span class="hl-y">assistant</span></div>
+    <div class="card ac" data-at="L1" data-pop>
+      <div class="lbl">AFTER PRETRAINING ONLY: A BRILLIANT AUTOCOMPLETE</div>
+      <div class="note">Illustrative</div>
+      <div class="q">What is the capital of France?</div>
+      <div class="a" id="s6a"></div>
+    </div>
+    <div id="s6chain"></div>
+    <div class="tag"><span class="chip" style="border-color:var(--teal)" data-at="L3@0.75" data-pop>
+      <span class="ico" style="color:var(--teal)" data-ico="spark"></span>How reasoning models learned to work step by step</span></div>
+  </section>
+
+  <!-- S7: try it yourself -->
+  <section class="scene" id="s7">
+    <div class="title" data-at="0.3" data-pop>The <span class="hl-t">Residual</span> Stream
+      <small>Training chapter &middot; press Train &middot; English and Hebrew</small></div>
+    <div class="url"><span class="chip" style="border-color:var(--teal)" data-at="L1@0.05" data-pop>https://danielarosenn.github.io/residual-stream/</span></div>
+    <div class="screen" style="left:390px" data-at="L1@0.15" data-pop>
+      <div class="cam" id="s7a"><img src="shots/03-train-trained.png" alt=""></div>
+    </div>
+    <div class="screen" style="left:970px" data-at="L1@0.5" data-pop>
+      <div class="cam" id="s7b"><img src="shots/04-stages.png" alt=""></div>
+    </div>
+    <div class="real" style="left:390px; top:404px" data-at="L1@0.25">THE GUIDE &middot; TRAINING</div>
+    <div class="real" style="left:970px; top:404px" data-at="L1@0.6">THE GUIDE &middot; POST-TRAINING</div>
+    <div class="credits" data-at="L1@0.8">Our own words and pictures; any mistakes are ours.</div>
+  </section>
+
+</div>
+<script src="timeline.js"></script>
+<script src="engine/stage.js"></script>
+<script>
+/* ---------- S1: illustrative next-token probabilities; the loss formula is real (natural log, like js/training.js) ---------- */
+const S1_CANDS = [['mat', 0.40], ['floor', 0.25], ['sofa', 0.20], ['roof', 0.10]];   // illustrative; the rest share 0.05
+const S1_REAL = 0;                     // "mat" is what really came next
+const S1_WRONG_P = 0.02;               // the confident-wrong case: the model bet on another word, gave "mat" 2%
+const loss = p => -Math.log(p);
+$('#s1rows').innerHTML = S1_CANDS.map(([w, p], i) =>
+  `<div class="r" id="s1r${i}"><span class="w">${w}</span><span class="bar"><i id="s1b${i}"></i></span><span class="p">${Math.round(100 * p)}%</span><span class="tag" id="s1t${i}"></span></div>`).join('');
+$('#s1a').innerHTML = `p(mat) = ${S1_CANDS[S1_REAL][1].toFixed(2)} &rarr; loss<b>${loss(S1_CANDS[S1_REAL][1]).toFixed(2)}</b><small>fairly sure, and right: small surprise</small>`;
+$('#s1b').innerHTML = `p(mat) = ${S1_WRONG_P.toFixed(2)} &rarr; loss<b>${loss(S1_WRONG_P).toFixed(2)}</b><small>sure of another word, and wrong: big surprise</small>`;
+Stage.scene('s1', (lt, s) => {
+  const b0 = at(s, 1, 0.4), b1 = at(s, 1, 0.9);
+  S1_CANDS.forEach(([, p], i) => {
+    const k = easeOut(prog(lt, b0 + (b1 - b0) * i / S1_CANDS.length, 0.4));
+    $('#s1b' + i).style.width = 100 * (p / S1_CANDS[0][1]) * k + '%';
+    $('#s1r' + i).style.opacity = k > 0 ? 0.3 + 0.7 * Math.min(1, k * 1.5) : 0;
+  });
+  /* "...its surprise at the real one": the real next word lights up */
+  const real = lt >= at(s, 2, 0.25);
+  $('#s1r0').style.background = real ? 'rgba(245,193,61,0.16)' : 'transparent';
+  $('#s1t0').textContent = real ? 'REAL NEXT' : '';
+  reveal($('#s1a'), prog(lt, at(s, 2, 0.6), 0.4));
+  reveal($('#s1b'), prog(lt, at(s, 3, 0.35), 0.4));
+});
+
+/* ---------- S2: the loop; illustrative knobs and an illustrative valley ---------- */
+const S2_NODES = [['Guess', 'spark', '--teal'], ['Compare', 'search', '--yellow'],
+  ['Nudge every knob', 'gear', '--orange'], ['Repeat', 'undo', '--blue']];
+buildChain($('#s2chain'), 's2', S2_NODES, { w: 236, gap: 52, y: 186, h: 88, x0: 410 });
+const S2_KNOBS = [1, -1, 1, 1, -1, 1, -1, -1];   // illustrative: which way backprop says each knob should turn
+$('#s2knobs').innerHTML = S2_KNOBS.map((d, i) =>
+  `<div class="kn"><div class="dial"><i id="s2d${i}"></i></div><div class="ar" id="s2a${i}" style="color:${d > 0 ? 'var(--teal)' : 'var(--orange)'}">${d > 0 ? '&uarr;' : '&darr;'}</div></div>`).join('');
+/* valley: loss = a*(x - 0.5)^2 + c, lowest in the middle, drawn in the 503x140 svg */
+const vx = u => 20 + u * 463, vy = u => 126 - 108 * Math.pow((u - 0.5) / 0.5, 2);   // svg y grows downward: edges high, middle low
+$('#s2curve').setAttribute('d', Array.from({ length: 41 }, (_, i) => (i ? 'L' : 'M') + vx(i / 40).toFixed(1) + ' ' + vy(i / 40).toFixed(1)).join(' '));
+Stage.scene('s2', (lt, s) => {
+  /* nodes appear on line 0; the glow follows the words of line 3, then cycles fast on line 4 */
+  const words = [at(s, 3, 0.02), at(s, 3, 0.27), at(s, 3, 0.52), at(s, 3, 0.77)];
+  let act = -1;
+  if (lt >= at(s, 0, 0.3) && lt < at(s, 1, 0)) act = 0;
+  else if (lt >= at(s, 1, 0) && lt < words[0]) act = 2;
+  else if (lt >= words[0] && lt < at(s, 4, 0)) act = words.filter(t => lt >= t).length - 1;
+  else if (lt >= at(s, 4, 0)) act = Math.floor((lt - at(s, 4, 0)) / 0.32) % 4;
+  S2_NODES.forEach(([, , c], i) => {
+    const el = $('#s2_n' + i);
+    reveal(el, prog(lt, 0.4 + i * 0.25, 0.45), true);
+    el.style.boxShadow = i === act ? `0 0 34px color-mix(in srgb, var(${c}) 60%, transparent)` : '';
+    if (i) $(`#s2_c${i} i`).style.width = 100 * prog(lt, 0.4 + i * 0.25, 0.35) + '%';
+  });
+  const k = prog(lt, 1.4, 0.8);
+  $('#s2back').setAttribute('stroke-dasharray', `${k} 1`);
+  $('#s2head').setAttribute('opacity', k >= 1 ? 1 : 0);
+  /* backprop: an arrow per knob, one after another, as the line names "which way" */
+  const a0 = at(s, 1, 0.3), a1 = at(s, 1, 0.8);
+  S2_KNOBS.forEach((d, i) => {
+    const t = a0 + (a1 - a0) * i / S2_KNOBS.length;
+    $('#s2a' + i).style.opacity = prog(lt, t, 0.25);
+    /* gradient descent: every knob turns a little, in steps, from line 2 on */
+    const steps = lt < at(s, 2, 0.3) ? 0 : 1 + Math.floor((lt - at(s, 2, 0.3)) / 0.6);
+    $('#s2d' + i).style.transform = `rotate(${d * Math.min(steps, 8) * 6}deg)`;
+  });
+  /* the ball steps down the valley: discrete small steps, each a fraction of the remaining slope */
+  const g0 = at(s, 2, 0.3), n = lt < g0 ? 0 : Math.min(14, 1 + Math.floor((lt - g0) / 0.45));
+  const f = lt < g0 ? 0 : easeOut(clamp01(((lt - g0) % 0.45) / 0.3));
+  const pos = m => 0.5 - 0.42 * Math.pow(0.72, m);         // each step 28% of the way to the bottom
+  const u = n === 0 ? pos(0) : pos(n - 1) + (pos(n) - pos(n - 1)) * (n >= 14 ? 1 : f);
+  $('#s2ball').setAttribute('cx', vx(u)); $('#s2ball').setAttribute('cy', vy(u) - 13);
+});
+
+/* ---------- S3: the guide's training demo at step 0, step 132 and step 586 (out/shots-data.json) ---------- */
+/* at 1.24x the 1140x512 screen shows 1549x696 shot px; centred on (1045, 586) that is x 270-1820, y 238-934:
+   the stat line, the loss chart and the whole next-character grid */
+const S3_CAM = [[0, 1045, 586, 1.24]];
+Stage.scene('s3', (lt, s) => {
+  ['#s3a', '#s3b', '#s3c'].forEach(id => setCam($(id), S3_CAM, lt));
+  $('#s3b').style.opacity = prog(lt, at(s, 1, 0.1), 0.6);     // training starts as Vera names the network
+  $('#s3c').style.opacity = prog(lt, at(s, 2, 0.15), 0.7);    // "loss falls"
+  reveal($('#s3grid'), prog(lt, at(s, 1, 0.75), 0.35), true);
+  if (lt >= at(s, 2, 0.05)) $('#s3grid').style.opacity = 0;   // grid highlight hands over to the numbers
+  reveal($('#s3stat'), prog(lt, at(s, 2, 0.08), 0.35), true);
+  if (lt >= at(s, 2, 0.5)) $('#s3stat').style.opacity = 0;
+  reveal($('#s3floor'), prog(lt, at(s, 2, 0.55), 0.35), true);
+  /* the card that matches the words glows */
+  const cur = lt >= at(s, 2, 0.55) ? 2 : lt >= at(s, 2, 0.3) ? 1 : lt >= at(s, 2, 0.1) ? 0 : -1;
+  [0, 1, 2].forEach(i => { $('#s3n' + i).style.boxShadow = i === cur ? '0 0 24px rgba(129,229,172,0.4)' : ''; });
+});
+
+/* ---------- S4: one character vs thousands of tokens (illustrative context strip) ---------- */
+const S4_CTX = ['The', 'cat', 'sat', 'on', 'the', 'mat', 'It', 'was', '&hellip;', '?'];   // sized to fit the 503 px card row
+$('#s4ctx').innerHTML = S4_CTX.map((w, i) => `<span class="ct${w === '?' ? ' q' : ''}" id="s4c${i}">${w}</span>`).join('');
+Stage.scene('s4', (lt, s) => {
+  const c0 = at(s, 1, 0.1), c1 = at(s, 1, 0.45);
+  S4_CTX.forEach((_, i) => { $('#s4c' + i).style.opacity = prog(lt, c0 + (c1 - c0) * i / S4_CTX.length, 0.2); });
+});
+
+/* ---------- S5: an illustrative smooth power-law curve, then Chinchilla's ~20 tokens per parameter ---------- */
+const px = u => 40 + u * 590, py = u => 280 - 240 * Math.pow(1 - u, 1.8);   // svg y grows downward: starts high, falls, flattens
+$('#s5curve').setAttribute('d', Array.from({ length: 61 }, (_, i) => (i ? 'L' : 'M') + px(i / 60).toFixed(1) + ' ' + py(i / 60).toFixed(1)).join(' '));
+const S5_DOTS = [0.12, 0.3, 0.48, 0.66, 0.84];
+$('#s5dots').innerHTML = S5_DOTS.map((u, i) => `<circle id="s5d${i}" cx="${px(u)}" cy="${py(u)}" r="9" fill="#F5C13D"/>`).join('');
+const CHINCHILLA_TOKENS_PER_PARAM = 20;   // Hoffmann et al. 2022, as quoted in the guide ("roughly 20 tokens per parameter")
+Stage.scene('s5', (lt, s) => {
+  const k = easeInOut(prog(lt, at(s, 1, 0.15), at(s, 1, 0.6) - at(s, 1, 0.15)));
+  $('#s5curve').setAttribute('stroke-dasharray', `${k} 1`);
+  S5_DOTS.forEach((u, i) => { $('#s5d' + i).setAttribute('opacity', k >= u ? 1 : 0); });
+  countTo($('#s5n'), CHINCHILLA_TOKENS_PER_PARAM, lt, at(s, 2, 0.6), 0.8);
+});
+
+/* ---------- S6: illustrative base-model continuation, then the guide's four stages ---------- */
+const S6_A = 'What is the capital of Germany? What is the capital of Spain? What is';
+const S6_STAGES = [
+  ['Pretraining', 'doc', '--teal', 'Next-token prediction on trillions of tokens of web, books and code'],
+  ['Supervised fine-tuning', 'chat', '--blue', 'Example conversations: an assistant behaving well'],
+  ['Preference tuning', 'check', '--yellow', 'Pairs of answers, the better one wins: RLHF (2022), DPO (2023)'],
+  ['RL with verifiable rewards', 'code', '--orange', 'Rewards for checkable answers: maths, code, tool use. From 2024']];
+buildChain($('#s6chain'), 's6', S6_STAGES, { w: 262, gap: 30, y: 350, h: 262, x0: 391 });
+Stage.scene('s6', (lt, s) => {
+  typeText($('#s6a'), S6_A, lt, at(s, 1, 0.45), at(s, 1, 1.0));
+  runChain('s6', S6_STAGES, [at(s, 1, 0.2), at(s, 2, 0.32), at(s, 2, 0.62), at(s, 3, 0.15)], lt);
+});
+
+/* ---------- S7: try it yourself ---------- */
+Stage.scene('s7', (lt, s) => {
+  Stage.spotlight(prog(lt, 0.2, 1.2));
+  /* the trained panel: chart and grid */
+  setCam($('#s7a'), [[0, 1045, 600, 1.2], [s.dur, 1045, 590, 1.28]], lt);
+  /* the stages list with "Preference tuning" open */
+  setCam($('#s7b'), [[0, 1045, 560, 1.4], [s.dur, 1045, 560, 1.48]], lt);
+});
+
+Stage.start();
+</script>
+</body>
+</html>

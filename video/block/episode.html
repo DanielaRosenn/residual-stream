@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Residual Stream - EP 06 - The block</title>
+<link rel="stylesheet" href="engine/stage.css">
+<style>
+  /* The Residual Stream palette (the site's dark theme), overriding the engine's Flow Show defaults
+     for this episode only - same overrides as EP 02 (video/tokens/episode.html):
+     green #158864, dark green #182D2A, mint #81E5AC, light #DEF6EF, yellow #F5C13D. */
+  :root {
+    --panel: rgba(16, 36, 32, 0.95);
+    --text: #DEF6EF;
+    --muted: #93b3a9;
+    --teal: #81E5AC;
+    --yellow: #F5C13D;
+    --orange: #FFA45C;
+    --blue: #86BDEB;
+    --red: #FF8F88;
+    --purple: #C7A8FF;
+    --green: #158864;
+    --deep: #0D483D;
+  }
+  #stage { background: radial-gradient(ellipse at 50% 38%, #24453e 0%, #182D2A 45%, #0c1a17 100%); }
+  .spot.l { background: linear-gradient(180deg, rgba(129,229,172,0.30), rgba(129,229,172,0.02)); }
+  .spot.r { background: linear-gradient(180deg, rgba(245,193,61,0.26), rgba(245,193,61,0.02)); }
+  .floor { background: linear-gradient(180deg, rgba(6,16,14,0) 0%, rgba(6,16,14,0.78) 100%); }
+  #cap { background: rgba(10, 26, 23, 0.95); }
+  .card { border-color: rgba(129,229,172,0.22); }
+  .chip { background: rgba(14, 32, 28, 0.9); }
+  .node { background: rgba(14, 32, 28, 0.96); }
+  .real { background: rgba(10,26,23,0.92); }
+  .note { position: absolute; font-size: 18px; color: var(--muted); font-weight: 500; }
+  .hl.y { border-color: var(--yellow); box-shadow: 0 0 36px rgba(245,193,61,0.55), inset 0 0 24px rgba(245,193,61,0.15); }
+  .card .lbl { font-size: 19px; }
+  .center { position: absolute; left: 390px; width: 1140px; text-align: center; }
+
+  /* token tile, as in EP 02 */
+  .tok { display: inline-flex; flex-direction: column; align-items: center; padding: 6px 14px 4px; border-radius: 12px; border: 2.5px solid var(--teal);
+    background: rgba(13,72,61,0.85); font-family: var(--mono); font-size: 29px; font-weight: 600; color: var(--text); }
+
+  /* S1: one block, stacked */
+  #s1 .kick { color: var(--teal); top: 196px; }
+  #s1 .big { top: 236px; font-size: 92px; letter-spacing: -1.5px; }
+  #s1 .sub { top: 360px; }
+  #s1 .demo { left: 430px; top: 440px; width: 1060px; height: 372px; }
+  #s1 .half { position: absolute; top: 0; width: 530px; height: 372px; }
+  #s1 .half .lbl { position: absolute; left: 34px; top: 22px; }
+  #s1 .half svg { position: absolute; left: 34px; top: 64px; }
+  #s1 .half .num { position: absolute; left: 300px; top: 120px; font-size: 112px; font-weight: 800; color: var(--yellow); line-height: 1; }
+  #s1 .half .num small { display: block; font-size: 24px; color: var(--text); font-weight: 700; margin-top: 8px; }
+  #s1 .demo .note { right: 26px; bottom: 16px; font-size: 17px; }
+
+  /* S2: the residual stream, in the guide's walkthrough */
+  #s2 .screen { left: 390px; top: 176px; width: 900px; height: 520px; }
+  #s2 .steps .lbl { position: absolute; left: 1320px; top: 182px; width: 210px; text-align: center; }
+  #s2 .pill { position: absolute; left: 1320px; width: 210px; height: 58px; border-radius: 14px; border: 2.5px solid rgba(129,229,172,0.35);
+    background: rgba(14,32,28,0.95); display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 25px; font-weight: 800; }
+  #s2 .pill.add { color: var(--yellow); }
+  #s2 .rail { position: absolute; left: 1300px; top: 226px; width: 6px; height: 420px; border-radius: 3px; background: var(--green); }
+  #s2 .bottom { top: 726px; }
+  #s2 .bottom .chip { font-size: 24px; padding: 11px 24px; }
+
+  /* S3: attention is where tokens meet */
+  #s3 .board { left: 390px; top: 176px; width: 1140px; height: 530px; }
+  #s3 .board svg { position: absolute; left: 0; top: 0; }
+  #s3 .board .tok { position: absolute; top: 418px; width: 150px; justify-content: center; }
+  #s3 .board .note { left: 26px; top: 494px; font-size: 17px; }
+  #s3 .bottom { top: 728px; }
+  #s3 .bottom .chip { font-size: 24px; padding: 11px 24px; }
+
+  /* S4: the MLP */
+  #s4 .net { left: 390px; top: 176px; width: 540px; height: 492px; padding: 20px 26px; }
+  #s4 .net svg { position: absolute; left: 0; top: 56px; }
+  #s4 .net .cl { position: absolute; top: 396px; width: 180px; text-align: center; font-size: 19px; font-weight: 700; }
+  #s4 .net .note { left: 26px; right: 26px; top: 456px; font-size: 17px; text-align: center; }
+  #s4 .screen { left: 960px; top: 176px; width: 570px; height: 290px; }
+  #s4 .stat { left: 960px; top: 494px; width: 570px; height: 166px; padding: 18px 26px; border-color: var(--yellow); }
+  #s4 .stat .row { display: flex; align-items: center; gap: 22px; margin-top: 4px; }
+  #s4 .stat .n { font-size: 92px; color: var(--yellow); }
+  #s4 .stat .l { font-size: 25px; line-height: 1.25; }
+  #s4 .bottom { top: 704px; }
+  #s4 .bottom .chip { font-size: 23px; padding: 11px 22px; }
+
+  /* S5: why residual connections */
+  #s5 .side { top: 176px; width: 550px; height: 480px; padding: 20px 26px; }
+  #s5 .side svg { position: absolute; left: 0; top: 56px; }
+  #s5 .side .note { right: 22px; top: 22px; font-size: 17px; }
+  #s5 .bottom { top: 690px; display: flex; justify-content: center; gap: 20px; }
+  #s5 .bottom .chip { font-size: 22px; padding: 10px 20px; }
+
+  /* S6: the calculator */
+  #s6 .screen { left: 390px; top: 176px; width: 1140px; height: 385px; }
+  #s6 .part { top: 588px; width: 360px; height: 116px; padding: 14px 24px; border-color: rgba(129,229,172,0.3); }
+  #s6 .part .n { font-size: 46px; font-weight: 800; line-height: 1.15; }
+  #s6 .part .n small { font-size: 26px; color: var(--muted); font-weight: 700; margin-left: 10px; }
+  #s6 .foot { top: 722px; font-size: 18px; color: var(--muted); font-weight: 500; }
+
+  /* S7: try it yourself */
+  #s7 .title { position: absolute; left: 0; right: 0; top: 120px; text-align: center; font-size: 104px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.05; }
+  #s7 .title small { display: block; font-size: 30px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-top: 14px; }
+  #s7 .url { position: absolute; left: 0; right: 0; top: 322px; text-align: center; }
+  #s7 .url .chip { font-family: var(--mono); font-size: 27px; color: var(--teal); }
+  #s7 .screen { top: 446px; width: 560px; height: 315px; }
+  #s7 .credits { position: absolute; left: 390px; width: 1140px; top: 784px; text-align: center; font-size: 18px; color: var(--muted); font-weight: 500; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- S1: a transformer is one block, stacked -->
+  <section class="scene hero" id="s1">
+    <div class="kick" data-at="0.2">THE RESIDUAL STREAM &middot; EP 06</div>
+    <div class="big" data-at="0.4" data-pop>The <span class="hl-y">block</span>, and the <span class="hl-t">stream</span> it sits on</div>
+    <div class="sub" data-at="0.8">One layer of a transformer, and what flows through it</div>
+    <div class="card demo" data-at="L1@0.1" data-pop>
+      <div class="half" style="left:0">
+        <div class="lbl">GPT-2 SMALL</div>
+        <div id="s1a"></div>
+        <div class="num"><span id="s1na">0</span><small>blocks</small></div>
+      </div>
+      <div class="half" style="left:530px">
+        <div class="lbl">GPT-3</div>
+        <div id="s1b"></div>
+        <div class="num"><span id="s1nb">0</span><small>blocks</small></div>
+      </div>
+      <div class="note" data-at="L2@0.3">One slab per block; each block has its own weights</div>
+    </div>
+  </section>
+
+  <!-- S2: the residual stream, in the guide's block walkthrough -->
+  <section class="scene" id="s2">
+    <div class="t-title" data-at="0.2">Read, compute, <span class="hl-y">add back</span></div>
+    <div class="screen" data-at="L0@0.4" data-pop>
+      <div class="cam" id="s2c0"><img src="shots/01-stage-1.png" alt="">
+        <div class="hl t" id="s2hl" style="left:352px; top:96px; width:58px; height:790px"></div>
+      </div>
+      <div class="cam" id="s2c1"><img src="shots/02-stage-2.png" alt=""></div>
+      <div class="cam" id="s2c2"><img src="shots/03-stage-3.png" alt=""></div>
+      <div class="cam" id="s2c3"><img src="shots/04-stage-4.png" alt=""></div>
+      <div class="cam" id="s2c4"><img src="shots/05-stage-5.png" alt=""></div>
+      <div class="cam" id="s2c5"><img src="shots/06-stage-6.png" alt=""></div>
+      <div class="cam" id="s2c6"><img src="shots/07-stage-7.png" alt=""></div>
+      <div class="cam" id="s2c7"><img src="shots/08-stage-8.png" alt=""></div>
+    </div>
+    <div class="real" style="left:1146px; top:650px" data-at="L0@0.6">REAL DEMO</div>
+    <div class="steps">
+      <div class="lbl" data-at="L2@0.0">ONE BLOCK &uarr;</div>
+      <div class="rail" data-at="L2@0.0"></div>
+    </div>
+    <div id="s2pills"></div>
+    <div class="center bottom"><span class="chip" style="border-color:var(--teal)" data-at="L3@0.5" data-pop>
+      <span class="ico" style="color:var(--teal)" data-ico="check"></span>Nothing overwrites. Everything accumulates.</span></div>
+  </section>
+
+  <!-- S3: attention is the only place tokens interact -->
+  <section class="scene" id="s3">
+    <div class="t-title" data-at="0.2">Attention: where tokens <span class="hl-t">meet</span></div>
+    <div class="card board" data-at="L0@0.4" data-pop>
+      <div id="s3svg"></div>
+      <div id="s3toks"></div>
+      <div class="note" data-at="L1@0.6">Illustrative: one hand-drawn attention pattern</div>
+    </div>
+    <div class="center bottom"><span class="chip" style="border-color:var(--muted)" data-at="L3@0.3" data-pop>
+      <span class="ico" style="color:var(--muted)" data-ico="user"></span>Everywhere else, each token works on its own</span></div>
+  </section>
+
+  <!-- S4: the MLP works on each token alone -->
+  <section class="scene" id="s4">
+    <div class="t-title" data-at="0.2">The <span class="hl-y">MLP</span>: one token at a time</div>
+    <div class="card net" data-at="L0@0.4" data-pop>
+      <div class="lbl">ONE TOKEN'S VECTOR</div>
+      <div id="s4svg"></div>
+      <div class="cl" style="left:0">8 numbers in</div>
+      <div class="cl" style="left:180px; color:var(--yellow)" data-at="L1@0.4">&times;4 wider<br>+ nonlinearity</div>
+      <div class="cl" style="left:360px" data-at="L1@0.85">8 numbers out</div>
+      <div class="note" data-at="L1@0.9">Sizes from the guide's demo; real models are thousands wide</div>
+    </div>
+    <div class="screen" data-at="L1@0.75" data-pop>
+      <div class="cam" id="s4cam"><img src="shots/06-stage-6.png" alt=""></div>
+    </div>
+    <div class="real" style="left:1388px; top:424px" data-at="L1@0.85">REAL DEMO</div>
+    <div class="card stat" data-at="L2@0.25" data-pop>
+      <div class="lbl">IN A DENSE MODEL</div>
+      <div class="row"><div class="n">&asymp;&#8202;&#8532;</div><div class="l">of the parameters<br>live in the MLPs</div></div>
+    </div>
+    <div class="center bottom"><span class="chip" style="border-color:var(--yellow)" data-at="L3@0.3" data-pop>
+      <span class="ico" style="color:var(--yellow)" data-ico="search"></span>Research suggests much factual recall happens here</span></div>
+  </section>
+
+  <!-- S5: why residual connections -->
+  <section class="scene" id="s5">
+    <div class="t-title" data-at="0.2">Why <span class="hl-y">add</span>, not replace?</div>
+    <div class="card side" style="left:390px; border-color:rgba(255,143,136,0.45)" data-at="L1@0.05" data-pop>
+      <div class="lbl" style="color:var(--red)">REPLACE AT EVERY LAYER</div>
+      <div class="note">Illustrative bars</div>
+      <div id="s5a"></div>
+    </div>
+    <div class="card side" style="left:980px; border-color:var(--teal)" data-at="L2@0.8" data-pop>
+      <div class="lbl" style="color:var(--teal)">ADD TO THE STREAM</div>
+      <div class="note">Illustrative bars</div>
+      <div id="s5b"></div>
+    </div>
+    <div class="center bottom">
+      <span class="chip" style="border-color:var(--blue)" data-at="L4@0.45" data-pop>
+        <span class="ico" style="color:var(--blue)" data-ico="search"></span>From computer vision: ResNet, 2015</span>
+      <span class="chip" style="border-color:var(--teal)" data-at="L5@0.3" data-pop>
+        <span class="ico" style="color:var(--teal)" data-ico="gear"></span>Norms: a stable scale for each sublayer</span>
+    </div>
+  </section>
+
+  <!-- S6: the guide's parameter calculator -->
+  <section class="scene" id="s6">
+    <div class="t-title" data-at="0.2">Count the <span class="hl-y">parameters</span></div>
+    <div class="screen" data-at="L0@0.5" data-pop>
+      <div class="cam" id="s6cam"><img src="shots/09-calc-llama3.png" alt="">
+        <div class="hl t" id="s6h0" style="left:752px; top:204px; width:168px; height:64px"></div>
+        <div class="hl y" id="s6h1" style="left:268px; top:526px; width:446px; height:100px"></div>
+        <div class="hl y" id="s6h2" style="left:530px; top:626px; width:1082px; height:52px"></div>
+      </div>
+    </div>
+    <div class="real" style="left:1296px; top:190px" data-at="L1@0.2">REAL CALCULATOR</div>
+    <div class="card part" id="s6p0" style="left:390px" data-at="L2@0.1" data-pop><div class="lbl">ATTENTION</div><div class="n">1.34B<small>17%</small></div></div>
+    <div class="card part" id="s6p1" style="left:780px" data-at="L2@0.3" data-pop><div class="lbl">MLP</div><div class="n" style="color:var(--yellow)">5.64B<small>70%</small></div></div>
+    <div class="card part" id="s6p2" style="left:1170px" data-at="L2@0.5" data-pop><div class="lbl">EMBEDDINGS</div><div class="n">1.05B<small>13%</small></div></div>
+    <div class="center foot" data-at="L3@0.4">Llama 3 8B preset. Real architecture formulas; the tiny norm and bias terms are left out.</div>
+  </section>
+
+  <!-- S7: try it yourself -->
+  <section class="scene" id="s7">
+    <div class="title" data-at="0.3" data-pop>The <span class="hl-t">Residual</span> Stream
+      <small>The block chapter &middot; step through it, then count</small></div>
+    <div class="url"><span class="chip" style="border-color:var(--teal)" data-at="L1@0.1" data-pop>https://danielarosenn.github.io/residual-stream/</span></div>
+    <div class="screen" style="left:390px" data-at="L1@0.25" data-pop>
+      <div class="cam" id="s7a"><img src="shots/04-stage-4.png" alt=""></div>
+    </div>
+    <div class="screen" style="left:970px" data-at="L1@0.6" data-pop>
+      <div class="cam" id="s7b"><img src="shots/09-calc-llama3.png" alt=""></div>
+    </div>
+    <div class="real" style="left:390px; top:404px" data-at="L1@0.3">THE BLOCK WALKTHROUGH</div>
+    <div class="real" style="left:970px; top:404px" data-at="L1@0.65">THE CALCULATOR &middot; DEEP MODE</div>
+    <div class="credits" data-at="L2@0.2">Our own words and pictures; any mistakes are ours.</div>
+  </section>
+
+</div>
+<script src="timeline.js"></script>
+<script src="engine/stage.js"></script>
+<script>
+/* deterministic pseudo-random in -1..1 for the illustrative drawings (no state between frames) */
+const nz = (a, b) => { const x = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return (x - Math.floor(x)) * 2 - 1; };
+const MINT = '129,229,172', YEL = '245,193,61', RED = '255,143,136';
+
+/* ---------- S1: GPT-2 small has 12 blocks, GPT-3 has 96 (the guide's own numbers) ---------- */
+const S1_W = 240, S1_H = 270;   // stack drawing, stage px
+function stackSvg(id, n, gap) {
+  const h = (S1_H - gap * (n - 1)) / n;
+  return `<svg width="${S1_W}" height="${S1_H}">` + [...Array(n)].map((_, i) =>
+    `<rect id="${id}${i}" x="0" y="${(S1_H - (i + 1) * h - i * gap).toFixed(2)}" width="${S1_W}" height="${h.toFixed(2)}" rx="${Math.min(6, h / 2).toFixed(1)}" fill="rgb(${MINT})" opacity="0"/>`
+  ).join('') + '</svg>';
+}
+$('#s1a').innerHTML = stackSvg('s1ra', 12, 6);
+$('#s1b').innerHTML = stackSvg('s1rb', 96, 1.2);   // wide enough gaps that 96 slabs still read as slabs
+function s1stack(id, n, lt, t0, t1, tint) {
+  let shown = 0;
+  for (let i = 0; i < n; i++) {
+    const k = prog(lt, t0 + (t1 - t0) * i / n, 0.15);
+    if (k > 0) shown = i + 1;
+    /* "each one has its own weights": every slab gets its own shade */
+    const a = (0.88 - tint * (0.25 + 0.3 * (nz(i, n) + 1) / 2)) * k;
+    $('#' + id + i).setAttribute('opacity', a.toFixed(3));
+  }
+  return shown;
+}
+Stage.scene('s1', (lt, s) => {
+  const tint = prog(lt, at(s, 2, 0.3), 0.6);
+  $('#s1na').textContent = s1stack('s1ra', 12, lt, at(s, 1, 0.25), at(s, 1, 0.5), tint);
+  $('#s1nb').textContent = s1stack('s1rb', 96, lt, at(s, 1, 0.62), at(s, 1, 0.97), tint);
+});
+
+/* ---------- S2: the guide's walkthrough, stage by stage (all shots at the same scroll position) ---------- */
+/* panel spans shot x 252-1836, y 60-975; at 1.21x the 900x520 screen shows x 252-1836, y 59-975 */
+const S2_CAM = [[0, 1044, 517, 1.212]];
+const S2_STEPS = [['Norm', false], ['Attention', false], ['+ add', true], ['Norm', false], ['MLP', false], ['+ add', true]];
+const S2_PILL_TOP = 588, S2_PILL_PITCH = 72;   // bottom pill's top, and spacing upward (stream flows up)
+$('#s2pills').innerHTML = S2_STEPS.map(([t, add], i) =>
+  `<div class="pill${add ? ' add' : ''}" id="s2p${i}" style="top:${S2_PILL_TOP - i * S2_PILL_PITCH}px">${t}</div>`).join('');
+Stage.scene('s2', (lt, s) => {
+  /* stage 1 while the stream is named; stages 2-7 across "reads it, computes, adds back"; stage 8 on "it all piles up" */
+  const t0 = at(s, 2, 0.02), t1 = at(s, 3, 0.45);
+  const times = [0, ...S2_STEPS.map((_, i) => t0 + (t1 - t0) * i / S2_STEPS.length), at(s, 3, 0.55)];
+  for (let i = 0; i < 8; i++) {
+    setCam($('#s2c' + i), S2_CAM, lt);
+    $('#s2c' + i).style.opacity = i === 0 ? 1 : prog(lt, times[i], 0.3);
+  }
+  const k = prog(lt, at(s, 1, 0.45), 0.4) * (1 - prog(lt, at(s, 2, 0.0), 0.3));
+  reveal($('#s2hl'), k, true);
+  const cur = times.filter(t => lt >= t).length - 1;   // 0..7 = guide stage index
+  S2_STEPS.forEach((_, i) => {
+    const p = $('#s2p' + i);
+    reveal(p, prog(lt, times[i + 1] - 0.15, 0.3), true);
+    const on = cur === i + 1;
+    p.style.borderColor = on ? 'var(--yellow)' : 'rgba(129,229,172,0.35)';
+    p.style.boxShadow = on ? '0 0 26px rgba(245,193,61,0.5)' : '';
+  });
+});
+
+/* ---------- S3: attention moves information between positions (illustrative pattern) ---------- */
+const S3_W = 1140, S3_H = 500;
+const S3_TOKS = ['Mia', 'lost', 'her', 'keys'];
+const S3_X0 = 240, S3_X1 = 1040;   // columns leave room on the left for the band label
+const S3_X = S3_TOKS.map((_, i) => S3_X0 + (S3_X1 - S3_X0) * i / (S3_TOKS.length - 1));
+const S3_ATT_Y0 = 214, S3_ATT_Y1 = 316, S3_MLP_Y = 62, S3_MLP_H = 64;
+(function buildS3() {
+  let g = `<svg width="${S3_W}" height="${S3_H}"><defs><marker id="s3arr" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="rgb(${MINT})"/></marker></defs>`;
+  g += `<rect id="s3band" x="20" y="${S3_ATT_Y0}" width="${S3_W - 40}" height="${S3_ATT_Y1 - S3_ATT_Y0}" rx="14" fill="rgba(${MINT},0.10)" stroke="rgba(${MINT},0.55)" stroke-width="2"/>`;
+  g += `<text x="36" y="${S3_ATT_Y0 + 44}" fill="rgb(${MINT})" font-size="20" font-weight="800" letter-spacing="1">ATTENTION</text><text x="36" y="${S3_ATT_Y0 + 70}" fill="rgb(${MINT})" font-size="18" font-weight="600">across tokens</text>`;
+  S3_X.forEach((x, i) => {
+    g += `<line x1="${x}" y1="410" x2="${x}" y2="24" stroke="rgba(${MINT},0.85)" stroke-width="8" stroke-linecap="round" marker-end="url(#s3arr)"/>`;
+    g += `<g id="s3m${i}"><rect x="${x - 70}" y="${S3_MLP_Y}" width="140" height="${S3_MLP_H}" rx="12" fill="rgba(14,32,28,0.98)" stroke="rgba(147,179,169,0.7)" stroke-width="2"/>`;
+    g += `<text x="${x}" y="${S3_MLP_Y + 30}" text-anchor="middle" fill="#DEF6EF" font-size="21" font-weight="800">MLP</text>`;
+    g += `<text x="${x}" y="${S3_MLP_Y + 52}" text-anchor="middle" fill="#93b3a9" font-size="16" font-weight="600">this token only</text></g>`;
+  });
+  /* causal arcs: each token reads from itself and earlier ones */
+  for (let i = 1; i < S3_X.length; i++) for (let j = 0; j < i; j++) {
+    const mx = (S3_X[i] + S3_X[j]) / 2, peak = S3_ATT_Y1 - 26 - 18 * (i - j);
+    g += `<path id="s3a${i}${j}" d="M${S3_X[j]},${S3_ATT_Y1 - 14} Q${mx},${peak - 40 * (i - j)} ${S3_X[i]},${S3_ATT_Y1 - 14}" fill="none" stroke="rgba(${MINT},0.5)" stroke-width="3"/>`;
+  }
+  g += `<circle id="s3dot" r="11" fill="rgb(${YEL})"/>`;
+  g += `<line id="s3up" x1="${S3_X[2]}" y1="${S3_ATT_Y0}" x2="${S3_X[2]}" y2="${S3_MLP_Y + S3_MLP_H + 4}" stroke="rgb(${YEL})" stroke-width="8" stroke-linecap="round"/>`;
+  g += '</svg>';
+  $('#s3svg').innerHTML = g;
+  $('#s3toks').innerHTML = S3_TOKS.map((t, i) => `<div class="tok" id="s3t${i}" style="left:${S3_X[i] - 75}px">${t}</div>`).join('');
+})();
+Stage.scene('s3', (lt, s) => {
+  S3_TOKS.forEach((_, i) => reveal($('#s3t' + i), prog(lt, at(s, 0, 0.5) + 0.12 * i, 0.3), true));
+  $('#s3band').setAttribute('opacity', prog(lt, at(s, 1, 0.1), 0.4));
+  /* "between positions": every backward arc fades in; then the one from "her" to "Mia" lights up */
+  const ka = prog(lt, at(s, 1, 0.55), 0.5), kh = prog(lt, at(s, 2, 0.3), 0.4);
+  for (let i = 1; i < S3_X.length; i++) for (let j = 0; j < i; j++) {
+    const a = $(`#s3a${i}${j}`), hot = i === 2 && j === 0;
+    a.setAttribute('opacity', (hot ? ka : ka * (1 - 0.6 * kh)).toFixed(3));
+    a.setAttribute('stroke', hot && kh > 0 ? `rgba(${YEL},${0.5 + 0.5 * kh})` : `rgba(${MINT},0.5)`);
+    a.setAttribute('stroke-width', hot ? 3 + 4 * kh : 3);
+  }
+  /* "Mia" travels along the arc into "her"'s column, which then carries it upward */
+  const kd = prog(lt, at(s, 2, 0.45), 0.9);
+  const arc = $('#s3a20'), len = arc.getTotalLength(), p = arc.getPointAtLength(len * easeInOut(kd));
+  $('#s3dot').setAttribute('cx', p.x); $('#s3dot').setAttribute('cy', p.y);
+  $('#s3dot').setAttribute('opacity', kd > 0 && kd < 1 ? 1 : 0);
+  const ku = prog(lt, at(s, 2, 0.45) + 0.9, 0.5);
+  $('#s3up').setAttribute('opacity', (0.85 * ku).toFixed(3));
+  $('#s3t2').style.borderColor = ku > 0 ? 'var(--yellow)' : 'var(--teal)';
+  /* the MLPs above are per token: no arcs between them */
+  S3_X.forEach((_, i) => $('#s3m' + i).setAttribute('opacity', prog(lt, at(s, 3, 0.15) + 0.1 * i, 0.35)));
+});
+
+/* ---------- S4: expand about 4x, nonlinearity, project back (the guide's demo sizes: 8 -> 32 -> 8) ---------- */
+const S4_W = 540, S4_H = 340, S4_D = 8, S4_HID = 32;   // D and H in js/block.js
+const S4_COLS = [90, 270, 450];
+const s4y = (k, n, pitch) => S4_H / 2 + (k - (n - 1) / 2) * pitch;
+(function buildS4() {
+  let g = `<svg width="${S4_W}" height="${S4_H}"><g id="s4l1">`;
+  for (let a = 0; a < S4_D; a++) for (let b = 0; b < S4_HID; b++)
+    g += `<line x1="${S4_COLS[0]}" y1="${s4y(a, S4_D, 40)}" x2="${S4_COLS[1]}" y2="${s4y(b, S4_HID, 10.2)}" stroke="rgba(${MINT},0.10)" stroke-width="1"/>`;
+  g += '</g><g id="s4l2">';
+  for (let b = 0; b < S4_HID; b++) for (let a = 0; a < S4_D; a++)
+    g += `<line x1="${S4_COLS[1]}" y1="${s4y(b, S4_HID, 10.2)}" x2="${S4_COLS[2]}" y2="${s4y(a, S4_D, 40)}" stroke="rgba(${YEL},0.10)" stroke-width="1"/>`;
+  g += '</g>';
+  for (let a = 0; a < S4_D; a++) g += `<circle id="s4i${a}" cx="${S4_COLS[0]}" cy="${s4y(a, S4_D, 40)}" r="14" fill="rgb(${MINT})"/>`;
+  for (let b = 0; b < S4_HID; b++) g += `<circle id="s4h${b}" cx="${S4_COLS[1]}" cy="${s4y(b, S4_HID, 10.2)}" r="4.6" fill="rgb(${YEL})"/>`;
+  for (let a = 0; a < S4_D; a++) g += `<circle id="s4o${a}" cx="${S4_COLS[2]}" cy="${s4y(a, S4_D, 40)}" r="14" fill="rgb(${YEL})"/>`;
+  $('#s4svg').innerHTML = g + '</svg>';
+})();
+Stage.scene('s4', (lt, s) => {
+  const kl1 = prog(lt, at(s, 1, 0.3), 0.4), kh = prog(lt, at(s, 1, 0.4), 0.4);
+  const knl = prog(lt, at(s, 1, 0.6), 0.4), kl2 = prog(lt, at(s, 1, 0.8), 0.4), ko = prog(lt, at(s, 1, 0.85), 0.4);
+  $('#s4l1').setAttribute('opacity', kl1);
+  $('#s4l2').setAttribute('opacity', kl2);
+  for (let b = 0; b < S4_HID; b++) {
+    /* nonlinearity: about half the hidden values are pushed towards zero (as GELU does to negatives) */
+    const neg = nz(b, 7) < 0;
+    $('#s4h' + b).setAttribute('opacity', (kh * (neg ? 1 - 0.8 * knl : 1)).toFixed(3));
+  }
+  for (let a = 0; a < S4_D; a++) $('#s4o' + a).setAttribute('opacity', prog(lt, at(s, 1, 0.85) + 0.04 * a, 0.3));
+  /* the MLP stage of the guide's walkthrough: title, text and the side-branch bars (shot x 760-1810, y 160-700) */
+  setCam($('#s4cam'), [[0, 1300, 420, 1.75], [s.dur, 1300, 430, 1.8]], lt);
+});
+
+/* ---------- S5: replace vs add, a hundred layers deep (illustrative bars) ---------- */
+const S5_V0 = [0.9, -0.6, 0.4, 1.0, -0.9, 0.3, 0.7, -0.4];
+const S5_ROWS = [0, 25, 50, 75, 100];        // layer depth shown on each row
+const S5_W = 550, S5_H = 400, S5_ROW_Y = r => 330 - r * 76, S5_BX = 146, S5_BP = 38, S5_BW = 24, S5_SC = 26;
+function s5vec(mode, r) {
+  const f = r / (S5_ROWS.length - 1);
+  return S5_V0.map((v, i) => mode === 'replace'
+    ? v * (1 - f) * (1 - 0.3 * f) + 0.75 * f * nz(r, i)            // shrinks and turns to noise
+    : v + 0.16 * [...Array(r)].reduce((acc, _, k) => acc + nz(k + 1, i + 9), 0));  // keeps v0, small additions
+}
+function s5svg(id, mode) {
+  let g = `<svg width="${S5_W}" height="${S5_H}">`;
+  if (mode === 'add') g += `<line x1="118" y1="388" x2="118" y2="6" stroke="#158864" stroke-width="10" stroke-linecap="round"/>`;
+  S5_ROWS.forEach((d, r) => {
+    const y = S5_ROW_Y(r) + 28, v = s5vec(mode, r), f = r / (S5_ROWS.length - 1);
+    const col = mode === 'replace' ? `rgb(${Math.round(129 + 126 * f)},${Math.round(229 - 86 * f)},${Math.round(172 - 36 * f)})` : `rgb(${MINT})`;
+    g += `<g id="${id}r${r}"><text x="14" y="${y + 6}" fill="#93b3a9" font-size="16" font-weight="700">${d === 0 ? 'input' : 'layer ' + d}</text>`;
+    g += `<line x1="${S5_BX - 6}" y1="${y}" x2="${S5_BX + 8 * S5_BP}" y2="${y}" stroke="rgba(147,179,169,0.35)" stroke-width="1.5"/>`;
+    S5_V0.forEach((g0, i) => {   // faint bars: where the vector started
+      const x = S5_BX + i * S5_BP, h = g0 * S5_SC;
+      g += `<rect x="${x - 2}" y="${h >= 0 ? y - h : y}" width="${S5_BW + 4}" height="${Math.abs(h)}" fill="rgba(147,179,169,0.22)"/>`;
+    });
+    v.forEach((x0, i) => {
+      const x = S5_BX + i * S5_BP + 4, h = Math.max(-34, Math.min(34, x0 * S5_SC));
+      g += `<rect x="${x}" y="${h >= 0 ? y - h : y}" width="${S5_BW - 8}" height="${Math.abs(h)}" fill="${col}"/>`;
+    });
+    if (mode === 'add' && r > 0) g += `<circle cx="118" cy="${y}" r="13" fill="#0c1a17" stroke="rgb(${YEL})" stroke-width="3"/><text x="118" y="${y + 6}" text-anchor="middle" fill="rgb(${YEL})" font-size="19" font-weight="800">+</text>`;
+    g += '</g>';
+  });
+  /* the training signal flowing back down: it fades away when every layer replaces */
+  const gid = id + 'g';
+  g += `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgb(${mode === 'replace' ? RED : MINT})" stop-opacity="0.95"/>` +
+       `<stop offset="1" stop-color="rgb(${mode === 'replace' ? RED : MINT})" stop-opacity="${mode === 'replace' ? 0 : 0.95}"/></linearGradient></defs>`;
+  g += `<g id="${id}grad"><text x="${S5_W - 24}" y="16" text-anchor="end" fill="${mode === 'replace' ? `rgb(${RED})` : `rgb(${MINT})`}" font-size="16" font-weight="800">GRADIENT &#8595;</text>`;
+  g += `<rect id="${id}gb" x="${S5_W - 52}" y="28" width="10" height="356" rx="5" fill="url(#${gid})"/></g>`;
+  return g + '</svg>';
+}
+$('#s5a').innerHTML = s5svg('s5a', 'replace');
+$('#s5b').innerHTML = s5svg('s5b', 'add');
+function s5run(id, lt, t0, t1, tg) {
+  S5_ROWS.forEach((_, r) => $(`#${id}r${r}`).setAttribute('opacity', prog(lt, t0 + (t1 - t0) * r / S5_ROWS.length, 0.35)));
+  const kg = prog(lt, tg, 0.9);   // gradient bar grows from the top down
+  $(`#${id}grad`).setAttribute('opacity', kg > 0 ? 1 : 0);
+  $(`#${id}gb`).setAttribute('height', (356 * easeOut(kg)).toFixed(1));
+}
+Stage.scene('s5', (lt, s) => {
+  s5run('s5a', lt, at(s, 1, 0.15), at(s, 1, 0.9), at(s, 2, 0.35));
+  /* the stream version builds while Toki asks who found it, so its gradient lands on "ResNet" */
+  s5run('s5b', lt, at(s, 2, 0.9), at(s, 4, 0.2), at(s, 4, 0.3));
+});
+
+/* ---------- S6: the guide's calculator on its Llama 3 8B preset (numbers: out/shots-data.json) ---------- */
+/* overview: presets, inputs, total, split bar and legend (shot x 270-1810, y 200-720); then the total and the split */
+Stage.scene('s6', (lt, s) => {
+  setCam($('#s6cam'), [[0, 1040, 460, 1.247], [at(s, 1, 0.5), 1040, 460, 1.247], [at(s, 1, 0.85), 860, 590, 1.65]], lt);
+  reveal($('#s6h0'), prog(lt, at(s, 1, 0.2), 0.35) * (1 - prog(lt, at(s, 1, 0.5), 0.3)), true);
+  reveal($('#s6h1'), prog(lt, at(s, 1, 0.8), 0.35) * (1 - prog(lt, at(s, 3, 0.0), 0.3)), true);
+  reveal($('#s6h2'), prog(lt, at(s, 3, 0.05), 0.35), true);
+  const hot = lt >= at(s, 3, 0.05);
+  $('#s6p1').style.borderColor = hot ? 'var(--yellow)' : 'rgba(129,229,172,0.3)';
+  $('#s6p1').style.boxShadow = hot ? '0 0 26px rgba(245,193,61,0.45)' : '';
+});
+
+/* ---------- S7: try it yourself ---------- */
+Stage.scene('s7', (lt, s) => {
+  Stage.spotlight(prog(lt, 0.2, 1.2));
+  setCam($('#s7a'), [[0, 1044, 517, 1.21], [s.dur, 1044, 517, 1.28]], lt);
+  setCam($('#s7b'), [[0, 1040, 460, 1.25], [s.dur, 1040, 470, 1.32]], lt);
+});
+
+Stage.start();
+</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+{
+  "brand": "The Residual Stream &middot; EP 02 &middot; Tokens",
+  "output": "Residual-Stream-EP02-Tokens.mp4",
+  "voices": {
+    "VERA": { "voice": "en-GB-SoniaNeural", "rate": "+18%", "pitch": "+0Hz" },
+    "TOKI": { "voice": "en-US-BrianNeural", "rate": "+20%", "pitch": "+4Hz" }
+  },
+  "cast": { "L": "VERA", "R": "TOKI" },
+  "scenes": [
+    {
+      "id": "s1",
+      "lines": [
+        { "who": "TOKI", "text": "Vera, does the model read my words?" },
+        { "who": "VERA", "text": "Not words, not letters. Numbered pieces from a fixed list." },
+        { "who": "TOKI", "text": "Numbered pieces? Like me?" },
+        { "who": "VERA", "text": "Like you. Each piece is a token, and the model only sees its number." }
+      ]
+    },
+    {
+      "id": "s2",
+      "lines": [
+        { "who": "TOKI", "text": "Why not just use letters?" },
+        { "who": "VERA", "text": "The list stays tiny, but every sentence gets very long." },
+        { "who": "TOKI", "text": "One number per word, then?" },
+        { "who": "VERA", "text": "Then the list explodes, and any new word is simply unknown." }
+      ]
+    },
+    {
+      "id": "s3",
+      "lines": [
+        { "who": "TOKI", "text": "So what's in between?" },
+        { "who": "VERA", "text": "Byte-pair encoding. Start from characters, and keep gluing the most frequent neighbouring pair.",
+          "say": "Byte pair encoding. Start from characters, and keep gluing the most frequent neighbouring pair." },
+        { "who": "TOKI", "text": "So common words end up as one piece?" },
+        { "who": "VERA", "text": "Right. Here, “learned” is one token, but “unbelievably” stays in pieces.",
+          "say": "Right. Here, learned is one token, but unbelievably stays in pieces." },
+        { "who": "VERA", "text": "Real models use lists of about 50,000 to 200,000 pieces.",
+          "say": "Real models use lists of about fifty thousand to two hundred thousand pieces." }
+      ]
+    },
+    {
+      "id": "s4",
+      "lines": [
+        { "who": "TOKI", "text": "Why should I care?" },
+        { "who": "VERA", "text": "Prices, context limits and speed are all counted in tokens, not words." },
+        { "who": "VERA", "text": "In English, a token is about four characters on average." },
+        { "who": "TOKI", "text": "And in Hebrew?" },
+        { "who": "VERA", "text": "Languages rarer in the training text, like Hebrew, need more tokens for the same meaning." },
+        { "who": "TOKI", "text": "So the same message costs more and fits less." }
+      ]
+    },
+    {
+      "id": "s5",
+      "lines": [
+        { "who": "TOKI", "text": "Then how many r's are in “strawberry”?",
+          "say": "Then how many R's are in strawberry?" },
+        { "who": "VERA", "text": "Three. But a chatbot may miscount: it never sees letters, only chunks like str, aw, berry.",
+          "say": "Three. But a chatbot may miscount: it never sees letters, only chunks, like S T R, A W, berry." },
+        { "who": "TOKI", "text": "So the r's are hidden inside the chunks.",
+          "say": "So the R's are hidden inside the chunks." },
+        { "who": "VERA", "text": "Exactly. Sums with long numbers trip up the same way." }
+      ]
+    },
+    {
+      "id": "s6",
+      "lines": [
+        { "who": "TOKI", "text": "Can I chop some text myself?" },
+        { "who": "VERA", "text": "Slide the merges in the Tokens chapter, or play Chop Shop in the game." },
+        { "who": "TOKI", "text": "Eight glues, fewest packets? I'm in." }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+WEBVTT
+
+00:00:00.700 --> 00:00:02.237
+Toki: Vera, what's inside a transformer?
+
+00:00:02.638 --> 00:00:08.186
+Vera: One block, stacked. GPT-2 small has 12; GPT-3 has 96.
+
+00:00:08.586 --> 00:00:10.053
+Toki: Like floors in a tall building.
+
+00:00:11.653 --> 00:00:12.748
+Toki: What flows up through them?
+
+00:00:13.148 --> 00:00:16.163
+Vera: Each token's vector, straight up: the residual stream.
+
+00:00:16.563 --> 00:00:21.218
+Vera: Every part reads it, computes, and adds its result back. Nothing overwrites.
+
+00:00:21.618 --> 00:00:22.829
+Toki: So it all just piles up.
+
+00:00:24.429 --> 00:00:25.902
+Toki: Where do tokens talk to each other?
+
+00:00:26.302 --> 00:00:29.698
+Vera: Only in attention. It moves information between positions.
+
+00:00:30.098 --> 00:00:32.121
+Vera: So “her” can pull in “Mia”.
+
+00:00:32.521 --> 00:00:34.045
+Toki: The only group chat in the building.
+
+00:00:35.645 --> 00:00:36.543
+Toki: And the MLP?
+
+00:00:36.943 --> 00:00:41.458
+Vera: Each token alone: expand about four times, a nonlinearity, project back.
+
+00:00:41.858 --> 00:00:44.721
+Vera: It holds roughly two thirds of a dense model's parameters.
+
+00:00:45.121 --> 00:00:47.794
+Vera: Research suggests much factual recall happens there.
+
+00:00:49.395 --> 00:00:50.881
+Toki: Why add? Why not replace?
+
+00:00:51.281 --> 00:00:55.804
+Vera: Without residual connections, a signal through a hundred layers is distorted beyond recovery.
+
+00:00:56.204 --> 00:00:57.982
+Vera: And gradients vanish on the way back.
+
+00:00:58.382 --> 00:00:59.143
+Toki: Who figured that out?
+
+00:00:59.543 --> 00:01:02.154
+Vera: Computer vision: ResNet, 2015.
+
+00:01:02.554 --> 00:01:05.163
+Vera: Norms keep each sublayer's input at a stable scale.
+
+00:01:06.763 --> 00:01:07.810
+Toki: How big is a real one?
+
+00:01:08.210 --> 00:01:12.383
+Vera: The guide's calculator says Llama 3 8B has 8.03 billion.
+
+00:01:12.783 --> 00:01:13.873
+Toki: And the MLP's share?
+
+00:01:14.273 --> 00:01:18.592
+Vera: 70%. Real formulas, minus tiny norm and bias terms.
+
+00:01:20.192 --> 00:01:21.465
+Toki: Can I climb a block myself?
+
+00:01:21.865 --> 00:01:24.829
+Vera: Step through it and try the calculator, in The block chapter.
+
+00:01:25.229 --> 00:01:27.907
+Toki: One floor at a time. Adding, never erasing.

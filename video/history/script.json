@@ -1,0 +1,67 @@
+{
+  "brand": "The Residual Stream &middot; EP 01 &middot; How it began",
+  "output": "Residual-Stream-EP01-History.mp4",
+  "voices": {
+    "VERA": { "voice": "en-GB-SoniaNeural", "rate": "+18%", "pitch": "+0Hz" },
+    "TOKI": { "voice": "en-US-BrianNeural", "rate": "+20%", "pitch": "+4Hz" }
+  },
+  "cast": { "L": "VERA", "R": "TOKI" },
+  "scenes": [
+    {
+      "id": "s1",
+      "lines": [
+        { "who": "TOKI", "text": "Vera, did chatbots always read like this?" },
+        { "who": "VERA", "text": "No. For decades, programs read text through a keyhole: one word at a time." },
+        { "who": "TOKI", "text": "And forgot most of what came before?" },
+        { "who": "VERA", "text": "Mostly. Each step in this story makes the keyhole wider." }
+      ]
+    },
+    {
+      "id": "s2",
+      "lines": [
+        { "who": "TOKI", "text": "So what was the first step?" },
+        { "who": "VERA", "text": "2013: word vectors. Words become lists of numbers that capture meaning.",
+          "say": "Twenty thirteen: word vectors. Words become lists of numbers that capture meaning." },
+        { "who": "VERA", "text": "King minus man plus woman lands near queen." },
+        { "who": "TOKI", "text": "Words with directions. Fancy." }
+      ]
+    },
+    {
+      "id": "s3",
+      "lines": [
+        { "who": "TOKI", "text": "Then machines learned to translate?" },
+        { "who": "VERA", "text": "2014: sequence to sequence. It squeezes the whole sentence into one vector, then writes the translation from it.",
+          "say": "Twenty fourteen: sequence to sequence. It squeezes the whole sentence into one vector, then writes the translation from it." },
+        { "who": "TOKI", "text": "A whole sentence in one vector?" },
+        { "who": "VERA", "text": "Exactly the problem. On long sentences, details get lost." }
+      ]
+    },
+    {
+      "id": "s4",
+      "lines": [
+        { "who": "TOKI", "text": "So how do you stop the squeeze?" },
+        { "who": "VERA", "text": "Attention, also 2014. The decoder looks back at every word and picks which ones to focus on.",
+          "say": "Attention, also twenty fourteen. The decoder looks back at every word, and picks which ones to focus on." },
+        { "who": "TOKI", "text": "No more single vector!" }
+      ]
+    },
+    {
+      "id": "s5",
+      "lines": [
+        { "who": "TOKI", "text": "And 2017?", "say": "And twenty seventeen?" },
+        { "who": "VERA", "text": "The transformer. It dropped recurrence and kept only attention, so it trains in parallel on GPUs.",
+          "say": "The transformer. It dropped recurrence, and kept only attention, so it trains in parallel on G P Us." },
+        { "who": "TOKI", "text": "The T in ChatGPT?", "say": "The T, in Chat G P T?" },
+        { "who": "VERA", "text": "That's the one. And it kept improving as it was made bigger." }
+      ]
+    },
+    {
+      "id": "s6",
+      "lines": [
+        { "who": "TOKI", "text": "Can I see the whole story?" },
+        { "who": "VERA", "text": "Pick one of the three acts on the timeline in the How it began chapter." },
+        { "who": "TOKI", "text": "Sixty years of ideas. I'll skim the highlights." }
+      ]
+    }
+  ]
+}

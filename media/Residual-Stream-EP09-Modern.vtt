@@ -1,0 +1,70 @@
+WEBVTT
+
+00:00:00.700 --> 00:00:02.830
+Toki: Vera, are today's chatbots a whole new machine?
+
+00:00:03.230 --> 00:00:06.440
+Vera: Same 2017 recipe, just tuned almost everywhere.
+
+00:00:06.840 --> 00:00:08.894
+Vera: Five ideas matter when you build on one.
+
+00:00:10.494 --> 00:00:13.250
+Toki: For word 500, does it redo all the work before it?
+
+00:00:13.650 --> 00:00:19.689
+Vera: Earlier tokens can't see later ones, so their keys and values never change. It keeps them: the KV cache.
+
+00:00:20.089 --> 00:00:23.303
+Toki: Three steps: 7 computations instead of 22!
+
+00:00:23.703 --> 00:00:29.521
+Vera: Prompt caching: same trick. The catch: it fills GPU memory, often capping users per server.
+
+00:00:31.121 --> 00:00:33.286
+Toki: How do models get huge without getting slow?
+
+00:00:33.686 --> 00:00:38.269
+Vera: Mixture of experts: a router sends each token to a few small expert MLPs.
+
+00:00:38.669 --> 00:00:43.360
+Vera: Kimi K2 has about a trillion parameters, but uses only 32 billion per token.
+
+00:00:43.760 --> 00:00:45.417
+Toki: Huge team, small bill per token.
+
+00:00:47.017 --> 00:00:48.157
+Toki: Longer memory, too?
+
+00:00:48.557 --> 00:00:52.614
+Vera: From 512 tokens in the original GPT to a million and more.
+
+00:00:53.014 --> 00:00:56.572
+Vera: But fitting a book isn't reading it well. The middle still gets missed.
+
+00:00:56.972 --> 00:00:58.416
+Toki: And the models that think first?
+
+00:00:58.816 --> 00:01:02.113
+Vera: Writing out steps helps, and reasoning models are trained to do it.
+
+00:01:02.513 --> 00:01:06.338
+Vera: Accuracy grows with thinking time. Hence the “thinking budget” setting.
+
+00:01:07.938 --> 00:01:09.568
+Toki: And facts newer than its training?
+
+00:01:09.968 --> 00:01:15.324
+Vera: RAG puts fresh documents into the context. With tools, it writes a call, and your code runs it.
+
+00:01:15.724 --> 00:01:19.011
+Vera: Loop that, and you have an agent. That's episode 11.
+
+00:01:20.611 --> 00:01:21.491
+Toki: Can I try it myself?
+
+00:01:21.891 --> 00:01:25.997
+Vera: Step through the KV cache and route a token in the Modern LLMs chapter.
+
+00:01:26.397 --> 00:01:28.672
+Toki: Remember, don't redo. My kind of motto.

@@ -1,0 +1,64 @@
+{
+  "brand": "The Residual Stream &middot; EP 11 &middot; Agents",
+  "output": "Residual-Stream-EP11-Agents.mp4",
+  "voices": {
+    "VERA": { "voice": "en-GB-SoniaNeural", "rate": "+18%", "pitch": "+0Hz" },
+    "TOKI": { "voice": "en-US-BrianNeural", "rate": "+20%", "pitch": "+4Hz" }
+  },
+  "cast": { "L": "VERA", "R": "TOKI" },
+  "scenes": [
+    {
+      "id": "s1",
+      "lines": [
+        { "who": "TOKI", "text": "Vera, what changes when a model uses a tool?" },
+        { "who": "VERA", "text": "Nothing. It still predicts tokens; tools are just text in context." },
+        { "who": "TOKI", "text": "Then who runs them?" },
+        { "who": "VERA", "text": "Your code. The model writes a strict-format call; your code runs it and appends the result." },
+        { "who": "VERA", "text": "Then it predicts again, until done. That loop is an agent." }
+      ]
+    },
+    {
+      "id": "s2",
+      "lines": [
+        { "who": "TOKI", "text": "Show me a real one." },
+        { "who": "VERA", "text": "The guide's run: find the top complaint, draft a reply." },
+        { "who": "VERA", "text": "Each result joins the context; every model call re-reads all of it." },
+        { "who": "TOKI", "text": "Heavier every step?" },
+        { "who": "VERA", "text": "Over 5,000 tokens. Caching the repeated start saves 47%.",
+          "say": "Over five thousand tokens. Caching the repeated start saves forty-seven percent." },
+        { "who": "VERA", "text": "Then it stops until a human approves the reply." }
+      ]
+    },
+    {
+      "id": "s3",
+      "lines": [
+        { "who": "TOKI", "text": "Why not give agents every job?" },
+        { "who": "VERA", "text": "Errors compound: 95% per step over 20 steps is about 36%.",
+          "say": "Errors compound: ninety-five percent per step over twenty steps is about thirty-six percent." },
+        { "who": "VERA", "text": "So agents need self-checks, retries, and tools that fail loudly." },
+        { "who": "VERA", "text": "With fixed steps, a simple workflow is cheaper and easier to test." },
+        { "who": "TOKI", "text": "Agents for open-ended jobs, then." }
+      ]
+    },
+    {
+      "id": "s4",
+      "lines": [
+        { "who": "TOKI", "text": "What if a web page gives my agent orders?" },
+        { "who": "VERA", "text": "That's prompt injection. Tool results are untrusted input." },
+        { "who": "VERA", "text": "Defend by design: least privilege per tool, text as data, log every call." },
+        { "who": "VERA", "text": "And a human approves anything irreversible: sending, paying, deleting, deploying." },
+        { "who": "TOKI", "text": "Even tools plugged in through MCP?", "say": "Even tools plugged in through M C P?" },
+        { "who": "VERA", "text": "Same rules. MCP is a standard plug, not a trust badge.",
+          "say": "Same rules. M C P is a standard plug, not a trust badge." }
+      ]
+    },
+    {
+      "id": "s5",
+      "lines": [
+        { "who": "TOKI", "text": "Can I run one myself?" },
+        { "who": "VERA", "text": "Step through the agent run and drag the reliability sliders in the Agents chapter." },
+        { "who": "TOKI", "text": "One loop at a time, a human at the gate." }
+      ]
+    }
+  ]
+}

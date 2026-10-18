@@ -1,0 +1,91 @@
+{
+  "brand": "The Residual Stream &middot; EP 00 &middot; Start",
+  "output": "Residual-Stream-EP00-Start.mp4",
+  "voices": {
+    "VERA": { "voice": "en-GB-SoniaNeural", "rate": "+18%", "pitch": "+0Hz" },
+    "TOKI": { "voice": "en-US-BrianNeural", "rate": "+20%", "pitch": "+4Hz" }
+  },
+  "cast": { "L": "VERA", "R": "TOKI" },
+  "scenes": [
+    {
+      "id": "s1",
+      "lines": [
+        { "who": "TOKI", "text": "Vera, how does a chatbot write its answers?" },
+        { "who": "VERA", "text": "One guess at a time. It predicts the next piece of text, adds it, and goes again." },
+        { "who": "TOKI", "text": "So it just... guesses?" },
+        { "who": "VERA", "text": "Very good guesses. Karpathy's framing: it's a next-token predictor, and the rest builds on that.",
+          "say": "Very good guesses. Karpathy's framing: it's a next token predictor, and the rest builds on that." }
+      ]
+    },
+    {
+      "id": "s2",
+      "lines": [
+        { "who": "TOKI", "text": "Next token? That's me! What's a token?" },
+        { "who": "VERA", "text": "A chunk of text. Common words get one, rarer words several. Each chunk gets an ID number.",
+          "say": "A chunk of text. Common words get one, rarer words several. Each chunk gets an I D number." },
+        { "who": "TOKI", "text": "Even “token” got chopped up!", "say": "Even the word token got chopped up!" }
+      ]
+    },
+    {
+      "id": "s3",
+      "lines": [
+        { "who": "TOKI", "text": "So I'm just a number?" },
+        { "who": "VERA", "text": "Then a long list of numbers: a vector. GPT-3 uses 12,288 of them per token.",
+          "say": "Then a long list of numbers: a vector. G P T 3 uses twelve thousand, two hundred and eighty-eight of them per token." },
+        { "who": "VERA", "text": "As 3Blue1Brown shows, directions mean things: king, minus man, plus woman, lands near queen.",
+          "say": "As Three Blue One Brown shows, directions mean things: king, minus man, plus woman, lands near queen." }
+      ]
+    },
+    {
+      "id": "s4",
+      "lines": [
+        { "who": "TOKI", "text": "But how does a word know what it refers to?" },
+        { "who": "VERA", "text": "Attention. Each token looks back at earlier words and asks: who here matters to me?" },
+        { "who": "VERA", "text": "“The animal didn't cross the street because it was too tired.” Who's tired?",
+          "say": "The animal didn't cross the street because it was too tired. Who's tired?" },
+        { "who": "TOKI", "text": "The animal. Streets don't get tired." },
+        { "who": "VERA", "text": "Attention makes that link. 3Blue1Brown's attention video shows it beautifully.",
+          "say": "Attention makes that link. Three Blue One Brown's attention video shows it beautifully." }
+      ]
+    },
+    {
+      "id": "s5",
+      "lines": [
+        { "who": "TOKI", "text": "Does that happen once?" },
+        { "who": "VERA", "text": "GPT-2 small has 12 layers, GPT-3 has 96. Each adds a little to the token's vector.",
+          "say": "G P T 2 small has twelve layers, G P T 3 has ninety-six. Each adds a little to the token's vector." },
+        { "who": "TOKI", "text": "Like a notebook carried upstairs, and every floor adds a note?" },
+        { "who": "VERA", "text": "Exactly. That running vector is the residual stream, and this guide's name." }
+      ]
+    },
+    {
+      "id": "s6",
+      "lines": [
+        { "who": "TOKI", "text": "And at the top, out pops the next word?" },
+        { "who": "VERA", "text": "A score for every possible token, turned into probabilities. A dial called temperature makes the pick safer or more adventurous." },
+        { "who": "TOKI", "text": "Then pick one, add it, and go again." }
+      ]
+    },
+    {
+      "id": "s7",
+      "lines": [
+        { "who": "TOKI", "text": "Who taught it all that?" },
+        { "who": "VERA", "text": "Training: guess the next token, check the real one, nudge the knobs. GPT-3 has 175 billion of them.",
+          "say": "Training: guess the next token, check the real one, nudge the knobs. G P T 3 has a hundred and seventy-five billion of them." },
+        { "who": "VERA", "text": "Over a huge pile of text. Karpathy calls the result a kind of lossy compression of the internet." },
+        { "who": "TOKI", "text": "A blurry zip file of the internet?" },
+        { "who": "VERA", "text": "Pretty much. So it can sound sure and still be wrong." }
+      ]
+    },
+    {
+      "id": "s8",
+      "lines": [
+        { "who": "TOKI", "text": "Can I try all this myself?" },
+        { "who": "VERA", "text": "Every demo in the guide runs in your browser. And in the game, you play the model." },
+        { "who": "TOKI", "text": "Vera, I was born for this." },
+        { "who": "VERA", "text": "Inspired by Andrej Karpathy and 3Blue1Brown. Go watch the originals.",
+          "say": "Inspired by Andrej Karpathy, and Three Blue One Brown. Go watch the originals." }
+      ]
+    }
+  ]
+}
