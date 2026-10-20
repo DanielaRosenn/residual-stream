@@ -9,6 +9,12 @@ window.RS_VIDEOS = [
     "seconds": 129.6
   },
   {
+    "ep": "01",
+    "section": "history",
+    "stem": "Residual-Stream-EP01-History",
+    "seconds": 77.4
+  },
+  {
     "ep": "02",
     "section": "tokens",
     "stem": "Residual-Stream-EP02-Tokens",
@@ -45,9 +51,27 @@ window.RS_VIDEOS = [
     "seconds": 89.5
   },
   {
+    "ep": "08",
+    "section": "training",
+    "stem": "Residual-Stream-EP08-Training",
+    "seconds": 89.8
+  },
+  {
     "ep": "09",
     "section": "modern",
     "stem": "Residual-Stream-EP09-Modern",
     "seconds": 89.6
+  },
+  {
+    "ep": "10",
+    "section": "interp",
+    "stem": "Residual-Stream-EP10-Interp",
+    "seconds": 89.9
+  },
+  {
+    "ep": "11",
+    "section": "agents",
+    "stem": "Residual-Stream-EP11-Agents",
+    "seconds": 90.1
   }
 ];

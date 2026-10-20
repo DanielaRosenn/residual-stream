@@ -1,0 +1,85 @@
+WEBVTT
+
+00:00:00.700 --> 00:00:02.352
+Toki: Vera, do we know how a model works?
+
+00:00:02.752 --> 00:00:06.350
+Vera: We see every multiplication. Not why they add up to behaviour.
+
+00:00:06.750 --> 00:00:07.532
+Toki: Who works that out?
+
+00:00:07.932 --> 00:00:11.808
+Vera: Interpretability. It matters for safety, debugging and trust.
+
+00:00:13.408 --> 00:00:14.215
+Toki: Where do you even start?
+
+00:00:14.615 --> 00:00:17.585
+Vera: The logit lens: stop partway up and ask for an answer now.
+
+00:00:17.985 --> 00:00:22.179
+Vera: Low down: “the”. Up top: “Paris”. Illustrative numbers.
+
+00:00:22.579 --> 00:00:24.135
+Toki: The guess sharpens as it climbs.
+
+00:00:25.735 --> 00:00:26.861
+Toki: Why not read each neuron?
+
+00:00:27.261 --> 00:00:30.939
+Vera: More concepts than dimensions, packed at almost-perpendicular angles.
+
+00:00:31.339 --> 00:00:35.205
+Vera: They're rarely active together, so it works. When two are, they leak.
+
+00:00:35.605 --> 00:00:37.345
+Toki: Cat and code on, and Paris lights up!
+
+00:00:38.945 --> 00:00:40.036
+Toki: So how do you pull them apart?
+
+00:00:40.436 --> 00:00:43.894
+Vera: Sparse autoencoders unpack them into millions of cleaner features.
+
+00:00:44.294 --> 00:00:46.566
+Vera: Anthropic found one for the Golden Gate Bridge.
+
+00:00:46.966 --> 00:00:47.750
+Toki: Can you turn it up?
+
+00:00:48.150 --> 00:00:51.624
+Vera: Push along it: Golden Gate Claude brought every chat back to the bridge.
+
+00:00:52.024 --> 00:00:53.976
+Vera: Real maths, made-up base numbers.
+
+00:00:55.576 --> 00:00:57.114
+Toki: But does a feature cause the answer?
+
+00:00:57.514 --> 00:01:00.477
+Vera: Paste one activation from a clean run into a corrupted one.
+
+00:01:00.877 --> 00:01:05.293
+Vera: Second John, layer 3: 83% back. That spot carries it.
+
+00:01:06.893 --> 00:01:08.177
+Toki: Why not just ask the model?
+
+00:01:08.577 --> 00:01:13.592
+Vera: That's generated text. Anthropic caught a model doing sums one way, describing another.
+
+00:01:13.992 --> 00:01:15.297
+Toki: So judge it by what it does.
+
+00:01:15.697 --> 00:01:20.340
+Vera: Behaviour and evals. It's young science: insight on about a quarter of prompts.
+
+00:01:21.940 --> 00:01:22.953
+Toki: Can I look inside too?
+
+00:01:23.353 --> 00:01:26.825
+Vera: Try the logit lens and the steering dial in the Inside the box chapter.
+
+00:01:27.225 --> 00:01:28.976
+Toki: Strength nine. I'm a bridge now.

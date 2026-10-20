@@ -1,0 +1,82 @@
+WEBVTT
+
+00:00:00.700 --> 00:00:02.464
+Toki: Vera, how does a model actually learn?
+
+00:00:02.864 --> 00:00:06.618
+Vera: At every position in real text, it gives each next token a probability.
+
+00:00:07.018 --> 00:00:10.728
+Vera: The loss is its surprise at the real one: minus the log of that probability.
+
+00:00:11.128 --> 00:00:12.872
+Toki: So a confident wrong guess costs a lot.
+
+00:00:14.472 --> 00:00:15.566
+Toki: Then how does it improve?
+
+00:00:15.966 --> 00:00:18.633
+Vera: Backpropagation finds which way each knob should move.
+
+00:00:19.033 --> 00:00:21.502
+Vera: Gradient descent nudges each one a little that way.
+
+00:00:21.902 --> 00:00:24.390
+Toki: Guess, compare, nudge, repeat.
+
+00:00:24.790 --> 00:00:26.096
+Vera: For trillions of tokens.
+
+00:00:27.696 --> 00:00:28.610
+Toki: Can I watch it learn?
+
+00:00:29.010 --> 00:00:33.470
+Vera: In the guide: a real bigram network. One character in, the next one out.
+
+00:00:33.870 --> 00:00:38.932
+Vera: Loss falls from 3.26, a blind guess, toward the dashed line: a bigram's best.
+
+00:00:39.332 --> 00:00:40.436
+Toki: It's getting less surprised!
+
+00:00:42.036 --> 00:00:42.973
+Toki: Why can't it go lower?
+
+00:00:43.373 --> 00:00:46.773
+Vera: A transformer sees thousands of tokens, and has billions of knobs.
+
+00:00:47.173 --> 00:00:50.889
+Vera: To lower the loss, it must learn grammar, facts and patterns of reasoning.
+
+00:00:51.289 --> 00:00:52.739
+Toki: That's what makes text predictable!
+
+00:00:54.339 --> 00:00:55.119
+Toki: Bigger is better?
+
+00:00:55.519 --> 00:01:00.738
+Vera: Scaling laws, 2020: loss falls smoothly as parameters, data and compute grow.
+
+00:01:01.138 --> 00:01:06.049
+Vera: Chinchilla, 2022: grow data with the model, about 20 tokens per parameter.
+
+00:01:07.649 --> 00:01:08.840
+Toki: And then it's an assistant?
+
+00:01:09.240 --> 00:01:11.874
+Vera: Not yet. Just a brilliant autocomplete.
+
+00:01:12.274 --> 00:01:17.206
+Vera: Then post-training: example chats, and preference tuning like RLHF and DPO.
+
+00:01:17.606 --> 00:01:21.688
+Vera: From 2024, rewards for checkable maths, code and tool use.
+
+00:01:23.288 --> 00:01:24.226
+Toki: Where do I press Train?
+
+00:01:24.626 --> 00:01:27.443
+Vera: In the Training chapter. Watch a real network learn.
+
+00:01:27.843 --> 00:01:28.889
+Toki: Down you go, loss!
