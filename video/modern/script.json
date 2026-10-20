@@ -1,0 +1,76 @@
+{
+  "brand": "The Residual Stream &middot; EP 09 &middot; Modern LLMs",
+  "output": "Residual-Stream-EP09-Modern.mp4",
+  "voices": {
+    "VERA": { "voice": "en-GB-SoniaNeural", "rate": "+18%", "pitch": "+0Hz" },
+    "TOKI": { "voice": "en-US-BrianNeural", "rate": "+20%", "pitch": "+4Hz" }
+  },
+  "cast": { "L": "VERA", "R": "TOKI" },
+  "scenes": [
+    {
+      "id": "s1",
+      "lines": [
+        { "who": "TOKI", "text": "Vera, are today's chatbots a whole new machine?" },
+        { "who": "VERA", "text": "Same 2017 recipe, just tuned almost everywhere.",
+          "say": "Same twenty seventeen recipe, just tuned almost everywhere." },
+        { "who": "VERA", "text": "Five ideas matter when you build on one." }
+      ]
+    },
+    {
+      "id": "s2",
+      "lines": [
+        { "who": "TOKI", "text": "For word 500, does it redo all the work before it?",
+          "say": "For word five hundred, does it redo all the work before it?" },
+        { "who": "VERA", "text": "Earlier tokens can't see later ones, so their keys and values never change. It keeps them: the KV cache.",
+          "say": "Earlier tokens can't see later ones, so their keys and values never change. It keeps them: the K V cache." },
+        { "who": "TOKI", "text": "Three steps: 7 computations instead of 22!",
+          "say": "Three steps: seven computations instead of twenty-two!" },
+        { "who": "VERA", "text": "Prompt caching: same trick. The catch: it fills GPU memory, often capping users per server.",
+          "say": "Prompt caching: same trick. The catch: it fills G P U memory, often capping users per server." }
+      ]
+    },
+    {
+      "id": "s3",
+      "lines": [
+        { "who": "TOKI", "text": "How do models get huge without getting slow?" },
+        { "who": "VERA", "text": "Mixture of experts: a router sends each token to a few small expert MLPs.",
+          "say": "Mixture of experts: a router sends each token to a few small expert M L Ps." },
+        { "who": "VERA", "text": "Kimi K2 has about a trillion parameters, but uses only 32 billion per token.",
+          "say": "Kimi K two has about a trillion parameters, but uses only thirty-two billion per token." },
+        { "who": "TOKI", "text": "Huge team, small bill per token." }
+      ]
+    },
+    {
+      "id": "s4",
+      "lines": [
+        { "who": "TOKI", "text": "Longer memory, too?" },
+        { "who": "VERA", "text": "From 512 tokens in the original GPT to a million and more.",
+          "say": "From five hundred and twelve tokens in the original G P T, to a million and more." },
+        { "who": "VERA", "text": "But fitting a book isn't reading it well. The middle still gets missed." },
+        { "who": "TOKI", "text": "And the models that think first?" },
+        { "who": "VERA", "text": "Writing out steps helps, and reasoning models are trained to do it." },
+        { "who": "VERA", "text": "Accuracy grows with thinking time. Hence the “thinking budget” setting.",
+          "say": "Accuracy grows with thinking time. Hence the thinking budget setting." }
+      ]
+    },
+    {
+      "id": "s5",
+      "lines": [
+        { "who": "TOKI", "text": "And facts newer than its training?" },
+        { "who": "VERA", "text": "RAG puts fresh documents into the context. With tools, it writes a call, and your code runs it.",
+          "say": "Rag puts fresh documents into the context. With tools, it writes a call, and your code runs it." },
+        { "who": "VERA", "text": "Loop that, and you have an agent. That's episode 11.",
+          "say": "Loop that, and you have an agent. That's episode eleven." }
+      ]
+    },
+    {
+      "id": "s6",
+      "lines": [
+        { "who": "TOKI", "text": "Can I try it myself?" },
+        { "who": "VERA", "text": "Step through the KV cache and route a token in the Modern LLMs chapter.",
+          "say": "Step through the K V cache, and route a token, in the Modern L L Ms chapter." },
+        { "who": "TOKI", "text": "Remember, don't redo. My kind of motto." }
+      ]
+    }
+  ]
+}

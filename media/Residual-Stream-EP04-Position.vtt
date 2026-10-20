@@ -1,0 +1,70 @@
+WEBVTT
+
+00:00:00.700 --> 00:00:03.600
+Toki: Vera, “dog bites man” or “man bites dog”. Same thing?
+
+00:00:04.000 --> 00:00:07.523
+Vera: Not to you. But attention alone treats the tokens as a set.
+
+00:00:07.923 --> 00:00:10.135
+Toki: So if you shuffle us, nothing changes?
+
+00:00:10.535 --> 00:00:15.177
+Vera: Every token computes the same result. So each token must be told where it sits.
+
+00:00:16.777 --> 00:00:18.650
+Toki: Like a seat number? One, two, three?
+
+00:00:19.050 --> 00:00:23.860
+Vera: The original transformer, in 2017, added a fixed pattern of sines and cosines.
+
+00:00:24.260 --> 00:00:28.498
+Vera: Each row is one position. Each pair of columns is a wave with its own speed.
+
+00:00:28.898 --> 00:00:31.480
+Toki: Fast waves on the left, slow ones on the right?
+
+00:00:31.880 --> 00:00:36.872
+Vera: Yes. Fast ones tell neighbours apart, slow ones the rough place, like the hands of a clock.
+
+00:00:38.472 --> 00:00:40.016
+Toki: Why waves, and not plain numbers?
+
+00:00:40.416 --> 00:00:44.602
+Vera: Compare one position's pattern with every other. Neighbours come out most similar.
+
+00:00:45.002 --> 00:00:48.810
+Vera: Move from position 20 to 45: the same shape, just shifted.
+
+00:00:49.210 --> 00:00:51.436
+Toki: So it's how far apart we are, not where we are.
+
+00:00:53.036 --> 00:00:54.722
+Toki: Do today's models still add waves?
+
+00:00:55.122 --> 00:01:00.237
+Vera: Most use RoPE, from 2021. It rotates pairs of numbers in the query and the key.
+
+00:01:00.637 --> 00:01:04.682
+Vera: The angle grows with position: a fast pair, a medium pair, a slow pair.
+
+00:01:05.082 --> 00:01:06.664
+Toki: And when two tokens compare notes?
+
+00:01:07.064 --> 00:01:10.983
+Vera: Only the difference of their angles survives: relative distance, directly.
+
+00:01:12.583 --> 00:01:14.304
+Toki: Does this matter for long documents?
+
+00:01:14.704 --> 00:01:19.627
+Vera: Yes. Position is one of the pieces that had to be stretched to make very long contexts possible.
+
+00:01:21.227 --> 00:01:22.365
+Toki: Can I play with the waves?
+
+00:01:22.765 --> 00:01:26.779
+Vera: Drag the position slider in the Position chapter; Deep mode adds the circles.
+
+00:01:27.179 --> 00:01:28.921
+Toki: Found my seat. Now I'm spinning.

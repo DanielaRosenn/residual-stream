@@ -337,6 +337,7 @@ details summary { cursor: pointer; font-family: var(--f-display); font-size: .92
 .ag-text { margin: 4px 0 0; color: var(--ink); }
 .ag-code { display: block; margin-top: 6px; white-space: pre-wrap; word-break: break-word; font-size: .78rem; }
 .ag-gate { margin-top: 12px; padding: 12px 14px; border-radius: var(--r-md); background: var(--accent-soft); border: 1px solid var(--accent); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.ag-gate[hidden] { display: none; } /* the flex rule above would otherwise override the hidden attribute js/agents.js toggles */
 .ag-gate p { margin: 0; flex: 1 1 260px; font-family: var(--f-display); font-size: .95rem; }
 .rel-big { font: 800 clamp(1.6rem, 4vw, 2.4rem)/1.1 var(--f-display); margin: 6px 0 10px; }
 .rel-track { height: 18px; }

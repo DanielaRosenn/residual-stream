@@ -1,0 +1,76 @@
+WEBVTT
+
+00:00:00.700 --> 00:00:02.993
+Toki: Vera, what changes when a model uses a tool?
+
+00:00:03.393 --> 00:00:07.470
+Vera: Nothing. It still predicts tokens; tools are just text in context.
+
+00:00:07.870 --> 00:00:08.756
+Toki: Then who runs them?
+
+00:00:09.156 --> 00:00:14.088
+Vera: Your code. The model writes a strict-format call; your code runs it and appends the result.
+
+00:00:14.488 --> 00:00:17.907
+Vera: Then it predicts again, until done. That loop is an agent.
+
+00:00:19.507 --> 00:00:20.391
+Toki: Show me a real one.
+
+00:00:20.791 --> 00:00:23.890
+Vera: The guide's run: find the top complaint, draft a reply.
+
+00:00:24.290 --> 00:00:27.859
+Vera: Each result joins the context; every model call re-reads all of it.
+
+00:00:28.259 --> 00:00:29.234
+Toki: Heavier every step?
+
+00:00:29.634 --> 00:00:34.205
+Vera: Over 5,000 tokens. Caching the repeated start saves 47%.
+
+00:00:34.605 --> 00:00:36.960
+Vera: Then it stops until a human approves the reply.
+
+00:00:38.560 --> 00:00:40.048
+Toki: Why not give agents every job?
+
+00:00:40.448 --> 00:00:45.202
+Vera: Errors compound: 95% per step over 20 steps is about 36%.
+
+00:00:45.602 --> 00:00:49.309
+Vera: So agents need self-checks, retries, and tools that fail loudly.
+
+00:00:49.709 --> 00:00:53.198
+Vera: With fixed steps, a simple workflow is cheaper and easier to test.
+
+00:00:53.598 --> 00:00:55.569
+Toki: Agents for open-ended jobs, then.
+
+00:00:57.169 --> 00:00:59.190
+Toki: What if a web page gives my agent orders?
+
+00:00:59.590 --> 00:01:03.105
+Vera: That's prompt injection. Tool results are untrusted input.
+
+00:01:03.505 --> 00:01:07.889
+Vera: Defend by design: least privilege per tool, text as data, log every call.
+
+00:01:08.289 --> 00:01:13.068
+Vera: And a human approves anything irreversible: sending, paying, deleting, deploying.
+
+00:01:13.468 --> 00:01:15.515
+Toki: Even tools plugged in through MCP?
+
+00:01:15.915 --> 00:01:19.826
+Vera: Same rules. MCP is a standard plug, not a trust badge.
+
+00:01:21.426 --> 00:01:22.506
+Toki: Can I run one myself?
+
+00:01:22.906 --> 00:01:27.010
+Vera: Step through the agent run and drag the reliability sliders in the Agents chapter.
+
+00:01:27.410 --> 00:01:29.236
+Toki: One loop at a time, a human at the gate.

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Residual Stream - EP 00 - Start</title>
+<link rel="stylesheet" href="engine/stage.css">
+<style>
+  /* The Residual Stream palette (the site's dark theme), overriding the engine's Flow Show defaults
+     for this episode only: green #158864, dark green #182D2A, mint #81E5AC, light #DEF6EF, yellow #F5C13D. */
+  :root {
+    --panel: rgba(16, 36, 32, 0.95);
+    --text: #DEF6EF;
+    --muted: #93b3a9;
+    --teal: #81E5AC;
+    --yellow: #F5C13D;
+    --orange: #FFA45C;
+    --blue: #86BDEB;
+    --red: #FF8F88;
+    --purple: #C7A8FF;
+    --green: #158864;
+    --deep: #0D483D;
+  }
+  #stage { background: radial-gradient(ellipse at 50% 38%, #24453e 0%, #182D2A 45%, #0c1a17 100%); }
+  .spot.l { background: linear-gradient(180deg, rgba(129,229,172,0.30), rgba(129,229,172,0.02)); }
+  .spot.r { background: linear-gradient(180deg, rgba(245,193,61,0.26), rgba(245,193,61,0.02)); }
+  .floor { background: linear-gradient(180deg, rgba(6,16,14,0) 0%, rgba(6,16,14,0.78) 100%); }
+  #cap { background: rgba(10, 26, 23, 0.95); }
+  .card { border-color: rgba(129,229,172,0.22); }
+  .chip { background: rgba(14, 32, 28, 0.9); }
+  .node { background: rgba(14, 32, 28, 0.96); }
+  .step .s { color: #c4ddd5; }
+  .real { background: rgba(10,26,23,0.92); }
+  .note { position: absolute; font-size: 18px; color: var(--muted); font-weight: 500; }
+
+  /* S1: hook */
+  #s1 .kick { color: var(--teal); }
+  #s1 .big { top: 250px; }
+  #s1 .sub { top: 428px; }
+  #s1 .answer { left: 430px; top: 510px; width: 1060px; height: 150px; padding: 22px 32px; }
+  #s1 .answer .q { font-size: 22px; color: var(--muted); font-weight: 600; }
+  #s1 .answer .a { margin-top: 14px; font-size: 40px; font-weight: 700; display: flex; align-items: baseline; gap: 0; white-space: pre; }
+  #s1 .answer .a span { opacity: 0; }
+  #s1 .answer .a .new { color: var(--yellow); }
+  #s1 .answer .next { margin-left: 18px; font-size: 20px; color: var(--yellow); font-weight: 800; border: 2px dashed var(--yellow); border-radius: 10px; padding: 2px 12px; align-self: center; }
+  #s1 .credit { position: absolute; left: 0; right: 0; top: 690px; text-align: center; }
+
+  /* S2: tokens */
+  #s2 .sent { left: 430px; top: 176px; width: 1060px; height: 86px; padding: 18px 30px; font-family: var(--mono); font-size: 32px; color: var(--text); }
+  #s2 .toks { position: absolute; left: 390px; width: 1140px; top: 290px; display: flex; justify-content: center; gap: 12px; }
+  #s2 .tok { display: flex; flex-direction: column; align-items: center; padding: 8px 14px 6px; border-radius: 12px; border: 2.5px solid var(--teal);
+    background: rgba(13,72,61,0.85); font-family: var(--mono); font-size: 29px; font-weight: 600; }
+  #s2 .tok i { font-style: normal; font-size: 19px; color: var(--yellow); margin-top: 2px; }
+  #s2 .tok.rare { border-color: var(--yellow); }
+  #s2 .note { left: 390px; width: 1140px; top: 404px; text-align: center; }
+  #s2 .screen { left: 390px; top: 450px; width: 1140px; height: 330px; }
+
+  /* S3: vectors */
+  #s3 .vec { left: 390px; top: 176px; width: 500px; height: 470px; padding: 24px 28px; }
+  #s3 .vec .row { display: flex; align-items: center; gap: 16px; font-size: 24px; font-weight: 700; }
+  #s3 .vec .nums { margin-top: 16px; font-family: var(--mono); font-size: 24px; line-height: 1.6; color: #c4ddd5; }
+  #s3 .vec .n { font-size: 120px; font-weight: 800; color: var(--yellow); line-height: 1.05; margin-top: 18px; }
+  #s3 .vec .l { font-size: 24px; font-weight: 700; }
+  #s3 .vec .d { font-size: 19px; color: var(--muted); margin-top: 12px; line-height: 1.4; }
+  #s3 .screen { left: 920px; top: 176px; width: 610px; height: 470px; }
+  #s3 .eq { position: absolute; left: 920px; width: 610px; top: 668px; text-align: center; }
+  #s3 .eq .chip { font-size: 23px; padding: 10px 20px; }
+
+  /* S4: attention */
+  #s4 .attn { left: 390px; top: 176px; width: 1140px; height: 330px; }
+  #s4 .attn svg { position: absolute; left: 0; top: 0; width: 1140px; height: 330px; overflow: visible; }
+  #s4 .words { position: absolute; left: 0; right: 0; top: 250px; display: flex; justify-content: center; gap: 13px; font-size: 32px; font-weight: 700; }
+  #s4 .words span { padding: 2px 6px; border-radius: 8px; }
+  #s4 .ask { left: 390px; top: 540px; width: 520px; height: 150px; padding: 22px 26px; border-color: var(--teal); }
+  #s4 .ask h4 { font-size: 26px; font-weight: 800; }
+  #s4 .ask p { font-size: 20px; color: #c4ddd5; margin-top: 8px; line-height: 1.4; }
+  #s4 .pct { left: 940px; top: 540px; width: 590px; height: 150px; padding: 18px 26px; border-color: var(--yellow); }
+  #s4 .pct .n { font-size: 64px; font-weight: 800; color: var(--yellow); line-height: 1.1; }
+  #s4 .pct .d { font-size: 18px; color: var(--muted); }
+  #s4 .credit { position: absolute; left: 390px; width: 1140px; top: 722px; text-align: center; }
+  #s4 .credit .chip { font-size: 23px; padding: 10px 22px; }
+
+  /* S5: layers */
+  #s5 .slab { position: absolute; left: 470px; width: 440px; height: 50px; border-radius: 14px; border: 2.5px solid rgba(129,229,172,0.45);
+    background: rgba(13,72,61,0.9); font-size: 19px; font-weight: 700; color: var(--muted); padding: 12px 20px; }
+  #s5 .stream { position: absolute; left: 680px; width: 20px; top: 200px; height: 600px; border-radius: 10px; background: rgba(12,26,23,0.9); overflow: hidden; }
+  #s5 .stream i { position: absolute; left: 4px; width: 12px; height: 26px; border-radius: 6px; background: var(--yellow); }
+  #s5 .tip { position: absolute; left: 668px; top: 168px; width: 0; height: 0; border-left: 22px solid transparent; border-right: 22px solid transparent; border-bottom: 30px solid var(--yellow); }
+  #s5 .lab { position: absolute; font-size: 19px; font-weight: 700; color: var(--muted); letter-spacing: 1px; }
+  #s5 .facts { position: absolute; left: 990px; top: 182px; width: 540px; display: flex; gap: 14px; }
+  #s5 .facts .chip { font-size: 22px; padding: 10px 18px; }
+  #s5 .bars { left: 990px; top: 262px; width: 540px; height: 340px; padding: 20px 24px; }
+  #s5 .bars .plot { position: absolute; left: 24px; right: 24px; top: 70px; height: 220px; }
+  #s5 .bars .axis { position: absolute; left: 0; right: 0; top: 110px; height: 2px; background: rgba(129,229,172,0.3); }
+  #s5 .bars b { position: absolute; width: 40px; border-radius: 4px; background: var(--teal); }
+  #s5 .bars u { position: absolute; width: 40px; border-radius: 4px; background: rgba(222,246,239,0.14); text-decoration: none; }
+  #s5 .bars .note { left: 24px; right: 24px; top: 300px; font-size: 17px; }
+  #s5 .rs { position: absolute; left: 990px; top: 630px; width: 540px; text-align: center; }
+
+  /* S6: sampling */
+  #s6 .prompt { left: 390px; top: 172px; width: 1140px; height: 82px; padding: 18px 30px; font-size: 34px; font-weight: 700; }
+  #s6 .prompt .pick { color: var(--yellow); border-bottom: 4px solid var(--yellow); display: inline-block; min-width: 120px; }
+  #s6 .dist { left: 390px; top: 272px; width: 1140px; height: 490px; padding: 18px 30px; }
+  #s6 .dial { display: flex; align-items: center; gap: 18px; font-size: 22px; font-weight: 700; }
+  #s6 .dial .track { position: relative; width: 420px; height: 10px; border-radius: 5px; background: rgba(129,229,172,0.2); }
+  #s6 .dial .knob { position: absolute; top: -10px; width: 30px; height: 30px; border-radius: 50%; background: var(--yellow); margin-left: -15px; }
+  #s6 .dial .end { font-size: 18px; color: var(--muted); font-weight: 600; }
+  #s6 .dial .val { font-family: var(--mono); color: var(--yellow); width: 70px; }
+  #s6 .rows { margin-top: 14px; }
+  #s6 .r { display: flex; align-items: center; height: 32px; gap: 16px; font-size: 21px; font-weight: 600; }
+  #s6 .r .w { width: 120px; text-align: right; }
+  #s6 .r .bar { position: relative; width: 760px; height: 22px; border-radius: 5px; background: rgba(129,229,172,0.08); }
+  #s6 .r .bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; background: var(--green); }
+  #s6 .r.top .bar i { background: var(--teal); }
+  #s6 .r .p { font-family: var(--mono); font-size: 19px; color: #c4ddd5; width: 80px; }
+  #s6 .dist .note { left: 30px; right: 30px; top: 432px; font-size: 17px; }
+  #s6 .loop { position: absolute; left: 0; right: 0; top: 778px; text-align: center; }
+
+  /* S7: training */
+  #s7 .stat { left: 390px; top: 418px; width: 540px; height: 250px; border-color: var(--yellow); }
+  #s7 .stat .n { font-size: 100px; color: var(--yellow); }
+  #s7 .stat .n small { font-size: 50px; }
+  #s7 .zip { left: 960px; top: 418px; width: 570px; height: 250px; padding: 26px 30px; border-color: var(--blue); }
+  #s7 .zip .lbl { color: var(--blue); }
+  #s7 .zip h4 { font-size: 36px; font-weight: 800; margin-top: 12px; line-height: 1.2; }
+  #s7 .zip p { font-size: 18px; color: var(--muted); margin-top: 12px; }
+  #s7 .warn { position: absolute; left: 0; right: 0; top: 700px; text-align: center; }
+
+  /* S8: try it */
+  #s8 .title { position: absolute; left: 0; right: 0; top: 120px; text-align: center; font-size: 104px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.05; }
+  #s8 .title small { display: block; font-size: 30px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-top: 14px; }
+  #s8 .url { position: absolute; left: 0; right: 0; top: 322px; text-align: center; }
+  #s8 .url .chip { font-family: var(--mono); font-size: 27px; color: var(--teal); }
+  #s8 .screen { top: 446px; width: 560px; height: 315px; }
+  #s8 .credits { position: absolute; left: 390px; width: 1140px; top: 780px; text-align: center; font-size: 24px; font-weight: 700; color: var(--yellow); }
+  #s8 .credits small { display: block; font-size: 18px; color: var(--muted); font-weight: 500; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- S1: every answer is one guess at a time -->
+  <section class="scene hero" id="s1">
+    <div class="kick" data-at="0.2">THE RESIDUAL STREAM &middot; EP 00</div>
+    <div class="big" data-at="0.4" data-pop>One <span class="hl-t">token</span> at a time</div>
+    <div class="sub" data-at="0.8">How a language model writes its answers</div>
+    <div class="card answer" data-at="L1" data-pop>
+      <div class="q">Q: What is the capital of France?</div>
+      <div class="a" id="s1a"></div>
+    </div>
+    <div class="credit"><span class="chip" style="border-color:var(--yellow)" data-at="L3@0.25" data-pop>
+      <span class="ico" style="color:var(--yellow)" data-ico="spark"></span>A next-token predictor &middot; framing from Andrej Karpathy</span></div>
+  </section>
+
+  <!-- S2: text becomes tokens -->
+  <section class="scene" id="s2">
+    <div class="t-title" data-at="0.2">Text becomes <span class="hl-t">tokens</span></div>
+    <div class="card sent" data-at="0.4" data-pop><span id="s2sent"></span></div>
+    <div class="toks" id="s2toks"></div>
+    <div class="note" data-at="L1@0.8">Pieces and IDs from the guide's own tiny tokenizer. Real models learn far bigger vocabularies.</div>
+    <div class="screen" data-at="L1@0.9" data-pop>
+      <div class="cam" id="s2cam"><img src="shots/02-tokens.png" alt="">
+        <div class="hl" style="left:935px; top:462px; width:190px; height:70px" data-at="L2@0.15" data-pop></div>
+      </div>
+    </div>
+    <div class="real" style="left:1340px; top:464px" data-at="L1@1">REAL DEMO</div>
+  </section>
+
+  <!-- S3: tokens become vectors -->
+  <section class="scene" id="s3">
+    <div class="t-title" data-at="0.2">Tokens become <span class="hl-y">vectors</span></div>
+    <div class="card vec" data-at="L1" data-pop>
+      <div class="row"><span class="chip" style="border-color:var(--teal); font-size:24px; padding:8px 18px">cat</span> becomes a list of numbers</div>
+      <div class="nums" id="s3nums"></div>
+      <div class="n" id="s3n">0</div>
+      <div class="l">numbers per token in GPT-3</div>
+      <div class="d">The values shown above are made up for illustration; training sets the real ones.</div>
+    </div>
+    <div class="screen" data-at="L2" data-pop>
+      <div class="cam" id="s3cam"><img src="shots/03-embeddings.png" alt=""></div>
+    </div>
+    <div class="real" style="left:1310px; top:192px" data-at="L2@0.1">GUIDE'S TOY MAP</div>
+    <div class="eq"><span class="chip" style="border-color:var(--yellow)" data-at="L2@0.55" data-pop>king &minus; man + woman &asymp; queen</span></div>
+  </section>
+
+  <!-- S4: attention -->
+  <section class="scene" id="s4">
+    <div class="t-title" data-at="0.2">Attention: <span class="hl-t">who here matters to me?</span></div>
+    <div class="card attn" data-at="L1" data-pop>
+      <svg id="s4arcs" viewBox="0 0 1140 330"></svg>
+      <div class="words" id="s4words"></div>
+    </div>
+    <div class="card ask" data-at="L1@0.5" data-pop>
+      <h4>Each token looks back</h4>
+      <p>at the words before it, weighs which ones matter, and pulls in meaning from them.</p>
+    </div>
+    <div class="card pct" data-at="L3@0.1" data-pop>
+      <div class="n">&ldquo;it&rdquo; &rarr; animal <span id="s4p">0</span>%</div>
+      <div class="d">Hand-set pattern from the guide's attention demo, mirroring heads found in real models</div>
+    </div>
+    <div class="credit"><span class="chip" style="border-color:var(--yellow)" data-at="L4@0.35" data-pop>
+      <span class="ico" style="color:var(--yellow)" data-ico="play"></span>Go deeper: 3Blue1Brown, &ldquo;Attention in transformers, step-by-step&rdquo;</span></div>
+  </section>
+
+  <!-- S5: layers and the residual stream -->
+  <section class="scene" id="s5">
+    <div class="t-title" data-at="0.2">Layer after layer: the <span class="hl-y">residual stream</span></div>
+    <div id="s5stack"></div>
+    <div class="facts">
+      <span class="chip" style="border-color:var(--teal)" data-at="L1@0.25" data-pop>GPT-2 small: 12 layers</span>
+      <span class="chip" style="border-color:var(--yellow)" data-at="L1@0.45" data-pop>GPT-3: 96</span>
+    </div>
+    <div class="card bars" data-at="L1@0.6" data-pop>
+      <div class="lbl">ONE TOKEN'S VECTOR &middot; 8 OF ITS NUMBERS</div>
+      <div class="plot" id="s5plot"><div class="axis"></div></div>
+      <div class="note">Illustrative values. Faint bars: before the latest layer.</div>
+    </div>
+    <div class="rs"><span class="chip" style="border-color:var(--yellow); color:var(--yellow)" data-at="L3@0.3" data-pop>
+      <span class="ico" data-ico="undo"></span>Nothing is erased. Every layer adds.</span></div>
+  </section>
+
+  <!-- S6: scores become a choice -->
+  <section class="scene" id="s6">
+    <div class="t-title" data-at="0.2">Scores become a <span class="hl-y">choice</span></div>
+    <div class="card prompt" data-at="0.4" data-pop>The best way to learn something new is to <span class="pick" id="s6pick"></span></div>
+    <div class="card dist" data-at="L1" data-pop>
+      <div class="dial">Temperature <span class="end">safe</span><div class="track"><div class="knob" id="s6knob"></div></div><span class="end">adventurous</span><span class="val" id="s6t">1.00</span></div>
+      <div class="rows" id="s6rows"></div>
+      <div class="note">Hand-set words and scores from the guide's demo; real softmax and temperature maths. A real model scores every token it knows.</div>
+    </div>
+    <div class="loop"><span class="chip" style="border-color:var(--teal)" data-at="L2@0.45" data-pop>
+      <span class="ico" style="color:var(--teal)" data-ico="undo"></span>Append the pick, run the whole model again</span></div>
+  </section>
+
+  <!-- S7: training -->
+  <section class="scene" id="s7">
+    <div class="t-title" data-at="0.2">How it got <span class="hl-t">good</span></div>
+    <div id="s7chain"></div>
+    <div class="card stat" data-at="L1@0.75" data-pop>
+      <div class="n"><span id="s7n">0</span><small> billion</small></div>
+      <div class="l">knobs (parameters) in GPT-3</div>
+      <div class="d">Each one nudged, again and again, during training</div>
+    </div>
+    <div class="card zip" data-at="L2@0.45" data-pop>
+      <div class="lbl">ANDREJ KARPATHY'S IMAGE</div>
+      <h4>A lossy compression of the internet</h4>
+      <p>From his talk &ldquo;Intro to Large Language Models&rdquo; (2023), paraphrased</p>
+    </div>
+    <div class="warn"><span class="chip" style="border-color:var(--red); color:var(--red)" data-at="L4@0.2" data-pop>
+      <span class="ico" data-ico="stop"></span>Blurry, so it can sound sure and still be wrong</span></div>
+  </section>
+
+  <!-- S8: try it yourself -->
+  <section class="scene" id="s8">
+    <div class="title" data-at="0.3" data-pop>The <span class="hl-t">Residual</span> Stream
+      <small>An interactive guide to how LLMs work &middot; English and Hebrew</small></div>
+    <div class="url"><span class="chip" style="border-color:var(--teal)" data-at="L1@0.1" data-pop>https://danielarosenn.github.io/residual-stream/</span></div>
+    <div class="screen" style="left:390px" data-at="L1@0.2" data-pop>
+      <div class="cam" id="s8a"><img src="shots/01-hero.png" alt=""></div>
+    </div>
+    <div class="screen" style="left:970px" data-at="L1@0.6" data-pop>
+      <div class="cam" id="s8b"><img src="shots/08-game.png" alt=""></div>
+    </div>
+    <div class="real" style="left:390px; top:404px" data-at="L1@0.3">THE GUIDE</div>
+    <div class="real" style="left:970px; top:404px" data-at="L1@0.7">THE GAME</div>
+    <div class="credits" data-at="L3@0.05">Inspired by Andrej Karpathy and 3Blue1Brown. Go watch the originals.
+      <small>Our own words and pictures; any mistakes are ours.</small></div>
+  </section>
+
+</div>
+<script src="timeline.js"></script>
+<script src="engine/stage.js"></script>
+<script>
+/* ---------- S1: an answer written one token at a time ---------- */
+const S1_TOKENS = ['The', ' capital', ' of', ' France', ' is', ' Paris', '.'];
+$('#s1a').innerHTML = S1_TOKENS.map((t, i) => `<span id="s1t${i}">${t}</span>`).join('') + '<span class="next" id="s1next">next?</span>';
+Stage.scene('s1', (lt, s) => {
+  const t0 = at(s, 1, 0.25), t1 = at(s, 3, 0.9), per = (t1 - t0) / S1_TOKENS.length;
+  S1_TOKENS.forEach((_, i) => {
+    const el = $('#s1t' + i), k = prog(lt, t0 + i * per, 0.25);
+    el.style.opacity = k;
+    el.className = k > 0 && lt < t0 + (i + 1) * per ? 'new' : '';
+  });
+  const done = lt >= t0 + S1_TOKENS.length * per;
+  $('#s1next').style.opacity = lt >= t0 && !done ? 0.5 + 0.5 * Math.abs(Math.sin(lt * 4)) : 0;
+});
+
+/* ---------- S2: tokens (pieces and IDs exactly as the guide's BPE demo shows them at 200 merges) ---------- */
+const S2_SENT = 'The cat learned to predict the next token,';
+const S2_TOKS = [['The', 33], ['cat', 69], ['learned', 214], ['to', 125], ['predict', 157], ['the', 33], ['next', 120],
+  ['to', 125, 1], ['k', 15, 1], ['en', 44, 1], [',', 2]];
+$('#s2toks').innerHTML = S2_TOKS.map(([w, id, rare], i) =>
+  `<div class="tok${rare ? ' rare' : ''}" id="s2k${i}">${w}<i id="s2i${i}">${id}</i></div>`).join('');
+Stage.scene('s2', (lt, s) => {
+  typeText($('#s2sent'), S2_SENT, lt, 0.5, at(s, 0, 0.9));
+  const c0 = at(s, 1, 0.05), c1 = at(s, 1, 0.45), id0 = at(s, 1, 0.6), id1 = at(s, 1, 0.85);
+  S2_TOKS.forEach((_, i) => {
+    reveal($('#s2k' + i), prog(lt, c0 + (c1 - c0) * i / S2_TOKS.length, 0.35), true);
+    $('#s2i' + i).style.opacity = prog(lt, id0 + (id1 - id0) * i / S2_TOKS.length, 0.25);
+    const rare = S2_TOKS[i][2], glow = rare && lt >= at(s, 2, 0);
+    $('#s2k' + i).style.boxShadow = glow ? '0 0 26px rgba(245,193,61,0.55)' : '';
+  });
+  /* chips row of the real demo, then a closer look at "to k en" */
+  setCam($('#s2cam'), [[at(s, 1, 0.9), 1044, 545, 1.2], [at(s, 2, 0.1), 1044, 545, 1.2], [at(s, 2, 0.9), 1040, 540, 1.25]], lt);
+});
+
+/* ---------- S3: vectors and the toy meaning map ---------- */
+const S3_NUMS = ['0.12', '-0.83', '0.47', '0.05', '-0.31', '0.92', '-0.14', '0.66'];
+Stage.scene('s3', (lt, s) => {
+  const t0 = at(s, 1, 0.15), per = 0.12;
+  $('#s3nums').textContent = '[ ' + S3_NUMS.filter((_, i) => lt >= t0 + i * per).join(', ') + (lt >= t0 + S3_NUMS.length * per ? ', ... ]' : '');
+  countTo($('#s3n'), 12288, lt, at(s, 1, 0.45), 1.2, v => Math.round(v).toLocaleString('en-US'));
+  /* the people-and-royalty corner of the guide's toy map: woman -> queen is the same step as man -> king */
+  /* 3.3x on shot px x 319-901, y 360-808: the group label down to "prince"; "sad" above and the verb row below stay out of frame */
+  setCam($('#s3cam'), [[at(s, 2, 0), 960, 540, 1.6], [at(s, 2, 0.45), 610, 584, 3.3]], lt);
+});
+
+/* ---------- S4: attention arcs from "it" (weights from the guide's coreference head, "...too tired") ---------- */
+const S4_WORDS = ['The', 'animal', "didn't", 'cross', 'the', 'street', 'because', 'it', 'was', 'too', 'tired.'];
+const S4_W = { 0: 0.01, 1: 0.89, 2: 0.01, 3: 0.01, 4: 0.01, 5: 0.03, 6: 0.01 };
+const IT = 7;
+$('#s4words').innerHTML = S4_WORDS.map((w, i) => `<span id="s4w${i}">${w}</span>`).join('');
+$('#s4arcs').innerHTML = Object.keys(S4_W).map(j => `<path id="s4a${j}" fill="none" stroke-linecap="round"/>`).join('');
+let s4x = null;
+Stage.scene('s4', (lt, s) => {
+  if (!s4x) s4x = S4_WORDS.map((_, i) => { const e = $('#s4w' + i); return e.offsetLeft + e.offsetWidth / 2; });
+  const ty = at(s, 2, 0), te = at(s, 2, 0.75);
+  S4_WORDS.forEach((_, i) => {
+    const e = $('#s4w' + i);
+    e.style.opacity = 0.25 + 0.75 * prog(lt, ty + (te - ty) * i / S4_WORDS.length, 0.2);
+    const hot = (i === IT && lt >= at(s, 2, 0.45)) || (i === 1 && lt >= at(s, 3, 0.1));
+    e.style.background = hot ? (i === IT ? 'rgba(129,229,172,0.85)' : 'rgba(245,193,61,0.9)') : 'transparent';
+    e.style.color = hot ? '#0c1a17' : '';
+  });
+  Object.entries(S4_W).forEach(([j, w]) => {
+    const p = $('#s4a' + j), x0 = s4x[IT], x1 = s4x[+j], h = 40 + (x0 - x1) * 0.32;
+    p.setAttribute('d', `M ${x0} 240 C ${x0} ${240 - h}, ${x1} ${240 - h}, ${x1} 240`);
+    p.setAttribute('stroke', +j === 1 ? '#F5C13D' : '#81E5AC');
+    p.setAttribute('stroke-width', 2 + 22 * w);
+    const k = prog(lt, at(s, 2, 0.5) + (+j === 1 ? 0.3 : 0), 0.6);
+    p.setAttribute('opacity', (0.35 + 0.65 * Math.min(1, w * 3)) * k);
+    p.setAttribute('pathLength', 1);
+    p.setAttribute('stroke-dasharray', `${k} 1`);
+  });
+  countTo($('#s4p'), 89, lt, at(s, 3, 0.2), 0.9);
+});
+
+/* ---------- S5: a stack of layers with the stream running up through it ---------- */
+const S5_LAYERS = 7, SLAB_TOP = 236, SLAB_STEP = 76;
+$('#s5stack').innerHTML =
+  `<div class="stream" id="s5stream"></div><div class="tip" data-at="L1@0.3"></div>` +
+  Array.from({ length: S5_LAYERS }, (_, i) => {
+    const n = S5_LAYERS - i, label = n === 4 ? '&middot; &middot; &middot;' : `Layer ${n > 4 ? 'N' + (n === 7 ? '' : ' - ' + (7 - n)) : n}`;
+    return `<div class="slab" id="s5l${n}" style="top:${SLAB_TOP + i * SLAB_STEP}px">${label}</div>`;
+  }).join('') +
+  `<div class="lab" style="left:600px; top:800px">TOKEN VECTOR IN</div>` +
+  `<div class="lab" style="left:735px; top:172px">TO THE SCORES</div>`;
+$('#s5stream').innerHTML = Array.from({ length: 12 }, (_, i) => `<i id="s5d${i}"></i>`).join('');
+/* fixed per-layer additions to 8 numbers, so the bars grow a little each layer (illustrative) */
+const S5_BASE = [30, -50, 40, 10, -20, 60, -35, 15];
+const S5_ADD = [[8, -6, 10, 14, 4, -8, 6, -10], [-4, 12, 6, -10, 16, 8, -12, 14], [10, 6, -8, 12, -6, 10, 8, -6],
+  [6, -10, 12, 4, 10, -6, -8, 12], [-8, 8, 6, 10, -10, 12, 6, 8], [12, -4, -10, 6, 8, 4, -6, 10], [4, 10, 8, -8, 6, 10, 12, -4]];
+$('#s5plot').insertAdjacentHTML('beforeend', S5_BASE.map((_, i) => `<u id="s5u${i}"></u><b id="s5b${i}"></b>`).join(''));
+function s5bar(el, i, v) {
+  const x = 8 + i * 60, mid = 110;
+  el.style.left = x + 'px';
+  el.style.top = (v >= 0 ? mid - v : mid) + 'px';
+  el.style.height = Math.abs(v) + 'px';
+}
+Stage.scene('s5', (lt, s) => {
+  const fast = lt >= at(s, 1, 0) ? 1 : 0.4;
+  for (let i = 0; i < 12; i++) $('#s5d' + i).style.top = (((i * 50 - lt * 120 * fast) % 600) + 600) % 600 + 'px';
+  /* layers light bottom to top: Layer 1 first, the top layer last */
+  const t0 = at(s, 1, 0.6), t1 = at(s, 3, 0.2), per = (t1 - t0) / S5_LAYERS;
+  let lit = 0;
+  for (let n = 1; n <= S5_LAYERS; n++) {
+    const on = lt >= t0 + (n - 1) * per, cur = on && lt < t0 + n * per, el = $('#s5l' + n);
+    if (on) lit = n;
+    el.style.borderColor = on ? 'var(--teal)' : 'rgba(129,229,172,0.45)';
+    el.style.color = on ? 'var(--text)' : 'var(--muted)';
+    el.style.boxShadow = cur ? '0 0 30px rgba(129,229,172,0.6)' : '';
+  }
+  const kk = lit ? clamp01((lt - (t0 + (lit - 1) * per)) / 0.4) : 0;
+  S5_BASE.forEach((b, i) => {
+    let before = b;
+    for (let n = 0; n < lit - 1; n++) before += S5_ADD[n][i];
+    const after = lit ? before + S5_ADD[lit - 1][i] * easeOut(kk) : b;
+    s5bar($('#s5b' + i), i, after);
+    s5bar($('#s5u' + i), i, before);
+  });
+  const glow = lt >= at(s, 3, 0.1);
+  $('#s5stream').style.boxShadow = glow ? '0 0 40px rgba(245,193,61,0.7)' : '';
+});
+
+/* ---------- S6: real softmax with temperature on the guide's hand-set scores ---------- */
+const S6 = [['practice', 3.1], ['read', 2.6], ['teach', 2.4], ['try', 2.0], ['ask', 1.7], ['build', 1.6],
+  ['fail', 1.0], ['sleep', 0.2], ['dance', -0.3], ['panic', -0.8], ['banana', -2.5]];
+$('#s6rows').innerHTML = S6.map(([w], i) =>
+  `<div class="r${i ? '' : ' top'}"><span class="w">${w}</span><span class="bar"><i id="s6b${i}"></i></span><span class="p" id="s6p${i}"></span></div>`).join('');
+const T_MIN = 0, T_MAX = 2;  // the guide's temperature slider runs from 0 to 2
+Stage.scene('s6', (lt, s) => {
+  /* temperature: 1 -> low (safe) on "safe" -> high on "adventurous" -> back to 1 */
+  const keys = [[at(s, 1, 0.62), 1], [at(s, 1, 0.74), 0.35], [at(s, 1, 0.84), 0.35], [at(s, 1, 0.97), 1.8], [at(s, 2, 0.05), 1.8], [at(s, 2, 0.3), 1]];
+  let T = 1;
+  for (let i = 0; i < keys.length - 1; i++) {
+    const [a, va] = keys[i], [b, vb] = keys[i + 1];
+    if (lt >= a && lt < b) T = va + (vb - va) * easeInOut((lt - a) / (b - a));
+  }
+  if (lt >= keys[keys.length - 1][0]) T = 1;
+  const z = S6.map(c => c[1] / T), m = Math.max(...z), e = z.map(v => Math.exp(v - m)), sum = e.reduce((a, b) => a + b, 0);
+  const grow = prog(lt, at(s, 1, 0.3), 0.8);
+  S6.forEach((_, i) => {
+    const p = e[i] / sum;
+    $('#s6b' + i).style.width = 100 * Math.min(1, p / 0.8) * easeOut(grow) + '%';
+    $('#s6p' + i).textContent = grow > 0 ? (100 * p).toFixed(1) + '%' : '';
+  });
+  $('#s6t').textContent = T.toFixed(2);
+  $('#s6knob').style.left = 100 * (T - T_MIN) / (T_MAX - T_MIN) + '%';
+  typeText($('#s6pick'), 'practice', lt, at(s, 2, 0.1), at(s, 2, 0.35));
+});
+
+/* ---------- S7: the training loop ---------- */
+const S7_STEPS = [
+  ['Guess', 'spark', '--teal', 'Predict the next token of real text'],
+  ['Check', 'search', '--yellow', 'Compare with the token that really came next'],
+  ['Nudge', 'gear', '--orange', 'Move every knob a tiny bit toward a better guess'],
+  ['Repeat', 'undo', '--blue', 'Over a huge pile of text'],
+];
+buildChain($('#s7chain'), 's7', S7_STEPS, { w: 264, gap: 28, y: 176, h: 210, x0: 394 });
+Stage.scene('s7', (lt, s) => {
+  runChain('s7', S7_STEPS, [at(s, 1, 0.1), at(s, 1, 0.3), at(s, 1, 0.45), at(s, 2, 0.05)], lt);
+  countTo($('#s7n'), 175, lt, at(s, 1, 0.8), 1.0);
+});
+
+/* ---------- S8: try it yourself ---------- */
+Stage.scene('s8', (lt, s) => {
+  Stage.spotlight(prog(lt, 0.2, 1.2));
+  /* keep the frame's bottom edge above the next heading in the hero shot (y 985); 1.12x shows shot y 0-964, 1.18x y 0-915 */
+  setCam($('#s8a'), [[0, 1040, 482, 1.12], [s.dur, 1040, 458, 1.18]], lt);
+  setCam($('#s8b'), [[0, 960, 540, 1.0], [s.dur, 960, 500, 1.12]], lt);
+});
+
+Stage.start();
+</script>
+</body>
+</html>

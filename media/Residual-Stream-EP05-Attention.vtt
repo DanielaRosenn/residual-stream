@@ -1,0 +1,79 @@
+WEBVTT
+
+00:00:00.700 --> 00:00:03.777
+Toki: Vera, I'm “bank”. Am I money, or a riverside?
+
+00:00:04.177 --> 00:00:06.989
+Vera: Depends on the words before you: a river, or a loan.
+
+00:00:07.389 --> 00:00:08.235
+Toki: So I ask around?
+
+00:00:08.635 --> 00:00:11.085
+Vera: Yes. That asking around is attention.
+
+00:00:12.685 --> 00:00:19.000
+Vera: Every token makes a query: what am I looking for? A key: what do I offer? A value: what I hand over.
+
+00:00:19.400 --> 00:00:24.686
+Vera: Each key is matched with the query for a score. Softmax turns scores into weights that sum to one.
+
+00:00:25.086 --> 00:00:27.918
+Toki: So I take a mix of their values, mostly from the best matches?
+
+00:00:28.319 --> 00:00:31.085
+Vera: Yes: a weighted mix, added onto your own vector.
+
+00:00:32.685 --> 00:00:36.367
+Vera: Try this one: “The animal didn't cross the street because it was too tired.”
+
+00:00:36.767 --> 00:00:37.665
+Toki: “It” looks at “animal”.
+
+00:00:38.065 --> 00:00:39.089
+Vera: Now swap in “wide”.
+
+00:00:39.489 --> 00:00:40.369
+Toki: Now it's the street!
+
+00:00:40.769 --> 00:00:43.777
+Vera: Hand-set patterns, mirroring ones found in real models.
+
+00:00:45.377 --> 00:00:46.886
+Toki: Wait. “Tired” comes after “it”!
+
+00:00:47.286 --> 00:00:51.378
+Vera: Right, it can't. Tokens only look back; later words settle it.
+
+00:00:51.778 --> 00:00:55.152
+Vera: No peeking ahead means one pass can train every position at once.
+
+00:00:56.752 --> 00:00:57.864
+Toki: One pattern per layer?
+
+00:00:58.264 --> 00:01:02.901
+Vera: Many, side by side: heads. GPT-2 small has 12 per layer.
+
+00:01:03.301 --> 00:01:07.699
+Vera: One watches the previous word, one links verbs to their doers, one tracks pronouns.
+
+00:01:08.099 --> 00:01:09.094
+Toki: A team of highlighters!
+
+00:01:10.694 --> 00:01:11.323
+Toki: What's the catch?
+
+00:01:11.723 --> 00:01:16.347
+Vera: Each token checks every one before it. Double the text, about four times the work.
+
+00:01:16.747 --> 00:01:20.410
+Vera: That square makes long contexts hard, and so much engineering fights it.
+
+00:01:22.010 --> 00:01:22.889
+Toki: Can I try it myself?
+
+00:01:23.289 --> 00:01:26.900
+Vera: Open the Attention chapter, click the tokens, flip tired to wide.
+
+00:01:27.300 --> 00:01:29.775
+Toki: Tokens talking to tokens. My kind of party.

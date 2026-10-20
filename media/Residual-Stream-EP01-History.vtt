@@ -1,0 +1,67 @@
+WEBVTT
+
+00:00:00.700 --> 00:00:02.589
+Toki: Vera, did chatbots always read like this?
+
+00:00:02.989 --> 00:00:07.549
+Vera: No. For decades, programs read text through a keyhole: one word at a time.
+
+00:00:07.949 --> 00:00:09.667
+Toki: And forgot most of what came before?
+
+00:00:10.067 --> 00:00:13.258
+Vera: Mostly. Each step in this story makes the keyhole wider.
+
+00:00:14.858 --> 00:00:15.940
+Toki: So what was the first step?
+
+00:00:16.340 --> 00:00:21.021
+Vera: 2013: word vectors. Words become lists of numbers that capture meaning.
+
+00:00:21.421 --> 00:00:23.799
+Vera: King minus man plus woman lands near queen.
+
+00:00:24.199 --> 00:00:26.138
+Toki: Words with directions. Fancy.
+
+00:00:27.738 --> 00:00:29.323
+Toki: Then machines learned to translate?
+
+00:00:29.723 --> 00:00:36.450
+Vera: 2014: sequence to sequence. It squeezes the whole sentence into one vector, then writes the translation from it.
+
+00:00:36.850 --> 00:00:38.372
+Toki: A whole sentence in one vector?
+
+00:00:38.772 --> 00:00:42.651
+Vera: Exactly the problem. On long sentences, details get lost.
+
+00:00:44.252 --> 00:00:45.508
+Toki: So how do you stop the squeeze?
+
+00:00:45.908 --> 00:00:51.777
+Vera: Attention, also 2014. The decoder looks back at every word and picks which ones to focus on.
+
+00:00:52.177 --> 00:00:53.296
+Toki: No more single vector!
+
+00:00:54.896 --> 00:00:55.853
+Toki: And 2017?
+
+00:00:56.253 --> 00:01:01.918
+Vera: The transformer. It dropped recurrence and kept only attention, so it trains in parallel on GPUs.
+
+00:01:02.318 --> 00:01:03.692
+Toki: The T in ChatGPT?
+
+00:01:04.092 --> 00:01:07.205
+Vera: That's the one. And it kept improving as it was made bigger.
+
+00:01:08.805 --> 00:01:09.964
+Toki: Can I see the whole story?
+
+00:01:10.364 --> 00:01:13.485
+Vera: Pick one of the three acts on the timeline in the How it began chapter.
+
+00:01:13.885 --> 00:01:16.532
+Toki: Sixty years of ideas. I'll skim the highlights.

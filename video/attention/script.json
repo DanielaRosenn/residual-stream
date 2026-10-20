@@ -1,0 +1,73 @@
+{
+  "brand": "The Residual Stream &middot; EP 05 &middot; Attention",
+  "output": "Residual-Stream-EP05-Attention.mp4",
+  "voices": {
+    "VERA": { "voice": "en-GB-SoniaNeural", "rate": "+18%", "pitch": "+0Hz" },
+    "TOKI": { "voice": "en-US-BrianNeural", "rate": "+20%", "pitch": "+4Hz" }
+  },
+  "cast": { "L": "VERA", "R": "TOKI" },
+  "scenes": [
+    {
+      "id": "s1",
+      "lines": [
+        { "who": "TOKI", "text": "Vera, I'm “bank”. Am I money, or a riverside?", "say": "Vera, I'm the word bank. Am I money, or a riverside?" },
+        { "who": "VERA", "text": "Depends on the words before you: a river, or a loan." },
+        { "who": "TOKI", "text": "So I ask around?" },
+        { "who": "VERA", "text": "Yes. That asking around is attention." }
+      ]
+    },
+    {
+      "id": "s2",
+      "lines": [
+        { "who": "VERA", "text": "Every token makes a query: what am I looking for? A key: what do I offer? A value: what I hand over." },
+        { "who": "VERA", "text": "Each key is matched with the query for a score. Softmax turns scores into weights that sum to one." },
+        { "who": "TOKI", "text": "So I take a mix of their values, mostly from the best matches?" },
+        { "who": "VERA", "text": "Yes: a weighted mix, added onto your own vector." }
+      ]
+    },
+    {
+      "id": "s3",
+      "lines": [
+        { "who": "VERA", "text": "Try this one: “The animal didn't cross the street because it was too tired.”",
+          "say": "Try this one: The animal didn't cross the street, because it was too tired." },
+        { "who": "TOKI", "text": "“It” looks at “animal”.", "say": "It looks at animal." },
+        { "who": "VERA", "text": "Now swap in “wide”.", "say": "Now swap in wide." },
+        { "who": "TOKI", "text": "Now it's the street!" },
+        { "who": "VERA", "text": "Hand-set patterns, mirroring ones found in real models.", "say": "Hand set patterns, mirroring ones found in real models." }
+      ]
+    },
+    {
+      "id": "s4",
+      "lines": [
+        { "who": "TOKI", "text": "Wait. “Tired” comes after “it”!", "say": "Wait. Tired comes after it!" },
+        { "who": "VERA", "text": "Right, it can't. Tokens only look back; later words settle it." },
+        { "who": "VERA", "text": "No peeking ahead means one pass can train every position at once." }
+      ]
+    },
+    {
+      "id": "s5",
+      "lines": [
+        { "who": "TOKI", "text": "One pattern per layer?" },
+        { "who": "VERA", "text": "Many, side by side: heads. GPT-2 small has 12 per layer.", "say": "Many, side by side: heads. G P T 2 small has twelve per layer." },
+        { "who": "VERA", "text": "One watches the previous word, one links verbs to their doers, one tracks pronouns." },
+        { "who": "TOKI", "text": "A team of highlighters!" }
+      ]
+    },
+    {
+      "id": "s6",
+      "lines": [
+        { "who": "TOKI", "text": "What's the catch?" },
+        { "who": "VERA", "text": "Each token checks every one before it. Double the text, about four times the work." },
+        { "who": "VERA", "text": "That square makes long contexts hard, and so much engineering fights it." }
+      ]
+    },
+    {
+      "id": "s7",
+      "lines": [
+        { "who": "TOKI", "text": "Can I try it myself?" },
+        { "who": "VERA", "text": "Open the Attention chapter, click the tokens, flip tired to wide." },
+        { "who": "TOKI", "text": "Tokens talking to tokens. My kind of party." }
+      ]
+    }
+  ]
+}

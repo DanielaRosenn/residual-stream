@@ -1,0 +1,173 @@
+{
+  "brand": "The Residual Stream &middot; EP 10 &middot; Inside the box",
+  "output": "Residual-Stream-EP10-Interp.mp4",
+  "voices": {
+    "VERA": {
+      "voice": "en-GB-SoniaNeural",
+      "rate": "+18%",
+      "pitch": "+0Hz"
+    },
+    "TOKI": {
+      "voice": "en-US-BrianNeural",
+      "rate": "+20%",
+      "pitch": "+4Hz"
+    }
+  },
+  "cast": {
+    "L": "VERA",
+    "R": "TOKI"
+  },
+  "scenes": [
+    {
+      "id": "s1",
+      "lines": [
+        {
+          "who": "TOKI",
+          "text": "Vera, do we know how a model works?"
+        },
+        {
+          "who": "VERA",
+          "text": "We see every multiplication. Not why they add up to behaviour."
+        },
+        {
+          "who": "TOKI",
+          "text": "Who works that out?"
+        },
+        {
+          "who": "VERA",
+          "text": "Interpretability. It matters for safety, debugging and trust."
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "lines": [
+        {
+          "who": "TOKI",
+          "text": "Where do you even start?"
+        },
+        {
+          "who": "VERA",
+          "text": "The logit lens: stop partway up and ask for an answer now."
+        },
+        {
+          "who": "VERA",
+          "text": "Low down: “the”. Up top: “Paris”. Illustrative numbers.",
+          "say": "Low down: the. Up top: Paris. Illustrative numbers."
+        },
+        {
+          "who": "TOKI",
+          "text": "The guess sharpens as it climbs."
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "lines": [
+        {
+          "who": "TOKI",
+          "text": "Why not read each neuron?"
+        },
+        {
+          "who": "VERA",
+          "text": "More concepts than dimensions, packed at almost-perpendicular angles.",
+          "say": "More concepts than dimensions, packed at almost perpendicular angles."
+        },
+        {
+          "who": "VERA",
+          "text": "They're rarely active together, so it works. When two are, they leak."
+        },
+        {
+          "who": "TOKI",
+          "text": "Cat and code on, and Paris lights up!"
+        }
+      ]
+    },
+    {
+      "id": "s4",
+      "lines": [
+        {
+          "who": "TOKI",
+          "text": "So how do you pull them apart?"
+        },
+        {
+          "who": "VERA",
+          "text": "Sparse autoencoders unpack them into millions of cleaner features.",
+          "say": "Sparse auto-encoders unpack them into millions of cleaner features."
+        },
+        {
+          "who": "VERA",
+          "text": "Anthropic found one for the Golden Gate Bridge."
+        },
+        {
+          "who": "TOKI",
+          "text": "Can you turn it up?"
+        },
+        {
+          "who": "VERA",
+          "text": "Push along it: Golden Gate Claude brought every chat back to the bridge."
+        },
+        {
+          "who": "VERA",
+          "text": "Real maths, made-up base numbers."
+        }
+      ]
+    },
+    {
+      "id": "s5",
+      "lines": [
+        {
+          "who": "TOKI",
+          "text": "But does a feature cause the answer?"
+        },
+        {
+          "who": "VERA",
+          "text": "Paste one activation from a clean run into a corrupted one."
+        },
+        {
+          "who": "VERA",
+          "text": "Second John, layer 3: 83% back. That spot carries it.",
+          "say": "Second John, layer three: eighty-three percent back. That spot carries it."
+        }
+      ]
+    },
+    {
+      "id": "s6",
+      "lines": [
+        {
+          "who": "TOKI",
+          "text": "Why not just ask the model?"
+        },
+        {
+          "who": "VERA",
+          "text": "That's generated text. Anthropic caught a model doing sums one way, describing another."
+        },
+        {
+          "who": "TOKI",
+          "text": "So judge it by what it does."
+        },
+        {
+          "who": "VERA",
+          "text": "Behaviour and evals. It's young science: insight on about a quarter of prompts."
+        }
+      ]
+    },
+    {
+      "id": "s7",
+      "lines": [
+        {
+          "who": "TOKI",
+          "text": "Can I look inside too?"
+        },
+        {
+          "who": "VERA",
+          "text": "Try the logit lens and the steering dial in the Inside the box chapter."
+        },
+        {
+          "who": "TOKI",
+          "text": "Strength nine. I'm a bridge now."
+        }
+      ]
+    }
+  ]
+}

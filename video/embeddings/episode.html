@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Residual Stream - EP 03 - Tokens become vectors</title>
+<link rel="stylesheet" href="engine/stage.css">
+<style>
+  /* The Residual Stream palette (the site's dark theme), overriding the engine's Flow Show defaults
+     for this episode only - same overrides as EP 01 and EP 02 (video/tokens/episode.html):
+     green #158864, dark green #182D2A, mint #81E5AC, light #DEF6EF, yellow #F5C13D. */
+  :root {
+    --panel: rgba(16, 36, 32, 0.95);
+    --text: #DEF6EF;
+    --muted: #93b3a9;
+    --teal: #81E5AC;
+    --yellow: #F5C13D;
+    --orange: #FFA45C;
+    --blue: #86BDEB;
+    --red: #FF8F88;
+    --purple: #C7A8FF;
+    --green: #158864;
+    --deep: #0D483D;
+  }
+  #stage { background: radial-gradient(ellipse at 50% 38%, #24453e 0%, #182D2A 45%, #0c1a17 100%); }
+  .spot.l { background: linear-gradient(180deg, rgba(129,229,172,0.30), rgba(129,229,172,0.02)); }
+  .spot.r { background: linear-gradient(180deg, rgba(245,193,61,0.26), rgba(245,193,61,0.02)); }
+  .floor { background: linear-gradient(180deg, rgba(6,16,14,0) 0%, rgba(6,16,14,0.78) 100%); }
+  #cap { background: rgba(10, 26, 23, 0.95); }
+  .card { border-color: rgba(129,229,172,0.22); }
+  .chip { background: rgba(14, 32, 28, 0.9); }
+  .node { background: rgba(14, 32, 28, 0.96); }
+  .real { background: rgba(10,26,23,0.92); }
+  .note { position: absolute; font-size: 18px; color: var(--muted); font-weight: 500; }
+  .hl.y { border-color: var(--yellow); box-shadow: 0 0 36px rgba(245,193,61,0.55), inset 0 0 24px rgba(245,193,61,0.15); }
+
+  /* token tile, as in EP 02 */
+  .tok { display: inline-flex; flex-direction: column; align-items: center; padding: 6px 14px 4px; border-radius: 12px; border: 2.5px solid var(--teal);
+    background: rgba(13,72,61,0.85); font-family: var(--mono); font-size: 29px; font-weight: 600; color: var(--text); }
+  .tok i { font-style: normal; font-size: 19px; color: var(--yellow); margin-top: 2px; }
+  .vec { font-family: var(--mono); font-weight: 600; color: var(--text); white-space: nowrap; }
+
+  /* S1: an ID is a row number; the row is a vector */
+  #s1 .kick { color: var(--teal); }
+  #s1 .big { top: 250px; }
+  #s1 .sub { top: 428px; }
+  #s1 .demo { left: 430px; top: 500px; width: 1060px; height: 216px; padding: 0; }
+  #s1 .demo > * { position: absolute; }
+  #s1 .s1tok { left: 30px; top: 66px; }
+  #s1 .arr { font-size: 40px; color: var(--muted); font-weight: 700; }
+  #s1 .tbl { left: 160px; top: 22px; width: 380px; }
+  #s1 .tbl .lbl { font-size: 17px; margin-bottom: 6px; }
+  #s1 .row { display: flex; gap: 14px; align-items: center; height: 42px; padding: 0 12px; border-radius: 9px; font-family: var(--mono); font-size: 20px; color: var(--muted); }
+  #s1 .row b { color: var(--yellow); width: 34px; }
+  #s1 .s1vec { left: 620px; top: 30px; font-size: 24px; }
+  #s1 .cnt { left: 620px; top: 84px; display: flex; gap: 34px; }
+  #s1 .cnt div { font-size: 48px; font-weight: 800; color: var(--yellow); line-height: 1.1; }
+  #s1 .cnt small { display: block; font-size: 19px; color: var(--text); font-weight: 700; }
+  #s1 .note { left: 430px; width: 1060px; top: 732px; text-align: center; }
+
+  /* S2: training nudges the numbers */
+  #s2 .sent { left: 390px; top: 176px; width: 420px; height: 470px; padding: 22px 26px; }
+  #s2 .sent .lbl { font-size: 19px; }
+  #s2 .srow { margin-top: 22px; font-size: 25px; font-weight: 600; line-height: 1.5; }
+  #s2 .srow .blank { display: inline-block; min-width: 70px; border-bottom: 3px solid var(--muted); text-align: center; color: var(--muted); }
+  #s2 .srow .fill { display: flex; gap: 10px; margin-top: 6px; }
+  #s2 .srow .tok { font-size: 22px; padding: 2px 12px; }
+  #s2 .plane { left: 840px; top: 176px; width: 690px; height: 470px; padding: 0; overflow: hidden; }
+  #s2 .plane .lbl { position: absolute; left: 24px; top: 20px; font-size: 19px; }
+  #s2 .phase { position: absolute; right: 24px; top: 16px; font-size: 20px; font-weight: 800; }
+  #s2 .dot { position: absolute; width: 0; height: 0; }
+  #s2 .dot::before { content: ''; position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: var(--c); box-shadow: 0 0 12px var(--c); }
+  #s2 .dot span { position: absolute; left: -60px; width: 120px; top: 12px; text-align: center; font-size: 21px; font-weight: 700; color: var(--text); }
+  #s2 .ring { position: absolute; border: 2.5px dashed; border-radius: 50%; }
+  #s2 .note { left: 840px; width: 690px; top: 660px; text-align: center; }
+  #s2 .bottom { position: absolute; left: 390px; width: 1140px; top: 712px; text-align: center; }
+  #s2 .bottom .chip { font-size: 23px; padding: 10px 22px; }
+
+  /* S3: the guide's toy map */
+  #s3 .screen { left: 390px; top: 168px; width: 1140px; height: 600px; }
+  #s3 .note { left: 390px; top: 790px; }
+  #s3 .nbrs { position: absolute; right: 390px; top: 782px; display: flex; gap: 10px; align-items: center; font-size: 20px; font-weight: 700; color: var(--muted); }
+  #s3 .nbrs .chip { font-size: 21px; padding: 5px 14px; }
+  #s3 .nbrs .chip b { color: var(--yellow); margin-left: 6px; }
+
+  /* S4: king - man + woman */
+  #s4 .screen.map { left: 390px; top: 170px; width: 600px; height: 470px; }
+  #s4 .screen.strip { left: 390px; top: 668px; width: 1140px; height: 110px; }
+  #s4 .sum { left: 1020px; top: 170px; width: 510px; height: 470px; padding: 22px 28px; border-color: var(--yellow); }
+  #s4 .sum .lbl { font-size: 18px; }
+  #s4 .srow { display: flex; align-items: baseline; margin-top: 14px; font-family: var(--mono); font-size: 29px; font-weight: 600; }
+  #s4 .srow .op { width: 34px; color: var(--yellow); font-weight: 800; }
+  #s4 .srow .w { width: 140px; }
+  #s4 .srow .v { color: var(--text); }
+  #s4 .rule { height: 2px; background: rgba(129,229,172,0.35); margin-top: 16px; }
+  #s4 .res { margin-top: 16px; font-size: 26px; font-weight: 800; color: var(--teal); display: flex; align-items: center; gap: 10px; }
+  #s4 .res .ico { width: 30px; height: 30px; }
+  #s4 .sum .note { left: 28px; right: 28px; top: 392px; font-size: 17px; }
+
+  /* S5: real maps, and the dot product */
+  #s5 .dims { left: 390px; top: 176px; width: 560px; height: 300px; padding: 22px 26px; }
+  #s5 .dims .lbl { font-size: 19px; }
+  #s5 .bar { margin-top: 22px; }
+  #s5 .bar .h { display: flex; justify-content: space-between; font-size: 22px; font-weight: 700; }
+  #s5 .bar .h b { font-family: var(--mono); color: var(--yellow); }
+  #s5 .bar .t { height: 16px; margin-top: 6px; border-radius: 8px; background: rgba(129,229,172,0.12); position: relative; overflow: hidden; }
+  #s5 .bar .t i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 8px; background: var(--teal); min-width: 3px; }
+  #s5 .dims .note { right: 26px; top: 22px; font-size: 17px; }
+  #s5 .tangle { left: 390px; top: 500px; width: 560px; height: 140px; padding: 20px 26px; border-color: var(--red); }
+  #s5 .tangle h4 { font-size: 25px; font-weight: 800; color: var(--red); display: flex; align-items: center; gap: 10px; }
+  #s5 .tangle p { font-size: 20px; color: #c4ddd5; margin-top: 8px; }
+  #s5 .dot { left: 980px; top: 176px; width: 550px; height: 464px; padding: 22px 28px; border-color: var(--teal); }
+  #s5 .dot .lbl { font-size: 19px; }
+  #s5 .dp { margin-top: 20px; }
+  #s5 .dp .q { font-size: 23px; font-weight: 700; }
+  #s5 .dp .m { font-family: var(--mono); font-size: 23px; color: var(--muted); margin-top: 4px; white-space: nowrap; }
+  #s5 .dp .m b { font-size: 34px; color: var(--yellow); margin-left: 6px; }
+  #s5 .dp.lo .m b { color: var(--muted); }
+  #s5 .dot .note { left: 28px; right: 28px; top: 380px; font-size: 17px; }
+  #s5 .bottom { position: absolute; left: 390px; width: 1140px; top: 690px; text-align: center; }
+  #s5 .bottom .chip { font-size: 23px; padding: 10px 22px; }
+
+  /* S6: try it yourself */
+  #s6 .title { position: absolute; left: 0; right: 0; top: 120px; text-align: center; font-size: 104px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.05; }
+  #s6 .title small { display: block; font-size: 30px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-top: 14px; }
+  #s6 .url { position: absolute; left: 0; right: 0; top: 322px; text-align: center; }
+  #s6 .url .chip { font-family: var(--mono); font-size: 27px; color: var(--teal); }
+  #s6 .screen { top: 446px; width: 560px; height: 315px; }
+  #s6 .credits { position: absolute; left: 390px; width: 1140px; top: 784px; text-align: center; font-size: 18px; color: var(--muted); font-weight: 500; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- S1: a token ID is a row number; the row is a vector -->
+  <section class="scene hero" id="s1">
+    <div class="kick" data-at="0.2">THE RESIDUAL STREAM &middot; EP 03</div>
+    <div class="big" data-at="0.4" data-pop>Tokens become <span class="hl-t">vectors</span></div>
+    <div class="sub" data-at="0.8">From an ID to a long list of numbers</div>
+    <div class="card demo" data-at="L0@0.2" data-pop>
+      <div class="tok s1tok" id="s1tok">cat<i>69</i></div>
+      <div class="arr" style="left:112px; top:72px" data-at="L1@0.4">&rarr;</div>
+      <div class="tbl" data-at="L1@0.4">
+        <div class="lbl">LEARNED TABLE &middot; ONE ROW PER TOKEN</div>
+        <div class="row" id="s1r0"><b>68</b>0.31 &minus;0.52 0.08 &hellip;</div>
+        <div class="row" id="s1r1"><b>69</b>0.12 &minus;0.83 0.47 &hellip;</div>
+        <div class="row" id="s1r2"><b>70</b>&minus;0.64 0.19 0.75 &hellip;</div>
+      </div>
+      <div class="arr" style="left:560px; top:72px" data-at="L3@0.02">&rarr;</div>
+      <div class="vec s1vec" id="s1vec"></div>
+      <div class="cnt">
+        <div data-at="L3@0.4"><span id="s1n1">0</span><small>numbers &middot; GPT-2 small</small></div>
+        <div data-at="L3@0.72"><span id="s1n2">0</span><small>numbers &middot; GPT-3</small></div>
+      </div>
+    </div>
+    <div class="note" data-at="L1@0.8">Token ID from the guide's demo tokenizer (EP 02); the numbers in the rows are made up for illustration</div>
+  </section>
+
+  <!-- S2: nobody designs the numbers; training nudges them -->
+  <section class="scene" id="s2">
+    <div class="t-title" data-at="0.2">Nobody <span class="hl-y">designs</span> these numbers</div>
+    <div class="card plane" data-at="L0@0.4" data-pop>
+      <div class="lbl">WHERE EACH TOKEN'S NUMBERS PUT IT</div>
+      <div class="phase" id="s2phase"></div>
+      <div id="s2rings"></div>
+      <div id="s2dots"></div>
+    </div>
+    <div class="note" data-at="L1@0.3">Illustrative: a cartoon of training, flattened to two numbers per token</div>
+    <div class="card sent" data-at="L2@0.5" data-pop>
+      <div class="lbl">SIMILAR SENTENCES</div>
+      <div class="srow" id="s2q0">I fed the <span class="blank">___</span> .<div class="fill"><div class="tok">cat</div><div class="tok">dog</div></div></div>
+      <div class="srow" id="s2q1">The <span class="blank">___</span> slept all day.<div class="fill"><div class="tok">cat</div><div class="tok">dog</div></div></div>
+      <div class="srow" id="s2q2">We flew to <span class="blank">___</span> .<div class="fill"><div class="tok">Paris</div><div class="tok">Rome</div></div></div>
+    </div>
+    <div class="bottom"><span class="chip" style="border-color:var(--teal)" data-at="L3@0.6" data-pop>
+      <span class="ico" style="color:var(--teal)" data-ico="check"></span>Used in similar ways &rarr; nearby on the map</span></div>
+  </section>
+
+  <!-- S3: the guide's hand-built toy map -->
+  <section class="scene" id="s3">
+    <div class="t-title" data-at="0.2">Meaning is a <span class="hl-t">place</span></div>
+    <div class="screen" data-at="L0@0.4" data-pop>
+      <div class="cam" id="s3a"><img src="shots/01-map-king.png" alt="">
+        <div class="hl t" id="s3hl1" style="left:1015px; top:80px; width:600px; height:380px"></div>
+        <div class="hl y" id="s3hl2" style="left:945px; top:655px; width:780px; height:335px"></div>
+      </div>
+      <div class="cam" id="s3b"><img src="shots/02-map-cat.png" alt=""></div>
+    </div>
+    <div class="real" style="left:1180px; top:184px" data-at="L1@0.3">GUIDE'S TOY MAP &middot; HAND-BUILT</div>
+    <div class="note" data-at="L1@0.6">41 words, placed by hand, two numbers each</div>
+    <div class="nbrs" id="s3nbrs">cat's nearest:
+      <span class="chip" style="border-color:var(--teal)">mouse<b>2.1</b></span>
+      <span class="chip" style="border-color:var(--teal)">kitten<b>2.3</b></span>
+      <span class="chip" style="border-color:var(--teal)">dog<b>2.5</b></span></div>
+  </section>
+
+  <!-- S4: directions mean things: king - man + woman -->
+  <section class="scene" id="s4">
+    <div class="t-title" data-at="0.2">Directions <span class="hl-y">mean things</span></div>
+    <div class="screen map" data-at="L0@0.4" data-pop>
+      <div class="cam" id="s4cam"><img src="shots/01-map-king.png" alt="">
+        <div class="hl t" id="s4hl1" style="left:556px; top:577px; width:290px; height:40px"></div>
+        <div class="hl y" id="s4hl2" style="left:556px; top:415px; width:290px; height:40px"></div>
+      </div>
+    </div>
+    <div class="real" style="left:776px; top:184px" data-at="L0@0.6">GUIDE'S TOY MAP</div>
+    <div class="card sum" data-at="L2@0.05" data-pop>
+      <div class="lbl">THE SUM, ON THE TOY MAP'S OWN VECTORS</div>
+      <div class="srow" id="s4r0"><span class="op"></span><span class="w">king</span><span class="v">[&minus;2.5, &minus;2.0]</span></div>
+      <div class="srow" id="s4r1"><span class="op">&minus;</span><span class="w">man</span><span class="v">[&minus;6.0, &minus;2.0]</span></div>
+      <div class="srow" id="s4r2"><span class="op">+</span><span class="w">woman</span><span class="v">[&minus;6.0, &nbsp;1.5]</span></div>
+      <div class="rule" id="s4rule"></div>
+      <div class="srow" id="s4r3"><span class="op">=</span><span class="w"></span><span class="v" style="color:var(--yellow)">[&minus;2.5, &nbsp;1.5]</span></div>
+      <div class="res" id="s4res"><span class="ico" data-ico="check"></span>queen is at [&minus;2.5, 1.5]</div>
+      <div class="note" data-at="L4@0.6">Exact here because the toy was built that way. In real models the sum lands near the answer, not on it.</div>
+    </div>
+    <div class="screen strip" data-at="L3@0.1" data-pop>
+      <div class="cam" id="s4strip"><img src="shots/06-ana-king.png" alt="">
+        <div class="hl y" id="s4hl3" style="left:960px; top:104px; width:124px; height:60px"></div>
+      </div>
+    </div>
+    <div class="real" style="left:1404px; top:646px" data-at="L3@0.2">REAL DEMO</div>
+  </section>
+
+  <!-- S5: honesty: real maps are bigger and messier; similarity is a dot product -->
+  <section class="scene" id="s5">
+    <div class="t-title" data-at="0.2">Real maps are <span class="hl-y">bigger</span>, and messier</div>
+    <div class="card dims" data-at="L0@0.45" data-pop>
+      <div class="lbl">NUMBERS PER TOKEN</div>
+      <div class="note">bars to scale</div>
+      <div class="bar"><div class="h">The guide's toy map<b>2</b></div><div class="t"><i id="s5b0"></i></div></div>
+      <div class="bar" data-at="L1@0.08"><div class="h">GPT-2 small<b>768</b></div><div class="t"><i id="s5b1"></i></div></div>
+      <div class="bar" data-at="L1@0.2"><div class="h">GPT-3<b>12,288</b></div><div class="t"><i id="s5b2"></i></div></div>
+    </div>
+    <div class="card tangle" data-at="L1@0.55" data-pop>
+      <h4><span class="ico" data-ico="stop"></span>One direction &ne; one idea</h4>
+      <p>A real direction rarely lines up with exactly one human idea.</p>
+    </div>
+    <div class="card dot" data-at="L3@0.1" data-pop>
+      <div class="lbl">SIMILARITY: THE DOT PRODUCT</div>
+      <div class="dp" id="s5d0"><div class="q">cat &middot; dog</div><div class="m">3&times;5.5 + 4&times;4 =<b id="s5v0">0</b></div></div>
+      <div class="dp lo" id="s5d1"><div class="q">cat &middot; Paris</div><div class="m">3&times;2.3 + 4&times;(&minus;3.8) =<b id="s5v1">0</b></div></div>
+      <div class="dp" id="s5d2"><div class="q" style="color:var(--teal)">Higher score: more alike</div></div>
+      <div class="note">On the toy map's vectors: cat [3, 4], dog [5.5, 4], Paris [2.3, &minus;3.8]. The toy's finder itself ranks by distance.</div>
+    </div>
+    <div class="bottom"><span class="chip" style="border-color:var(--yellow)" data-at="L4@0.55" data-pop>
+      <span class="ico" style="color:var(--yellow)" data-ico="spark"></span>Coming up: the heart of attention &middot; EP 05</span></div>
+  </section>
+
+  <!-- S6: try it yourself -->
+  <section class="scene" id="s6">
+    <div class="title" data-at="0.3" data-pop>The <span class="hl-t">Residual</span> Stream
+      <small>Embeddings chapter &middot; the word finder and the word sums</small></div>
+    <div class="url"><span class="chip" style="border-color:var(--teal)" data-at="L1@0.1" data-pop>https://danielarosenn.github.io/residual-stream/</span></div>
+    <div class="screen" style="left:390px" data-at="L1@0.3" data-pop>
+      <div class="cam" id="s6a"><img src="shots/03-find-cat.png" alt=""></div>
+    </div>
+    <div class="screen" style="left:970px" data-at="L1@0.7" data-pop>
+      <div class="cam" id="s6b"><img src="shots/04-ana-puppy.png" alt=""></div>
+    </div>
+    <div class="real" style="left:390px; top:404px" data-at="L1@0.35">THE WORD FINDER</div>
+    <div class="real" style="left:970px; top:404px" data-at="L1@0.75">YOUR OWN ANALOGY</div>
+    <div class="credits" data-at="L2@0.2">Our own words and pictures; any mistakes are ours.</div>
+  </section>
+
+</div>
+<script src="timeline.js"></script>
+<script src="engine/stage.js"></script>
+<script>
+/* ---------- S1: "cat" is ID 69 in the guide's demo tokenizer at its maximum 205 merges (video/tokens/out/shots-data.json);
+   the table values are made up ---------- */
+const S1_VEC = '[0.12, -0.83, 0.47, 0.05, ...]';
+Stage.scene('s1', (lt, s) => {
+  reveal($('#s1tok'), prog(lt, at(s, 0, 0.3), 0.35), true);
+  [0, 1, 2].forEach(i => reveal($('#s1r' + i), prog(lt, at(s, 1, 0.45) + i * 0.12, 0.3), false));
+  /* "...a row number": row 69 lights up */
+  const hot = lt >= at(s, 1, 0.75);
+  $('#s1r1').style.background = hot ? 'rgba(245,193,61,0.18)' : 'transparent';
+  $('#s1r1').style.color = hot ? 'var(--text)' : '';
+  $('#s1r1').style.outline = hot ? '2px solid var(--yellow)' : 'none';
+  typeText($('#s1vec'), S1_VEC, lt, at(s, 3, 0.05), at(s, 3, 0.35));
+  countTo($('#s1n1'), 768, lt, at(s, 3, 0.4), 0.8, v => Math.round(v).toLocaleString('en-US'));
+  countTo($('#s1n2'), 12288, lt, at(s, 3, 0.72), 1.0, v => Math.round(v).toLocaleString('en-US'));
+});
+
+/* ---------- S2: illustrative: scattered points drift into groups, in small steps ---------- */
+/* [label, start x, start y, end x, end y, colour] in plane-card px (card 690x470) */
+const S2_PTS = [
+  ['cat', 130, 330, 455, 150, '--teal'], ['dog', 600, 390, 575, 165, '--teal'],
+  ['kitten', 330, 130, 470, 235, '--teal'], ['puppy', 90, 190, 590, 250, '--teal'],
+  ['Paris', 590, 120, 120, 330, '--yellow'], ['Rome', 390, 300, 230, 345, '--yellow'],
+  ['France', 470, 240, 115, 410, '--yellow'], ['Italy', 250, 230, 240, 425, '--yellow'],
+  ['happy', 540, 300, 140, 120, '--purple'], ['sad', 300, 400, 245, 150, '--purple']
+];
+const S2_RINGS = [[385, 100, 270, 190, '--teal'], [55, 290, 250, 175, '--yellow'], [80, 80, 230, 120, '--purple']];  // left, top, w, h
+const S2_STEPS = 9;  // "a little at a time": the drift moves in this many nudges
+$('#s2dots').innerHTML = S2_PTS.map(([w, , , , , c], i) => `<div class="dot" id="s2p${i}" style="--c:var(${c})"><span>${w}</span></div>`).join('');
+$('#s2rings').innerHTML = S2_RINGS.map(([l, t, w, h, c], i) =>
+  `<div class="ring" id="s2g${i}" style="left:${l}px; top:${t}px; width:${w}px; height:${h}px; border-color:var(${c})"></div>`).join('');
+Stage.scene('s2', (lt, s) => {
+  const t0 = at(s, 1, 0.45), t1 = at(s, 2, 0.75);
+  const k = prog(lt, t0, t1 - t0);
+  const step = Math.min(S2_STEPS, Math.floor(k * S2_STEPS)), frac = k * S2_STEPS - step;
+  const kk = step >= S2_STEPS ? 1 : (step + easeOut(clamp01(frac * 2.5))) / S2_STEPS;  // each nudge settles quickly
+  S2_PTS.forEach(([, x0, y0, x1, y1], i) => {
+    const e = $('#s2p' + i);
+    e.style.left = (x0 + (x1 - x0) * kk) + 'px';
+    e.style.top = (y0 + (y1 - y0) * kk) + 'px';
+    reveal(e, prog(lt, at(s, 0, 0.5) + i * 0.05, 0.3), true);
+  });
+  $('#s2phase').textContent = lt < t0 ? 'BEFORE TRAINING' : k < 1 ? 'TRAINING…' : 'AFTER TRAINING';
+  $('#s2phase').style.color = k < 1 ? 'var(--muted)' : 'var(--teal)';
+  S2_RINGS.forEach((_, i) => { $('#s2g' + i).style.opacity = prog(lt, at(s, 2, 0.8) + i * 0.1, 0.4); });
+  /* Toki's "cat and dog ... the same kinds of sentences": the cat/dog sentences glow */
+  const hot = lt >= at(s, 3, 0.3);
+  [0, 1].forEach(i => { $('#s2q' + i).style.color = hot ? 'var(--teal)' : ''; });
+  reveal($('#s2q0'), prog(lt, at(s, 2, 0.6), 0.3), false);
+  reveal($('#s2q1'), prog(lt, at(s, 2, 0.7), 0.3), false);
+  reveal($('#s2q2'), prog(lt, at(s, 2, 0.8), 0.3), false);
+});
+
+/* ---------- S3: the guide's toy map (shots 01 and 02 share one scroll position) ---------- */
+/* animals: shot x 1020-1610, y 85-450; countries and capitals: x 950-1715, y 655-975 */
+Stage.scene('s3', (lt, s) => {
+  const A = [1230, 300, 2.15], C = [1330, 760, 2.0];  // A stops left of the site's mode toggle (shot x 1676+, y 25-140)
+  const keys = [[0, 960, 540, 1.0], [at(s, 2, 0.0), 960, 540, 1.0], [at(s, 2, 0.35), ...A],
+    [at(s, 3, 0.0), ...A], [at(s, 3, 0.35), ...C], [at(s, 4, 0.0), ...C], [at(s, 4, 0.35), 1215, 330, 2.15]];
+  setCam($('#s3a'), keys, lt);
+  setCam($('#s3b'), keys, lt);
+  $('#s3b').style.opacity = prog(lt, at(s, 4, 0.4), 0.4);
+  reveal($('#s3hl1'), prog(lt, at(s, 2, 0.35), 0.35) * (1 - prog(lt, at(s, 3, 0.05), 0.3)), true);
+  reveal($('#s3hl2'), prog(lt, at(s, 3, 0.4), 0.35), true);
+  reveal($('#s3nbrs'), prog(lt, at(s, 4, 0.7), 0.35), false);
+});
+
+/* ---------- S4: king - man + woman on the toy map's vectors (out/shots-data.json "vectors") ---------- */
+Stage.scene('s4', (lt, s) => {
+  /* the people-and-royalty corner of shot 01: x 295-935, y 270-770 */
+  setCam($('#s4cam'), [[0, 615, 520, 3.0]], lt);
+  /* the analogy row of shot 06: king - man + woman = queen and the "Try another" button */
+  setCam($('#s4strip'), [[0, 795, 134, 1.85]], lt);  // shot x 276-1314: king ... Try another
+  reveal($('#s4r0'), prog(lt, at(s, 2, 0.1), 0.3), false);
+  reveal($('#s4r1'), prog(lt, at(s, 2, 0.45), 0.3), false);
+  reveal($('#s4r2'), prog(lt, at(s, 2, 0.8), 0.3), false);
+  $('#s4rule').style.opacity = prog(lt, at(s, 3, 0.3), 0.3);
+  reveal($('#s4r3'), prog(lt, at(s, 3, 0.4), 0.3), false);
+  reveal($('#s4res'), prog(lt, at(s, 3, 0.8), 0.35), true);
+  reveal($('#s4hl3'), prog(lt, at(s, 3, 0.8), 0.35), true);
+  /* "man to woman is the same step as king to queen": the dashed arrow (man->king), then the solid one (woman->queen) */
+  reveal($('#s4hl1'), prog(lt, at(s, 4, 0.35), 0.35), true);
+  reveal($('#s4hl2'), prog(lt, at(s, 4, 0.7), 0.35), true);
+});
+
+/* ---------- S5: dimensions to scale; dot products on the toy's vectors ---------- */
+const S5_DIMS = [2, 768, 12288];
+Stage.scene('s5', (lt, s) => {
+  /* the toy's 2 first (Toki's "flat like this?"), then the real models' bars on Vera's answer */
+  S5_DIMS.forEach((d, i) => { $('#s5b' + i).style.width = (100 * d / 12288 * easeOut(prog(lt, i ? at(s, 1, 0.12) + i * 0.12 : at(s, 0, 0.7), 0.6))) + '%'; });
+  reveal($('#s5d0'), prog(lt, at(s, 3, 0.45), 0.3), false);
+  countTo($('#s5v0'), 32.5, lt, at(s, 3, 0.5), 0.6, v => v.toFixed(1));
+  reveal($('#s5d1'), prog(lt, at(s, 3, 0.75), 0.3), false);
+  countTo($('#s5v1'), -8.3, lt, at(s, 3, 0.8), 0.6, v => (v < 0 ? '−' : '') + Math.abs(v).toFixed(1));
+  reveal($('#s5d2'), prog(lt, at(s, 4, 0.05), 0.3), false);
+});
+
+/* ---------- S6: try it yourself ---------- */
+Stage.scene('s6', (lt, s) => {
+  Stage.spotlight(prog(lt, 0.2, 1.2));
+  /* the finder with "cat" and its neighbour chips; the analogy row and the animals with puppy - dog + cat = kitten */
+  setCam($('#s6a'), [[0, 740, 270, 2.0], [s.dur, 740, 280, 2.1]], lt);
+  setCam($('#s6b'), [[0, 940, 380, 1.45], [s.dur, 960, 380, 1.55]], lt);
+});
+
+Stage.start();
+</script>
+</body>
+</html>

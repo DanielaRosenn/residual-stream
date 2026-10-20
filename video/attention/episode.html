@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Residual Stream - EP 05 - Tokens talking to tokens</title>
+<link rel="stylesheet" href="engine/stage.css">
+<style>
+  /* The Residual Stream palette (the site's dark theme), overriding the engine's Flow Show defaults
+     for this episode only, exactly as the pilot (video/next-word) does:
+     green #158864, dark green #182D2A, mint #81E5AC, light #DEF6EF, yellow #F5C13D. */
+  :root {
+    --panel: rgba(16, 36, 32, 0.95);
+    --text: #DEF6EF;
+    --muted: #93b3a9;
+    --teal: #81E5AC;
+    --yellow: #F5C13D;
+    --orange: #FFA45C;
+    --blue: #86BDEB;
+    --red: #FF8F88;
+    --purple: #C7A8FF;
+    --green: #158864;
+    --deep: #0D483D;
+  }
+  #stage { background: radial-gradient(ellipse at 50% 38%, #24453e 0%, #182D2A 45%, #0c1a17 100%); }
+  .spot.l { background: linear-gradient(180deg, rgba(129,229,172,0.30), rgba(129,229,172,0.02)); }
+  .spot.r { background: linear-gradient(180deg, rgba(245,193,61,0.26), rgba(245,193,61,0.02)); }
+  .floor { background: linear-gradient(180deg, rgba(6,16,14,0) 0%, rgba(6,16,14,0.78) 100%); }
+  #cap { background: rgba(10, 26, 23, 0.95); }
+  .card { border-color: rgba(129,229,172,0.22); }
+  .chip { background: rgba(14, 32, 28, 0.9); }
+  .node { background: rgba(14, 32, 28, 0.96); }
+  .real { background: rgba(10,26,23,0.92); }
+  .note { position: absolute; font-size: 18px; color: var(--muted); font-weight: 500; }
+  .hl.y { border-color: var(--yellow); box-shadow: 0 0 36px rgba(245,193,61,0.55), inset 0 0 24px rgba(245,193,61,0.15); }
+
+  /* S1: hook - "bank" takes its meaning from the words before it */
+  #s1 .big { top: 250px; font-size: 112px; }
+  #s1 .sub { top: 410px; }
+  #s1 .ex { top: 500px; width: 540px; height: 168px; padding: 22px 28px; }
+  #s1 .ex .s { font-size: 28px; font-weight: 600; line-height: 1.35; }
+  #s1 .ex .s b { color: var(--yellow); border-radius: 8px; padding: 0 6px; }
+  #s1 .ex .s .tk { display: inline-block; padding: 0 12px; border-radius: 10px; border: 2.5px solid var(--teal); background: rgba(13,72,61,0.85);
+    font-family: var(--mono); font-size: 27px; }
+  #s1 .ex .m { margin-top: 14px; font-size: 24px; font-weight: 700; color: var(--teal); }
+  #s1 .credit { position: absolute; left: 0; right: 0; top: 708px; text-align: center; }
+
+  /* S2: query, key, value */
+  #s2 .qkv { top: 168px; width: 360px; height: 128px; padding: 18px 24px; }
+  #s2 .qkv h4 { font-size: 30px; font-weight: 800; }
+  #s2 .qkv p { font-size: 23px; margin-top: 8px; color: #c4ddd5; font-style: italic; }
+  #s2 .calc { left: 390px; top: 318px; width: 1140px; height: 500px; padding: 18px 30px; }
+  #s2 .hdr { display: flex; gap: 16px; font-size: 17px; font-weight: 700; color: var(--muted); letter-spacing: 1px; height: 26px; }
+  #s2 .hdr .w { width: 150px; text-align: right; }
+  #s2 .hdr .sc { width: 376px; }
+  #s2 .hdr .wt { width: 430px; }
+  #s2 .r { display: flex; align-items: center; gap: 16px; height: 37px; font-size: 22px; font-weight: 600; }
+  #s2 .r .w { width: 150px; text-align: right; }
+  #s2 .r .bar { position: relative; height: 22px; border-radius: 5px; background: rgba(129,229,172,0.08); }
+  #s2 .r .bar.sc { width: 300px; }
+  #s2 .r .bar.wt { width: 360px; }
+  #s2 .r .bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; }
+  #s2 .r .bar.sc i { background: var(--teal); opacity: 0.75; }
+  #s2 .r .bar.wt i { background: var(--yellow); }
+  #s2 .r .n { font-family: var(--mono); font-size: 19px; color: #c4ddd5; width: 60px; }
+  #s2 .r.me .w { color: var(--yellow); }
+  #s2 .sum { position: absolute; left: 990px; top: 14px; font-family: var(--mono); font-size: 20px; color: var(--yellow); font-weight: 700; }
+  #s2 .mix { position: absolute; left: 30px; right: 30px; top: 360px; }
+  #s2 .mix .lbl { margin-bottom: 10px; }
+  #s2 .mix .stack { display: flex; height: 40px; border-radius: 8px; overflow: hidden; width: 1080px; }
+  #s2 .mix .stack i { display: block; height: 100%; font-style: normal; font-size: 19px; font-weight: 800; color: #0c1a17; padding: 8px 12px; white-space: nowrap; overflow: hidden; }
+  #s2 .calc .note { left: 30px; right: 30px; top: 456px; font-size: 17px; }
+
+  /* S3: the guide's demo */
+  #s3 .screen { left: 440px; top: 168px; width: 1040px; height: 585px; }
+  #s3 .cam2 { opacity: 0; }
+  #s3 .credit { position: absolute; left: 0; right: 0; top: 772px; text-align: center; }
+  #s3 .credit .chip { font-size: 23px; padding: 10px 22px; }
+
+  /* S4: the causal mask */
+  #s4 .grid { left: 390px; top: 168px; width: 560px; height: 640px; padding: 18px 24px; }
+  #s4 .cells { position: absolute; left: 0; top: 0; }
+  #s4 .cells i { position: absolute; width: 33px; height: 33px; border-radius: 4px; }
+  #s4 .rl { position: absolute; width: 120px; text-align: right; font-size: 19px; font-weight: 600; color: var(--muted); }
+  #s4 .cl { position: absolute; font-size: 19px; font-weight: 600; color: var(--muted); transform-origin: 0 100%; transform: rotate(-60deg); white-space: nowrap; }
+  #s4 .fut { position: absolute; font-size: 18px; font-weight: 800; letter-spacing: 1.5px; color: var(--red); transform: rotate(45deg); transform-origin: 50% 50%; }
+  #s4 .grid .note { left: 24px; right: 24px; top: 604px; font-size: 17px; }
+  #s4 .screen { left: 980px; top: 204px; width: 550px; height: 386px; }
+  #s4 .pass { left: 980px; top: 610px; width: 550px; height: 178px; padding: 20px 26px; border-color: var(--yellow); }
+  #s4 .pass .lbl { color: var(--yellow); }
+  #s4 .pass h4 { font-size: 27px; font-weight: 800; margin-top: 8px; line-height: 1.25; }
+  #s4 .pass p { font-size: 19px; color: var(--muted); margin-top: 8px; }
+
+  /* S5: many heads */
+  #s5 .layer { left: 390px; top: 168px; width: 1140px; height: 84px; padding: 14px 26px; display: flex; align-items: center; gap: 22px; }
+  #s5 .layer .lbl { width: 300px; line-height: 1.35; }
+  #s5 .layer .tiles { display: flex; gap: 12px; }
+  #s5 .layer .tiles i { width: 50px; height: 50px; border-radius: 10px; border: 2.5px solid rgba(129,229,172,0.45); background: rgba(13,72,61,0.6); }
+  #s5 .screen { top: 300px; width: 360px; height: 392px; }
+  #s5 .what { position: absolute; top: 708px; width: 360px; text-align: center; }
+  #s5 .what .chip { font-size: 22px; padding: 10px 18px; }
+
+  /* S6: the cost */
+  #s6 .tri { top: 168px; height: 560px; padding: 18px 24px; }
+  #s6 .tri .cells { position: absolute; }
+  #s6 .tri .cells i { position: absolute; width: 21px; height: 21px; border-radius: 3px; }
+  #s6 .tri .cnt { position: absolute; left: 24px; right: 24px; top: 500px; font-size: 22px; font-weight: 700; }
+  #s6 .tri .cnt span { font-family: var(--mono); color: var(--yellow); font-size: 26px; }
+  #s6 .x4 { left: 1250px; top: 168px; width: 280px; height: 560px; padding: 26px 24px; border-color: var(--yellow); text-align: center; }
+  #s6 .x4 .a { font-size: 30px; font-weight: 700; color: var(--muted); margin-top: 70px; }
+  #s6 .x4 .b { font-size: 108px; font-weight: 800; color: var(--yellow); line-height: 1.05; margin-top: 30px; }
+  #s6 .x4 .c { font-size: 26px; font-weight: 700; }
+  #s6 .x4 .d { font-size: 18px; color: var(--muted); margin-top: 40px; line-height: 1.4; }
+  #s6 .fight { position: absolute; left: 0; right: 0; top: 752px; text-align: center; }
+
+  /* S7: try it yourself */
+  #s7 .title { position: absolute; left: 0; right: 0; top: 120px; text-align: center; font-size: 104px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.05; }
+  #s7 .title small { display: block; font-size: 30px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-top: 14px; }
+  #s7 .url { position: absolute; left: 0; right: 0; top: 322px; text-align: center; }
+  #s7 .url .chip { font-family: var(--mono); font-size: 27px; color: var(--teal); }
+  #s7 .screen { top: 446px; width: 560px; height: 315px; }
+  #s7 .try { position: absolute; left: 390px; width: 1140px; top: 784px; text-align: center; font-size: 24px; font-weight: 700; color: var(--yellow); }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- S1: a word's meaning depends on the words around it -->
+  <section class="scene hero" id="s1">
+    <div class="kick" data-at="0.2">THE RESIDUAL STREAM &middot; EP 05</div>
+    <div class="big" data-at="0.4" data-pop>Tokens <span class="hl-t">talking</span> to tokens</div>
+    <div class="sub" data-at="0.8">Attention: how a word picks up meaning from the words before it</div>
+    <div class="card ex" style="left:400px" data-at="L0@0.3" data-pop>
+      <div class="s">We walked by the <b id="s1r">river</b> to the <span class="tk">bank</span></div>
+      <div class="m" data-at="L1@0.55">&rarr; a riverside</div>
+    </div>
+    <div class="card ex" style="left:980px" data-at="L0@0.5" data-pop>
+      <div class="s">She asked for a <b id="s1l">loan</b> at the <span class="tk">bank</span></div>
+      <div class="m" data-at="L1@0.85">&rarr; money</div>
+    </div>
+    <div class="credit"><span class="chip" style="border-color:var(--teal)" data-at="L3@0.3" data-pop>
+      <span class="ico" style="color:var(--teal)" data-ico="search"></span>Same token, different words before it, different meaning</span></div>
+  </section>
+
+  <!-- S2: query, key, value; scores, softmax, weighted mix -->
+  <section class="scene" id="s2">
+    <div class="t-title" data-at="0.2"><span class="hl-y">Query</span>, <span class="hl-t">key</span>, <span class="hl-b">value</span></div>
+    <div class="card qkv" style="left:390px; border-color:var(--yellow)" data-at="L0@0.12" data-pop><h4 class="hl-y">Query</h4><p>&ldquo;What am I looking for?&rdquo;</p></div>
+    <div class="card qkv" style="left:780px; border-color:var(--teal)" data-at="L0@0.5" data-pop><h4 class="hl-t">Key</h4><p>&ldquo;What do I offer?&rdquo;</p></div>
+    <div class="card qkv" style="left:1170px; border-color:var(--blue)" data-at="L0@0.78" data-pop><h4 class="hl-b">Value</h4><p>&ldquo;What I hand over&rdquo;</p></div>
+    <div class="card calc" data-at="L1" data-pop>
+      <div class="hdr"><span class="w">&ldquo;it&rdquo; vs</span><span class="sc">SCORE: QUERY &middot; KEY</span><span class="wt">WEIGHT AFTER SOFTMAX</span></div>
+      <div class="sum" id="s2sum">&Sigma; = 100%</div>
+      <div id="s2rows"></div>
+      <div class="mix" data-at="L2@0.3">
+        <div class="lbl">ADDED ONTO &ldquo;it&rdquo;: THE VALUES, MIXED BY THOSE WEIGHTS</div>
+        <div class="stack" id="s2stack"></div>
+      </div>
+      <div class="note">Hand-set scores from the guide's demo (the pronoun head); the softmax is real maths.</div>
+    </div>
+  </section>
+
+  <!-- S3: the pronoun, on the guide's own demo -->
+  <section class="scene" id="s3">
+    <div class="t-title" data-at="0.2">Who is <span class="hl-y">&ldquo;it&rdquo;</span>?</div>
+    <div class="screen" data-at="0.4" data-pop>
+      <div class="cam" id="s3a"><img src="shots/01-it-tired.png" alt="">
+        <div class="hl t" style="left:316px; top:578px; width:190px; height:64px" data-at="L1" data-pop></div>
+        <div class="hl y" style="left:840px; top:174px; width:226px; height:56px" data-at="L1@0.3" data-pop></div>
+      </div>
+      <div class="cam cam2" id="s3b"><img src="shots/02-it-wide.png" alt="">
+        <div class="hl t" style="left:316px; top:578px; width:190px; height:64px"></div>
+        <div class="hl y" style="left:840px; top:450px; width:226px; height:56px" data-at="L3" data-pop></div>
+        <div class="hl y" style="left:1364px; top:640px; width:62px; height:56px" data-at="L3@0.4" data-pop></div>
+      </div>
+    </div>
+    <div class="real" style="left:1330px; top:124px" data-at="0.6">REAL DEMO</div>
+    <div class="credit"><span class="chip" style="border-color:var(--yellow)" data-at="L4@0.05" data-pop>
+      <span class="ico" style="color:var(--yellow)" data-ico="spark"></span>Hand-set patterns, mirroring ones researchers find in trained models</span></div>
+  </section>
+
+  <!-- S4: the causal mask -->
+  <section class="scene" id="s4">
+    <div class="t-title" data-at="0.2">Look <span class="hl-t">back</span>, never forward</div>
+    <div class="card grid" data-at="0.4" data-pop>
+      <div class="lbl">ROW LOOKS &middot; COLUMN IS LOOKED AT</div>
+      <div class="cells" id="s4cells"></div>
+      <div class="note">The upper half is masked: a token never sees what comes after it.</div>
+    </div>
+    <div class="screen" data-at="L1@0.55" data-pop>
+      <div class="cam" id="s4cam"><img src="shots/03-tired-looks-back.png" alt=""></div>
+    </div>
+    <div class="real" style="left:980px; top:164px" data-at="L1@0.65">&ldquo;TIRED&rdquo; LOOKS BACK</div>
+    <div class="card pass" data-at="L2@0.25" data-pop>
+      <div class="lbl">ONE PASS, EVERY POSITION</div>
+      <h4>Every row learns to guess the token after it, all at the same time</h4>
+      <p>No row can peek at its own answer</p>
+    </div>
+  </section>
+
+  <!-- S5: many heads -->
+  <section class="scene" id="s5">
+    <div class="t-title" data-at="0.2">Many <span class="hl-y">heads</span>, side by side</div>
+    <div class="card layer" data-at="L1@0.1" data-pop>
+      <div class="lbl">ONE LAYER OF GPT-2 SMALL<br>12 HEADS IN PARALLEL</div>
+      <div class="tiles" id="s5tiles"></div>
+    </div>
+    <div class="screen" style="left:390px" data-at="L2@0.02" data-pop><div class="cam" id="s5a"><img src="shots/04-head-prev.png" alt=""></div></div>
+    <div class="screen" style="left:780px" data-at="L2@0.3" data-pop><div class="cam" id="s5b"><img src="shots/05-head-subj.png" alt=""></div></div>
+    <div class="screen" style="left:1170px" data-at="L2@0.7" data-pop><div class="cam" id="s5c"><img src="shots/01-it-tired.png" alt=""></div></div>
+    <div class="what" style="left:390px"><span class="chip" style="border-color:var(--teal)" data-at="L2@0.1" data-pop>Previous word</span></div>
+    <div class="what" style="left:780px"><span class="chip" style="border-color:var(--teal)" data-at="L2@0.4" data-pop>Verb &rarr; who did it</span></div>
+    <div class="what" style="left:1170px"><span class="chip" style="border-color:var(--teal)" data-at="L2@0.8" data-pop>Pronoun &rarr; its noun</span></div>
+    <div class="real" style="left:390px; top:264px" data-at="L2@0.2">THE GUIDE'S HAND-SET HEADS</div>
+  </section>
+
+  <!-- S6: the cost grows with the square of the length -->
+  <section class="scene" id="s6">
+    <div class="t-title" data-at="0.2">The cost: a <span class="hl-y">square</span></div>
+    <div class="card tri" style="left:390px; width:300px" data-at="L1" data-pop>
+      <div class="lbl">8 TOKENS</div>
+      <div class="cells" id="s6a" style="left:24px; top:268px"></div>
+      <div class="cnt"><span id="s6na">0</span> pairs</div>
+    </div>
+    <div class="card tri" style="left:720px; width:500px" data-at="L1@0.3" data-pop>
+      <div class="lbl">16 TOKENS</div>
+      <div class="cells" id="s6b" style="left:24px; top:76px"></div>
+      <div class="cnt"><span id="s6nb">0</span> pairs</div>
+    </div>
+    <div class="card x4" data-at="L1@0.6" data-pop>
+      <div class="lbl">DOUBLE THE TEXT</div>
+      <div class="a">&times;2 tokens</div>
+      <div class="b">&asymp;&times;4</div>
+      <div class="c">the work</div>
+      <div class="d">Each token is compared with itself and every token before it</div>
+    </div>
+    <div class="fight"><span class="chip" style="border-color:var(--yellow)" data-at="L2@0.3" data-pop>
+      <span class="ico" style="color:var(--yellow)" data-ico="gear"></span>Why long contexts are hard, and what so much engineering fights</span></div>
+  </section>
+
+  <!-- S7: try it yourself -->
+  <section class="scene" id="s7">
+    <div class="title" data-at="0.3" data-pop>The <span class="hl-t">Residual</span> Stream
+      <small>An interactive guide to how LLMs work &middot; English and Hebrew</small></div>
+    <div class="url"><span class="chip" style="border-color:var(--teal)" data-at="L1@0.05" data-pop>https://danielarosenn.github.io/residual-stream/</span></div>
+    <div class="screen" style="left:390px" data-at="L1@0.2" data-pop>
+      <div class="cam" id="s7a"><img src="shots/01-it-tired.png" alt=""></div>
+    </div>
+    <div class="screen" style="left:970px" data-at="L1@0.6" data-pop>
+      <div class="cam" id="s7b"><img src="shots/02-it-wide.png" alt=""></div>
+    </div>
+    <div class="real" style="left:390px; top:404px" data-at="L1@0.3">&hellip;TOO TIRED</div>
+    <div class="real" style="left:970px; top:404px" data-at="L1@0.7">&hellip;TOO WIDE</div>
+    <div class="try" data-at="L1@0.4">Attention chapter: click the tokens, then flip &ldquo;tired&rdquo; and &ldquo;wide&rdquo;</div>
+  </section>
+
+</div>
+<script src="timeline.js"></script>
+<script src="engine/stage.js"></script>
+<script>
+/* Shared: the guide's coreference head for "it" in "...because it was too tired" (js/attention.js, HEADS.coref.score):
+   "it" scores 4.5 on "animal", 1.2 on "street", 1 on itself and 0 on everything else; softmax over the tokens up to "it". */
+const SENT = ['The', 'animal', "didn't", 'cross', 'the', 'street', 'because', 'it', 'was', 'too', 'tired'];
+const IT = 7, ANIMAL = 1, TIRED = 10;
+const IT_SCORES = [0, 4.5, 0, 0, 0, 1.2, 0, 1];
+function softmax(z) { const m = Math.max(...z), e = z.map(v => Math.exp(v - m)), s = e.reduce((a, b) => a + b, 0); return e.map(v => v / s); }
+const IT_W = softmax(IT_SCORES);
+
+/* ---------- S1: the clue word before "bank" lights up ---------- */
+Stage.scene('s1', (lt, s) => {
+  const r = lt >= at(s, 1, 0.45), l = lt >= at(s, 1, 0.75);
+  $('#s1r').style.background = r ? 'rgba(245,193,61,0.22)' : 'transparent';
+  $('#s1l').style.background = l ? 'rgba(245,193,61,0.22)' : 'transparent';
+});
+
+/* ---------- S2: scores, softmax weights and the weighted mix of values ---------- */
+const SCORE_MAX = 4.5;   // the largest hand-set score, drawn as a full bar
+$('#s2rows').innerHTML = IT_SCORES.map((sc, i) =>
+  `<div class="r${i === IT ? ' me' : ''}"><span class="w">${SENT[i]}</span><span class="bar sc"><i id="s2s${i}"></i></span>` +
+  `<span class="n" id="s2v${i}"></span><span class="bar wt"><i id="s2b${i}"></i></span><span class="n" id="s2p${i}"></span></div>`).join('');
+/* the mix: one segment per token, as wide as its weight; tiny ones carry no label */
+const MIX_COL = i => i === ANIMAL ? 'var(--yellow)' : i === IT ? 'var(--blue)' : i === 5 ? 'var(--teal)' : 'rgba(129,229,172,0.45)';
+$('#s2stack').innerHTML = IT_W.map((w, i) =>
+  `<i id="s2m${i}" style="background:${MIX_COL(i)}">${w > 0.2 ? `${Math.round(w * 100)}% value of &ldquo;${SENT[i]}&rdquo;` : ''}</i>`).join('');
+Stage.scene('s2', (lt, s) => {
+  const t0 = at(s, 1, 0.08), t1 = at(s, 1, 0.4), w0 = at(s, 1, 0.55), w1 = at(s, 1, 0.85);
+  IT_SCORES.forEach((sc, i) => {
+    const ks = easeOut(prog(lt, t0 + (t1 - t0) * i / IT_SCORES.length, 0.4));
+    $('#s2s' + i).style.width = 100 * (sc / SCORE_MAX) * ks + '%';
+    $('#s2v' + i).textContent = ks > 0 ? sc.toFixed(1) : '';
+    const kw = easeOut(prog(lt, w0, w1 - w0));
+    $('#s2b' + i).style.width = 100 * IT_W[i] * kw + '%';
+    $('#s2p' + i).textContent = kw > 0 ? Math.round(100 * IT_W[i] * kw) + '%' : '';
+  });
+  $('#s2sum').style.opacity = prog(lt, w1, 0.3);
+  const km = easeOut(prog(lt, at(s, 2, 0.35), 1.0));
+  IT_W.forEach((w, i) => { $('#s2m' + i).style.width = 100 * w * km + '%'; });
+});
+
+/* ---------- S3: "it" -> animal, then swap in "wide": "it" -> street (cut between the two real shots) ---------- */
+Stage.scene('s3', (lt, s) => {
+  /* full demo first, then the lines and the heat map: shot x ~280-1670, y ~80-860 */
+  const keys = [[0.3, 960, 540, 1.0], [at(s, 0, 0.6), 975, 470, 1.38]];
+  setCam($('#s3a'), keys, lt);
+  setCam($('#s3b'), keys, lt);
+  $('#s3b').style.opacity = prog(lt, at(s, 2, 0.55), 0.4);
+});
+
+/* ---------- S4: the causal mask as a grid over the same sentence ---------- */
+const CELL = 36, GX = 150, GY = 200;  // cell pitch and grid origin inside the card (px)
+(() => {
+  let h = '';
+  SENT.forEach((w, i) => {
+    h += `<div class="rl" id="s4r${i}" style="left:${GX - 132}px; top:${GY + i * CELL + 5}px">${w}</div>`;
+    h += `<div class="cl" id="s4c${i}" style="left:${GX + i * CELL + 22}px; top:${GY - 34}px">${w}</div>`;
+    SENT.forEach((_, j) => { h += `<i id="s4x${i}_${j}" style="left:${GX + j * CELL}px; top:${GY + i * CELL}px"></i>`; });
+  });
+  h += `<div class="fut" id="s4fut" style="left:${GX + 6 * CELL}px; top:${GY + 2.6 * CELL}px">FUTURE: MASKED</div>`;
+  $('#s4cells').innerHTML = h;
+})();
+Stage.scene('s4', (lt, s) => {
+  const back0 = at(s, 1, 0.25), back1 = at(s, 1, 0.55), late = at(s, 1, 0.75), pass = at(s, 2, 0.3);
+  const pulse = lt >= pass ? 0.5 + 0.5 * Math.abs(Math.sin((lt - pass) * 3)) : 0;
+  SENT.forEach((_, i) => {
+    const kr = prog(lt, back0 + (back1 - back0) * i / SENT.length, 0.3);
+    SENT.forEach((_, j) => {
+      const c = $(`#s4x${i}_${j}`);
+      if (j > i) {
+        /* future cells: outlined; the one "it" would need ("tired") flashes red on Toki's line */
+        const ask = i === IT && j === TIRED && lt >= at(s, 0, 0.5);
+        c.style.background = ask ? 'rgba(255,143,136,0.55)' : 'rgba(255,143,136,' + 0.08 * prog(lt, back0, 0.6) + ')';
+        c.style.border = '1.5px solid rgba(129,229,172,0.16)';
+      } else {
+        const hot = i === TIRED && (j === ANIMAL || j === IT) && lt >= late;
+        const a = hot ? 0.95 : (0.18 + 0.22 * pulse) * kr;
+        c.style.background = hot ? 'rgba(245,193,61,0.95)' : `rgba(129,229,172,${a})`;
+        c.style.border = '1.5px solid rgba(129,229,172,0.3)';
+      }
+    });
+    const rowOn = (i === IT && lt >= at(s, 0, 0.3) && lt < late) || (i === TIRED && lt >= late);
+    $('#s4r' + i).style.color = rowOn ? 'var(--text)' : 'var(--muted)';
+    $('#s4c' + i).style.color = (i === TIRED && lt >= at(s, 0, 0.5) && lt < late) ? 'var(--red)' : 'var(--muted)';
+  });
+  $('#s4fut').style.opacity = prog(lt, back1, 0.4);
+  /* the lines from "tired", including its strongest target "animal" (shot y ~200): shot x ~170-1210, y ~120-860 */
+  setCam($('#s4cam'), [[0, 690, 490, 1.85]], lt);
+});
+
+/* ---------- S5: a strip of 12 heads, then three of the guide's hand-set heads ---------- */
+const HEADS_GPT2_SMALL = 12;  // GPT-2 small: 12 attention heads in each of its 12 layers
+$('#s5tiles').innerHTML = Array.from({ length: HEADS_GPT2_SMALL }, (_, i) => `<i id="s5h${i}"></i>`).join('');
+Stage.scene('s5', (lt, s) => {
+  const t0 = at(s, 1, 0.55), t1 = at(s, 1, 0.95);
+  for (let i = 0; i < HEADS_GPT2_SMALL; i++) {
+    const on = lt >= t0 + (t1 - t0) * i / HEADS_GPT2_SMALL;
+    $('#s5h' + i).style.borderColor = on ? 'var(--yellow)' : 'rgba(129,229,172,0.45)';
+    $('#s5h' + i).style.background = on ? 'rgba(245,193,61,0.35)' : 'rgba(13,72,61,0.6)';
+  }
+  /* the lines panel of each shot: x ~290-1080 */
+  ['#s5a', '#s5b', '#s5c'].forEach(id => setCam($(id), [[0, 685, 500, 2.43]], lt));
+});
+
+/* ---------- S6: pairs compared grow with the square of the length ---------- */
+const N_SHORT = 8, N_LONG = 16, PITCH = 24;
+function tri(box, n) {
+  let h = '';
+  for (let i = 0; i < n; i++) for (let j = 0; j <= i; j++) h += `<i data-k="${i * (i + 1) / 2 + j}" style="left:${j * PITCH}px; top:${i * PITCH}px"></i>`;
+  box.innerHTML = h;
+}
+tri($('#s6a'), N_SHORT); tri($('#s6b'), N_LONG);
+const pairs = n => n * (n + 1) / 2;  // each token with itself and every earlier token
+function fillTri(box, n, lt, t0, t1) {
+  const total = pairs(n), k = clamp01((lt - t0) / (t1 - t0)), lit = Math.floor(k * total + 1e-9);
+  box.querySelectorAll('i').forEach(c => { c.style.background = +c.dataset.k < lit ? 'rgba(129,229,172,0.8)' : 'rgba(129,229,172,0.1)'; });
+  return lit;
+}
+Stage.scene('s6', (lt, s) => {
+  const a = fillTri($('#s6a'), N_SHORT, lt, at(s, 1, 0.1), at(s, 1, 0.35));
+  const b = fillTri($('#s6b'), N_LONG, lt, at(s, 1, 0.35), at(s, 1, 0.75));
+  $('#s6na').textContent = a;
+  $('#s6nb').textContent = b;
+});
+
+/* ---------- S7: try it yourself ---------- */
+Stage.scene('s7', (lt, s) => {
+  Stage.spotlight(prog(lt, 0.2, 1.2));
+  setCam($('#s7a'), [[0, 975, 470, 1.3], [s.dur, 975, 470, 1.38]], lt);
+  setCam($('#s7b'), [[0, 975, 470, 1.3], [s.dur, 975, 470, 1.38]], lt);
+});
+
+Stage.start();
+</script>
+</body>
+</html>

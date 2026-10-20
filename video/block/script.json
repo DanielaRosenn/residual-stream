@@ -1,0 +1,80 @@
+{
+  "brand": "The Residual Stream &middot; EP 06 &middot; The block",
+  "output": "Residual-Stream-EP06-Block.mp4",
+  "voices": {
+    "VERA": { "voice": "en-GB-SoniaNeural", "rate": "+18%", "pitch": "+0Hz" },
+    "TOKI": { "voice": "en-US-BrianNeural", "rate": "+20%", "pitch": "+4Hz" }
+  },
+  "cast": { "L": "VERA", "R": "TOKI" },
+  "scenes": [
+    {
+      "id": "s1",
+      "lines": [
+        { "who": "TOKI", "text": "Vera, what's inside a transformer?" },
+        { "who": "VERA", "text": "One block, stacked. GPT-2 small has 12; GPT-3 has 96.",
+          "say": "One block, stacked. G P T two small has twelve, G P T three has ninety-six." },
+        { "who": "TOKI", "text": "Like floors in a tall building." }
+      ]
+    },
+    {
+      "id": "s2",
+      "lines": [
+        { "who": "TOKI", "text": "What flows up through them?" },
+        { "who": "VERA", "text": "Each token's vector, straight up: the residual stream." },
+        { "who": "VERA", "text": "Every part reads it, computes, and adds its result back. Nothing overwrites." },
+        { "who": "TOKI", "text": "So it all just piles up." }
+      ]
+    },
+    {
+      "id": "s3",
+      "lines": [
+        { "who": "TOKI", "text": "Where do tokens talk to each other?" },
+        { "who": "VERA", "text": "Only in attention. It moves information between positions." },
+        { "who": "VERA", "text": "So “her” can pull in “Mia”.", "say": "So, her, can pull in, Mia." },
+        { "who": "TOKI", "text": "The only group chat in the building." }
+      ]
+    },
+    {
+      "id": "s4",
+      "lines": [
+        { "who": "TOKI", "text": "And the MLP?", "say": "And the M L P?" },
+        { "who": "VERA", "text": "Each token alone: expand about four times, a nonlinearity, project back.",
+          "say": "Each token alone: expand about four times, a non-linearity, project back." },
+        { "who": "VERA", "text": "It holds roughly two thirds of a dense model's parameters." },
+        { "who": "VERA", "text": "Research suggests much factual recall happens there." }
+      ]
+    },
+    {
+      "id": "s5",
+      "lines": [
+        { "who": "TOKI", "text": "Why add? Why not replace?" },
+        { "who": "VERA", "text": "Without residual connections, a signal through a hundred layers is distorted beyond recovery." },
+        { "who": "VERA", "text": "And gradients vanish on the way back." },
+        { "who": "TOKI", "text": "Who figured that out?" },
+        { "who": "VERA", "text": "Computer vision: ResNet, 2015.",
+          "say": "Computer vision: Resnet, twenty fifteen." },
+        { "who": "VERA", "text": "Norms keep each sublayer's input at a stable scale.",
+          "say": "Norms keep each sub-layer's input at a stable scale." }
+      ]
+    },
+    {
+      "id": "s6",
+      "lines": [
+        { "who": "TOKI", "text": "How big is a real one?" },
+        { "who": "VERA", "text": "The guide's calculator says Llama 3 8B has 8.03 billion.",
+          "say": "The guide's calculator says Llama three, eight B, has eight point oh three billion." },
+        { "who": "TOKI", "text": "And the MLP's share?", "say": "And the M L P's share?" },
+        { "who": "VERA", "text": "70%. Real formulas, minus tiny norm and bias terms.",
+          "say": "Seventy percent. Real formulas, minus tiny norm and bias terms." }
+      ]
+    },
+    {
+      "id": "s7",
+      "lines": [
+        { "who": "TOKI", "text": "Can I climb a block myself?" },
+        { "who": "VERA", "text": "Step through it and try the calculator, in The block chapter." },
+        { "who": "TOKI", "text": "One floor at a time. Adding, never erasing." }
+      ]
+    }
+  ]
+}

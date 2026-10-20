@@ -1,0 +1,79 @@
+{
+  "brand": "The Residual Stream &middot; EP 08 &middot; Training",
+  "output": "Residual-Stream-EP08-Training.mp4",
+  "voices": {
+    "VERA": { "voice": "en-GB-SoniaNeural", "rate": "+18%", "pitch": "+0Hz" },
+    "TOKI": { "voice": "en-US-BrianNeural", "rate": "+20%", "pitch": "+4Hz" }
+  },
+  "cast": { "L": "VERA", "R": "TOKI" },
+  "scenes": [
+    {
+      "id": "s1",
+      "lines": [
+        { "who": "TOKI", "text": "Vera, how does a model actually learn?" },
+        { "who": "VERA", "text": "At every position in real text, it gives each next token a probability." },
+        { "who": "VERA", "text": "The loss is its surprise at the real one: minus the log of that probability." },
+        { "who": "TOKI", "text": "So a confident wrong guess costs a lot." }
+      ]
+    },
+    {
+      "id": "s2",
+      "lines": [
+        { "who": "TOKI", "text": "Then how does it improve?" },
+        { "who": "VERA", "text": "Backpropagation finds which way each knob should move.",
+          "say": "Back propagation finds which way each knob should move." },
+        { "who": "VERA", "text": "Gradient descent nudges each one a little that way." },
+        { "who": "TOKI", "text": "Guess, compare, nudge, repeat." },
+        { "who": "VERA", "text": "For trillions of tokens." }
+      ]
+    },
+    {
+      "id": "s3",
+      "lines": [
+        { "who": "TOKI", "text": "Can I watch it learn?" },
+        { "who": "VERA", "text": "In the guide: a real bigram network. One character in, the next one out." },
+        { "who": "VERA", "text": "Loss falls from 3.26, a blind guess, toward the dashed line: a bigram's best.",
+          "say": "Loss falls from three point two six, a blind guess, toward the dashed line: a bigram's best." },
+        { "who": "TOKI", "text": "It's getting less surprised!" }
+      ]
+    },
+    {
+      "id": "s4",
+      "lines": [
+        { "who": "TOKI", "text": "Why can't it go lower?" },
+        { "who": "VERA", "text": "A transformer sees thousands of tokens, and has billions of knobs." },
+        { "who": "VERA", "text": "To lower the loss, it must learn grammar, facts and patterns of reasoning." },
+        { "who": "TOKI", "text": "That's what makes text predictable!" }
+      ]
+    },
+    {
+      "id": "s5",
+      "lines": [
+        { "who": "TOKI", "text": "Bigger is better?" },
+        { "who": "VERA", "text": "Scaling laws, 2020: loss falls smoothly as parameters, data and compute grow.",
+          "say": "Scaling laws, twenty twenty: loss falls smoothly as parameters, data and compute grow." },
+        { "who": "VERA", "text": "Chinchilla, 2022: grow data with the model, about 20 tokens per parameter.",
+          "say": "Chinchilla, twenty twenty-two: grow data with the model, about twenty tokens per parameter." }
+      ]
+    },
+    {
+      "id": "s6",
+      "lines": [
+        { "who": "TOKI", "text": "And then it's an assistant?" },
+        { "who": "VERA", "text": "Not yet. Just a brilliant autocomplete." },
+        { "who": "VERA", "text": "Then post-training: example chats, and preference tuning like RLHF and DPO.",
+          "say": "Then post-training: example chats, and preference tuning like R L H F and D P O." },
+        { "who": "VERA", "text": "From 2024, rewards for checkable maths, code and tool use.",
+          "say": "From twenty twenty-four, rewards for checkable maths, code and tool use." }
+      ]
+    },
+    {
+      "id": "s7",
+      "lines": [
+        { "who": "TOKI", "text": "Where do I press Train?" },
+        { "who": "VERA", "text": "In the Training chapter. Watch a real network learn." },
+        { "who": "TOKI", "text": "Down you go, loss!" }
+      ]
+    }
+  ]
+}
